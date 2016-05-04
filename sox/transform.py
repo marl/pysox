@@ -6,13 +6,11 @@ This module requires that SoX is installed.
 """
 
 from __future__ import print_function
-
-import os
-import csv
-
 import logging
-import tempfile as tmp
-import subprocess
+
+from . import core
+from .core import sox
+from .core import SoxError
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -26,8 +24,8 @@ VERBOSITY_VALS = [0, 1, 2, 3, 4]
 class Transformer(object):
     def __init__(self, input_filepath, output_filepath):
         self.globals = Globals().globals
-        self.input_filepath = input_filepath
-        self.output_filepath = output_filepath
+        self.input_filepath = core.set_input_file(input_filepath)
+        self.output_filepath = core.set_output_file(output_filepath)
         self.input_format = []
         self.output_format = []
         self.effects = []
@@ -48,11 +46,11 @@ class Transformer(object):
             raise SoxError
         else:
             logging.info(
-                "Created {} with effects: {}".format(
-                    self.output_filepath,
-                    " ".join(self.effects_log)
-                )
+                "Created %s with effects: %s",
+                self.output_filepath,
+                " ".join(self.effects_log)
             )
+            return True
 
     def allpass(self):
         raise NotImplementedError
@@ -166,7 +164,6 @@ class Transformer(object):
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('fade')
-
 
     def fir(self):
         raise NotImplementedError
@@ -397,9 +394,8 @@ class Transformer(object):
 
 class Globals(object):
     """ Class containing global sox arguments """
-    def __init__(self, clobber=True, combine=False, dither=False, guard=False,
+    def __init__(self, combine=False, dither=False, guard=False,
                  multithread=False, replay_gain=False, verbosity=2):
-        self.clobber = self._set_bool(clobber)
         self.combine = self._set_constrainted(combine, COMBINE_VALS)
         self.dither = self._set_bool(dither)
         self.guard = self._set_bool(guard)
@@ -413,8 +409,6 @@ class Globals(object):
         """ Build global command line arguments.
         """
         global_args = []
-        if not self.clobber:
-            global_args.append('--no-clobber')
 
         if self.combine is not False:
             global_args.append('--combine')
@@ -457,42 +451,4 @@ class Globals(object):
             )
 
 
-def sox(args):
-    """Pass an argument list to SoX.
 
-    Parameters
-    ----------
-    args : iterable
-        Argument list for SoX. The first item can, but does not
-        need to, be 'sox'.
-
-    Returns:
-    --------
-    status : bool
-        True on success.
-
-    """
-    if args[0].lower() != "sox":
-        args.insert(0, "sox")
-    else:
-        args[0] = "sox"
-
-    try:
-        logging.info("Executing: %s", " ".join(args))
-        process_handle = subprocess.Popen(args, stderr=subprocess.PIPE)
-        status = process_handle.wait()
-        if process_handle.stdout is not None:
-            logging.info(process_handle.stdout)
-        return status == 0
-    except OSError as error_msg:
-        logging.error("OSError: SoX failed! %s", error_msg)
-    except TypeError as error_msg:
-        logging.error("TypeError: %s", error_msg)
-    return False
-
-
-class SoxError(Exception):
-    """Exception to be raised when SoX exits with non-zero status.
-    """
-    def __init__(self, *args, **kwargs):
-        Exception.__init__(self, *args, **kwargs)
