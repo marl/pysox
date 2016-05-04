@@ -59,7 +59,7 @@ def _get_valid_formats():
         "sox -h | grep 'AUDIO FILE FORMATS'",
         shell=True
     )
-    formats = shell_output.strip('\n').split(' ')[3:]
+    formats = str(shell_output).strip('\n').split(' ')[3:]
     return formats
 
 
@@ -104,6 +104,7 @@ def set_input_file(input_filepath):
         )
     ext = _file_extension(input_filepath)
     if ext not in VALID_FORMATS:
+        logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
         raise SoxError(
             "This install of SoX cannot process .{} files.".format(ext)
         )
@@ -134,14 +135,15 @@ def set_output_file(output_filepath):
 
     ext = _file_extension(output_filepath)
     if ext not in VALID_FORMATS:
+        logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
         raise SoxError(
             "This install of SoX cannot process .{} files.".format(ext)
         )
 
     if os.path.exists(output_filepath):
         logging.warning(
-            'output_file: {} already '
-            'exists and will be overwritten on build'.format(output_filepath)
+            'output_file: %s already exists and will be overwritten on build',
+            output_filepath
         )
 
     return output_filepath
