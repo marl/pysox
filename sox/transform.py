@@ -11,7 +11,6 @@ import os
 import csv
 
 import logging
-import os
 import tempfile as tmp
 import subprocess
 
