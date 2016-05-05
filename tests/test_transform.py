@@ -22,7 +22,7 @@ class TestTransformDefault(unittest.TestCase):
         )
 
     def test_globals(self):
-        expected = ['-D', '-V2']
+        expected = ['-D', '-V4']
         actual = self.transformer.globals
         self.assertEqual(expected, actual)
 
@@ -156,10 +156,10 @@ class TestTransformerFade(unittest.TestCase):
 
     def test_default(self):
         tfm = new_transformer()
-        tfm.fade()
+        tfm.fade(fade_in_len=0.5)
 
         actual_args = tfm.effects
-        expected_args = ['fade', 'q', '0', '0', '0']
+        expected_args = ['fade', 'q', '0.5']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -175,7 +175,7 @@ class TestTransformerFade(unittest.TestCase):
         tfm.fade(fade_in_len=1.2)
 
         actual_args = tfm.effects
-        expected_args = ['fade', 'q', '1.2', '0', '0']
+        expected_args = ['fade', 'q', '1.2']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build()
@@ -192,7 +192,7 @@ class TestTransformerFade(unittest.TestCase):
         tfm.fade(fade_out_len=3)
 
         actual_args = tfm.effects
-        expected_args = ['fade', 'q', '0', '0', '3']
+        expected_args = ['reverse', 'fade', 'q', '3', 'reverse']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build()
@@ -206,10 +206,10 @@ class TestTransformerFade(unittest.TestCase):
 
     def test_fade_shape_valid(self):
         tfm = new_transformer()
-        tfm.fade(fade_shape='p')
+        tfm.fade(fade_shape='p', fade_in_len=1.5)
 
         actual_args = tfm.effects
-        expected_args = ['fade', 'p', '0', '0', '0']
+        expected_args = ['fade', 'p', '1.5']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build()
@@ -502,6 +502,4 @@ class TestTransformerTrim(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.trim(8, 2)
-
-
 

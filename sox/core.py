@@ -26,11 +26,21 @@ def sox(args):
 
     try:
         logging.info("Executing: %s", " ".join(args))
-        process_handle = subprocess.Popen(args, stderr=subprocess.PIPE)
-        status = process_handle.wait()
-        if process_handle.stdout is not None:
-            logging.info(process_handle.stdout)
-        return status == 0
+
+        process_handle = subprocess.Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        out, err = process_handle.communicate()
+        status = process_handle.returncode
+        if out is not None:
+            logging.info(out)
+        if status == 0:
+            return True
+        else:
+            logging.info("SoX returned with error code %s", status)
+            logging.info(out)
+            logging.info(err)
+            return False
     except OSError as error_msg:
         logging.error("OSError: SoX failed! %s", error_msg)
     except TypeError as error_msg:

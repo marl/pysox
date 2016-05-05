@@ -159,7 +159,7 @@ class TestIsNumber(unittest.TestCase):
     def test_numeric4(self):
         actual = core.is_number('13.54')
         expected = True
-        self.assertEqual(expected, actual)        
+        self.assertEqual(expected, actual)
 
     def test_nonnumeric(self):
         actual = core.is_number('a')

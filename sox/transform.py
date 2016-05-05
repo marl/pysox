@@ -42,6 +42,7 @@ class Transformer(object):
         args.extend(self.effects)
 
         status = sox(args)
+
         if status is False:
             raise SoxError
         else:
@@ -174,12 +175,22 @@ class Transformer(object):
         if not is_number(fade_out_len) or fade_out_len < 0:
             raise ValueError("fade_out_len must be a nonnegative number.")
 
-        effect_args = [
-            'fade', str(fade_shape), str(fade_in_len),
-            '0', str(fade_out_len)
-        ]
-        self.effects.extend(effect_args)
-        self.effects_log.append('fade')
+        effect_args = []
+
+        if fade_in_len > 0:
+            effect_args.extend([
+                'fade', str(fade_shape), str(fade_in_len)
+            ])
+
+        if fade_out_len > 0:
+            effect_args.extend([
+                'reverse', 'fade', str(fade_shape),
+                str(fade_out_len), 'reverse'
+            ])
+
+        if len(effect_args) > 0:
+            self.effects.extend(effect_args)
+            self.effects_log.append('fade')
 
     def fir(self):
         raise NotImplementedError
@@ -451,7 +462,7 @@ class Transformer(object):
 class Globals(object):
     """ Class containing global sox arguments """
     def __init__(self, combine=False, dither=False, guard=False,
-                 multithread=False, replay_gain=False, verbosity=2):
+                 multithread=False, replay_gain=False, verbosity=4):
         self.combine = self._set_constrainted(combine, COMBINE_VALS)
         self.dither = self._set_bool(dither)
         self.guard = self._set_bool(guard)
@@ -505,6 +516,5 @@ class Globals(object):
                 'Invalid value for combine. Must be one of False or {}'.format(
                     valid_vals)
             )
-
 
 

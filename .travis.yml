@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 
 language: python
 
@@ -7,10 +7,14 @@ python:
   - "3.4"
   - "3.5"
 
-addons:
-  apt:
-    packages:
-    - sox
+before_install:
+  - sudo apt-get update -q
+  - sudo apt-get install sox=14.3.2-3
+
+# addons:
+#   apt:
+#     packages:
+#     - sox
 
 # command to install dependencies
 install:
