@@ -147,3 +147,24 @@ def set_output_file(output_filepath):
         )
 
     return output_filepath
+
+
+def is_number(var):
+    """Check if variable is a numeric value.
+
+    Parameters
+    ----------
+    var : object
+
+    Returns:
+    --------
+    bool
+        True if var is numeric, False otherwise.
+    """
+    try:
+        float(var)
+        return True
+    except ValueError:
+        return False
+    except TypeError:
+        return False

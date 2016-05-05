@@ -11,13 +11,13 @@ import logging
 from . import core
 from .core import sox
 from .core import SoxError
+from .core import is_number
 
 logging.basicConfig(level=logging.DEBUG)
 
 COMBINE_VALS = [
     'concatenate', 'merge', 'mix', 'mix-power', 'multiply', 'sequence', False
 ]
-
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
 
 
@@ -98,12 +98,22 @@ class Transformer(object):
             Desired bitdepth. If None, defaults to the same as input.
 
         """
-        if bitdepth:
-            assert bitdepth in [8, 16, 24, 32, 64]
+        bitdepths = [8, 16, 24, 32, 64]
+        if bitdepth is not None:
+            if bitdepth not in bitdepths:
+                raise ValueError(
+                    "bitdepth must be one of {}.".format(str(bitdepths))
+                )
             self.output_format.extend(['-b', '{}'.format(bitdepth)])
-        if channels:
+        if channels is not None:
+            if not isinstance(channels, int) or channels <= 0:
+                raise ValueError(
+                    "channels must be a positive integer."
+                )
             self.output_format.extend(['-c', '{}'.format(channels)])
-        if samplerate:
+        if samplerate is not None:
+            if not is_number(samplerate) or samplerate <= 0:
+                raise ValueError("samplerate must be a positive number.")
             self.rate(samplerate)
 
     def dcshift(self):
@@ -155,9 +165,15 @@ class Transformer(object):
 
         """
         fade_shapes = ['q', 'h', 't', 'l', 'p']
-        assert fade_shape in fade_shapes, "Invalid fade shape."
-        assert fade_in_len >= 0, "fade_in_len must be nonnegative."
-        assert fade_out_len >= 0, "fade_out_len must be nonnegative."
+        if fade_shape not in fade_shapes:
+            raise ValueError(
+                "Fade shape must be one of {}".format(" ".join(fade_shapes))
+            )
+        if not is_number(fade_in_len) or fade_in_len < 0:
+            raise ValueError("fade_in_len must be a nonnegative number.")
+        if not is_number(fade_out_len) or fade_out_len < 0:
+            raise ValueError("fade_out_len must be a nonnegative number.")
+
         effect_args = [
             'fade', str(fade_shape), str(fade_in_len),
             '0', str(fade_out_len)
@@ -201,6 +217,9 @@ class Transformer(object):
             Output volume (db)
 
         """
+        if not is_number(db_level):
+            raise ValueError('db_level must be a number.')
+
         effect_args = [
             'norm',
             '{}'.format(db_level)
@@ -226,8 +245,12 @@ class Transformer(object):
             Number of seconds of silence to add to end.
 
         """
-        assert start_duration >= 0, "Start duration must be positive."
-        assert end_duration >= 0, "End duration must be positive."
+        if not is_number(start_duration) or start_duration < 0:
+            raise ValueError("Start duration must be a positive number.")
+
+        if not is_number(end_duration) or end_duration < 0:
+            raise ValueError("End duration must be positive.")
+
         effect_args = [
             'pad',
             '{}'.format(start_duration),
@@ -267,8 +290,15 @@ class Transformer(object):
             silent regions.
 
         """
-        assert samplerate > 0, "Samplerate must be a positive number."
-        assert quality in ['q', 'l', 'm', 'h', 'v'], "Invalid quality."
+        quality_vals = ['q', 'l', 'm', 'h', 'v']
+        if not is_number(samplerate) or samplerate <= 0:
+            raise ValueError("Samplerate must be a positive number.")
+
+        if quality not in quality_vals:
+            raise ValueError(
+                "Quality must be one of {}.".format(' '.join(quality_vals))
+            )
+
         effect_args = [
             'rate',
             '-{}'.format(quality),
@@ -286,7 +316,7 @@ class Transformer(object):
     def reverse(self):
         raise NotImplementedError
 
-    def silence(self, location=0, silence_threshold=0.01,
+    def silence(self, location=0, silence_threshold=0.1,
                 min_silence_duration=0.1, buffer_around_silence=False):
         """Removes silent regions from an audio file.
 
@@ -299,6 +329,7 @@ class Transformer(object):
              * -1 to remove silence from the end,
         silence_threshold: float
             Silence threshold as percentage of maximum sample amplitude.
+            Must be between 0 and 100.
         min_silence_duration: float
             The minimum ammount of time in seconds required for a region to be
             considered non-silent.
@@ -307,6 +338,26 @@ class Transformer(object):
             silent regions.
 
         """
+        if location not in [-1, 0, 1]:
+            raise ValueError("location must be one of -1, 0, 1.")
+
+        if not is_number(silence_threshold) or silence_threshold < 0:
+            raise ValueError(
+                "silence_threshold must be a number between 0 and 100"
+            )
+        elif silence_threshold >= 100:
+            raise ValueError(
+                "silence_threshold must be a number between 0 and 100"
+            )
+
+        if not is_number(min_silence_duration) or min_silence_duration <= 0:
+            raise ValueError(
+                "min_silence_duration must be a positive number."
+            )
+
+        if not isinstance(buffer_around_silence, bool):
+            raise ValueError("buffer_around_silence must be a boolean.")
+
         effect_args = []
 
         if location == -1:
@@ -371,8 +422,13 @@ class Transformer(object):
             End time of the clip (seconds)
 
         """
-        assert start_time >= 0, "`start_time` must be positive."
-        assert end_time >= 0, "`end_time` must be positive."
+        if not is_number(start_time) or start_time < 0:
+            raise ValueError("start_time must be a positive number.")
+        if not is_number(end_time) or end_time < 0:
+            raise ValueError("end_time must be a positive number.")
+        if start_time >= end_time:
+            raise ValueError("start_time must be smaller than end_time.")
+
         effect_args = [
             'trim',
             '{}'.format(start_time),

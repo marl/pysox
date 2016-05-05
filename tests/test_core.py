@@ -139,9 +139,39 @@ class TestSetOutputFile(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+class TestIsNumber(unittest.TestCase):
 
+    def test_numeric(self):
+        actual = core.is_number(0)
+        expected = True
+        self.assertEqual(expected, actual)
 
+    def test_numeric2(self):
+        actual = core.is_number(1.213215)
+        expected = True
+        self.assertEqual(expected, actual)
 
+    def test_numeric3(self):
+        actual = core.is_number(-100)
+        expected = True
+        self.assertEqual(expected, actual)
 
+    def test_numeric4(self):
+        actual = core.is_number('13.54')
+        expected = True
+        self.assertEqual(expected, actual)        
 
+    def test_nonnumeric(self):
+        actual = core.is_number('a')
+        expected = False
+        self.assertEqual(expected, actual)
 
+    def test_nonnumeric2(self):
+        actual = core.is_number('-f')
+        expected = False
+        self.assertEqual(expected, actual)
+
+    def test_nonnumeric3(self):
+        actual = core.is_number([1])
+        expected = False
+        self.assertEqual(expected, actual)
