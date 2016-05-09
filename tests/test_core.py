@@ -102,40 +102,40 @@ class TestFileExtension(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
-class TestSetInputFile(unittest.TestCase):
+class TestValidateInputFile(unittest.TestCase):
 
     def test_valid(self):
-        actual = core.set_input_file(INPUT_FILE)
-        expected = INPUT_FILE
+        actual = core.validate_input_file(INPUT_FILE)
+        expected = None
         self.assertEqual(expected, actual)
 
     def test_nonexistent(self):
         with self.assertRaises(IOError):
-            core.set_input_file('data/asdfasdfasdf.wav')
+            core.validate_input_file('data/asdfasdfasdf.wav')
 
     def test_invalid_format(self):
         with self.assertRaises(SoxError):
-            core.set_input_file(INPUT_FILE_INVALID)
+            core.validate_input_file(INPUT_FILE_INVALID)
 
 
-class TestSetOutputFile(unittest.TestCase):
+class TestValidateOutputFile(unittest.TestCase):
 
     def test_valid(self):
-        actual = core.set_output_file(OUTPUT_FILE)
-        expected = OUTPUT_FILE
+        actual = core.validate_output_file(OUTPUT_FILE)
+        expected = None
         self.assertEqual(expected, actual)
 
     def test_not_writeable(self):
         with self.assertRaises(IOError):
-            core.set_output_file('data/notafolder/output.wav')
+            core.validate_output_file('data/notafolder/output.wav')
 
     def test_invalid_format(self):
         with self.assertRaises(SoxError):
-            core.set_output_file('data/output.xyz')
+            core.validate_output_file('data/output.xyz')
 
     def test_file_exists(self):
-        actual = core.set_output_file(INPUT_FILE)
-        expected = INPUT_FILE
+        actual = core.validate_output_file(INPUT_FILE)
+        expected = None
         self.assertEqual(expected, actual)
 
 

@@ -22,7 +22,7 @@ class TestTransformDefault(unittest.TestCase):
         )
 
     def test_globals(self):
-        expected = ['-D', '-V4']
+        expected = ['-D', '-V2']
         actual = self.transformer.globals
         self.assertEqual(expected, actual)
 
@@ -55,6 +55,91 @@ class TestTransformDefault(unittest.TestCase):
         expected = []
         actual = self.transformer.effects_log
         self.assertEqual(expected, actual)
+
+
+class TestTransformSetGlobals(unittest.TestCase):
+
+    def setUp(self):
+        self.tfm = new_transformer()
+
+    def test_defaults(self):
+        actual = self.tfm.globals
+        expected = ['-D', '-V2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_dither(self):
+        self.tfm.set_globals(dither=True)
+        actual = self.tfm.globals
+        expected = ['-V2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_dither_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_globals(dither=None)
+
+    def test_guard(self):
+        self.tfm.set_globals(guard=True)
+        actual = self.tfm.globals
+        expected = ['-D', '-G', '-V2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_guard_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_globals(guard='-G')
+
+    def test_multithread(self):
+        self.tfm.set_globals(multithread=True)
+        actual = self.tfm.globals
+        expected = ['-D', '--multi-threaded', '-V2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_multithread_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_globals(multithread='a')
+
+    def test_replay_gain(self):
+        self.tfm.set_globals(replay_gain=True)
+        actual = self.tfm.globals
+        expected = ['-D', '--replay-gain', 'track', '-V2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_replay_gain_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_globals(replay_gain='track')
+
+    def test_verbosity(self):
+        self.tfm.set_globals(verbosity=0)
+        actual = self.tfm.globals
+        expected = ['-D', '-V0']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_verbosity_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_globals(verbosity='debug')
 
 
 class TestTransformerBuild(unittest.TestCase):
