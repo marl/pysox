@@ -15,21 +15,93 @@ from .core import is_number
 
 logging.basicConfig(level=logging.DEBUG)
 
-COMBINE_VALS = [
-    'concatenate', 'merge', 'mix', 'mix-power', 'multiply', 'sequence', False
-]
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
 
 
 class Transformer(object):
     def __init__(self, input_filepath, output_filepath):
-        self.globals = Globals().globals
-        self.input_filepath = core.set_input_file(input_filepath)
-        self.output_filepath = core.set_output_file(output_filepath)
+        core.validate_input_file(input_filepath)
+        core.validate_output_file(output_filepath)
+
+        self.input_filepath = input_filepath
+        self.output_filepath = output_filepath
+
         self.input_format = []
         self.output_format = []
+
         self.effects = []
         self.effects_log = []
+
+        self.globals = []
+        self.set_globals()
+
+    def set_globals(self, dither=False, guard=False, multithread=False,
+                    replay_gain=False, verbosity=2):
+        """Sets SoX's global arguments.
+        Overwrites any previously set global arguments.
+        If this function is not explicity called, globals are set to this
+        function's defaults.
+
+        Parameters
+        ----------
+        dither : bool, default=False
+            If True, dithering is applied for low files with low bit rates.
+        guard : bool, default=False
+            If True, invokes the gain effect to guard against clipping.
+        multithread: bool, default=False
+            If True, each channel is processed in parallel.
+        replay_gain: bool, default=False
+            If True, applies replay-gain adjustment to input-files.
+        verbosity : int, default=2
+            SoX's verbosity level. One of:
+                * 0 : No messages are shown at all
+                * 1 : Only error messages are shown. These are generated if SoX
+                    cannot complete the requested commands.
+                * 2 : Warning messages are also shown. These are generated if
+                    SoX can complete the requested commands, but not exactly
+                    according to the requested command parameters, or if
+                    clipping occurs.
+                * 3 : Descriptions of SoX’s processing phases are also shown.
+                    Useful for seeing exactly how SoX is processing your audio.
+                * 4, >4 : Messages to help with debugging SoX are also shown.
+
+        """
+        if not isinstance(dither, bool):
+            raise ValueError('dither must be a boolean.')
+
+        if not isinstance(guard, bool):
+            raise ValueError('guard must be a boolean.')
+
+        if not isinstance(multithread, bool):
+            raise ValueError('multithread must be a boolean.')
+
+        if not isinstance(replay_gain, bool):
+            raise ValueError('replay_gain must be a boolean.')
+
+        if verbosity not in VERBOSITY_VALS:
+            raise ValueError(
+                'Invalid value for VERBOSITY. Must be one {}'.format(
+                    VERBOSITY_VALS)
+            )
+
+        global_args = []
+
+        if not dither:
+            global_args.append('-D')
+
+        if guard:
+            global_args.append('-G')
+
+        if multithread:
+            global_args.append('--multi-threaded')
+
+        if replay_gain:
+            global_args.append('--replay-gain')
+            global_args.append('track')
+
+        global_args.append('-V{}'.format(verbosity))
+
+        self.globals = global_args
 
     def build(self):
         """ Executes SoX. """
@@ -457,64 +529,3 @@ class Transformer(object):
 
     def vol(self):
         raise NotImplementedError
-
-
-class Globals(object):
-    """ Class containing global sox arguments """
-    def __init__(self, combine=False, dither=False, guard=False,
-                 multithread=False, replay_gain=False, verbosity=4):
-        self.combine = self._set_constrainted(combine, COMBINE_VALS)
-        self.dither = self._set_bool(dither)
-        self.guard = self._set_bool(guard)
-        self.multithread = self._set_bool(multithread)
-        self.replay_gain = self._set_bool(replay_gain)
-        self.verbosity = self._set_constrainted(verbosity, VERBOSITY_VALS)
-
-        self.globals = self._build_globals()
-
-    def _build_globals(self):
-        """ Build global command line arguments.
-        """
-        global_args = []
-
-        if self.combine is not False:
-            global_args.append('--combine')
-            global_args.append(self.combine)
-
-        if not self.dither:
-            global_args.append('-D')
-
-        if self.guard:
-            global_args.append('-G')
-
-        if self.multithread:
-            global_args.append('--multi-threaded')
-
-        if self.replay_gain:
-            global_args.append('--replay-gain')
-            global_args.append('track')
-
-        global_args.append('-V{}'.format(self.verbosity))
-
-        return global_args
-
-    def _set_bool(self, value):
-        """ If true, overwrites existing files.
-        """
-        if isinstance(value, bool):
-            return bool(value)
-        else:
-            raise ValueError('Value must be a boolean.')
-
-    def _set_constrainted(self, value, valid_vals):
-        """ Specifies how multiple input files should be combined.
-        """
-        if value in valid_vals:
-            return value
-        else:
-            raise ValueError(
-                'Invalid value for combine. Must be one of False or {}'.format(
-                    valid_vals)
-            )
-
-
