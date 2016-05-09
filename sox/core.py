@@ -55,6 +55,73 @@ class SoxError(Exception):
         Exception.__init__(self, *args, **kwargs)
 
 
+def file_info(input_file):
+    """ Get audio file information including file format, bit rate,
+        and sample rate.
+
+    Parameters
+    ----------
+    input_file : str
+        Path to audio file.
+
+    Returns
+    -------
+    ret_dict : dictionary
+        Dictionary containing file information.
+            - Bit Rate
+            - Channels
+            - Duration
+            - File Size
+            - Precision
+            - Sample Encoding
+            - Sample Rate
+    """
+    if os.path.exists(input_file):
+        ret_dict = {}
+        soxi_out = subprocess.check_output(["soxi", input_file]).split('\n')
+        for line in soxi_out:
+            if len(line) > 0:
+                separator = line.find(':')
+                key = line[:separator].strip()
+                if key == 'Input File':
+                    continue
+                value = line[separator + 1:].strip()
+                ret_dict[key] = _soxi_parse(key, value)
+        return ret_dict
+    else:
+        raise IOError("{} does not exist.".format(input_file))
+
+
+def _soxi_parse(key, value):
+    """ Helper function for file_info. Parses key value pairs returned by soxi.
+    """
+    ret_value = None
+    try:
+        if 'Duration' == key:
+            ret_value = [x.strip() for x in value.split('=')]
+            # parse time into seconds
+            hours, minutes, seconds = ret_value[0].split(':')
+            secs_duration = float(seconds) + (int(minutes) * 60.) + \
+                (int(hours) * 3600.)
+            # parse samples
+            samples_duration = int(ret_value[1].split(' ')[0])
+            # parse sectors
+            ret_value = {"seconds": secs_duration, "samples": samples_duration}
+        elif key in ['Channels', 'Sample Rate']:
+            ret_value = int(value)
+        elif key in ['Precision']:
+            ret_value = int(value.split('-')[0])
+        elif key in ['File Size']:
+            ret_value = float(value.strip('k'))
+        elif key in ['Bit Rate']:
+            ret_value = float(value.strip('M'))
+        else:
+            ret_value = value
+    except ValueError:
+        ret_value = value
+    return ret_value
+
+
 def _get_valid_formats():
     """ Calls SoX help for a lists of audio formats available with the current
     install of SoX.
@@ -84,26 +151,16 @@ def _file_extension(filepath):
     filepath : str
         File path.
 
-    Returns:
-    --------
-    extension : str
-        File extension.
-
     """
     return os.path.splitext(filepath)[1][1:]
 
 
-def set_input_file(input_filepath):
+def validate_input_file(input_filepath):
     """Input file validation function. Checks that file exists and can be
     processed by SoX.
 
     Parameters
     ----------
-    input_filepath : str
-        The input filepath.
-
-    Returns:
-    --------
     input_filepath : str
         The input filepath.
 
@@ -119,10 +176,25 @@ def set_input_file(input_filepath):
             "This install of SoX cannot process .{} files.".format(ext)
         )
 
-    return input_filepath
+
+def validate_input_file_list(input_filepath_list):
+    """Input file list validation function. Checks that object is a list and
+    contains valid filepaths that can be processed by SoX.
+
+    Parameters
+    ----------
+    input_filepath_list : list
+        A list of filepaths.
+
+    """
+    if not isinstance(input_filepath_list, list):
+        raise TypeError("input_filepath_list must be a list.")
+
+    for input_filepath in input_filepath_list:
+        validate_input_file(input_filepath)
 
 
-def set_output_file(output_filepath):
+def validate_output_file(output_filepath):
     """Output file validation function. Checks that file can be written, and
     has a valid file extension. Throws a warning if the path already exists,
     as it will be overwritten on build.
@@ -156,7 +228,26 @@ def set_output_file(output_filepath):
             output_filepath
         )
 
-    return output_filepath
+
+def validate_volumes(input_volumes):
+    """Check input_volumes contains a valid list of volumes.
+
+    Parameters
+    ----------
+    input_volumes : list
+        list of volume values. Castable to numbers.
+
+    """
+    if not (input_volumes is None or isinstance(input_volumes, list)):
+        raise TypeError("input_volumes must be None or a list.")
+
+    if isinstance(input_volumes, list):
+        for vol in input_volumes:
+            if not is_number(vol):
+                raise ValueError(
+                    "Elements of input_volumes must be numbers: found {}"
+                    .format(vol)
+                )
 
 
 def is_number(var):
