@@ -2,9 +2,11 @@ import unittest
 
 from sox import core
 from sox.core import SoxError
+from sox.core import SoxiError
 
 INPUT_FILE = 'data/input.wav'
 INPUT_FILE_INVALID = 'data/input.xyz'
+INPUT_FILE_CORRUPT = 'data/empty.aiff'
 OUTPUT_FILE = 'data/output.wav'
 
 
@@ -36,6 +38,12 @@ class TestSox(unittest.TestCase):
 
     def test_sox_fail_bad_ext(self):
         args = ['input.wav', 'output.xyz']
+        expected = False
+        actual = core.sox(args)
+        self.assertEqual(expected, actual)
+
+    def test_sox_fail_corrupt_file(self):
+        args = [INPUT_FILE_CORRUPT, OUTPUT_FILE]
         expected = False
         actual = core.sox(args)
         self.assertEqual(expected, actual)
@@ -74,106 +82,28 @@ class TestValidFormats(unittest.TestCase):
         self.assertNotIn('AUDIO FILE FORMATS', core.VALID_FORMATS)
 
 
-class TestFileExtension(unittest.TestCase):
+class TestSoxi(unittest.TestCase):
 
-    def test_ext1(self):
-        actual = core._file_extension('simplefile.xyz')
-        expected = 'xyz'
+    def test_base_case(self):
+        actual = core.soxi(INPUT_FILE, 's')
+        expected = '441000'
         self.assertEqual(expected, actual)
 
-    def test_ext2(self):
-        actual = core._file_extension('less.simple.file.xyz')
-        expected = 'xyz'
-        self.assertEqual(expected, actual)
-
-    def test_ext3(self):
-        actual = core._file_extension('longext.asdf')
-        expected = 'asdf'
-        self.assertEqual(expected, actual)
-
-    def test_ext4(self):
-        actual = core._file_extension('this/has/a/path/file.123')
-        expected = '123'
-        self.assertEqual(expected, actual)
-
-    def test_ext5(self):
-        actual = core._file_extension('this.is/a/weird.path/file.x23zya')
-        expected = 'x23zya'
-        self.assertEqual(expected, actual)
-
-
-class TestValidateInputFile(unittest.TestCase):
-
-    def test_valid(self):
-        actual = core.validate_input_file(INPUT_FILE)
-        expected = None
-        self.assertEqual(expected, actual)
-
-    def test_nonexistent(self):
-        with self.assertRaises(IOError):
-            core.validate_input_file('data/asdfasdfasdf.wav')
-
-    def test_invalid_format(self):
-        with self.assertRaises(SoxError):
-            core.validate_input_file(INPUT_FILE_INVALID)
-
-
-class TestValidateInputFileList(unittest.TestCase):
-
-    def test_valid(self):
-        actual = core.validate_input_file_list([INPUT_FILE, INPUT_FILE])
-        expected = None
-        self.assertEqual(expected, actual)
-
-    def test_nonexistent(self):
-        with self.assertRaises(IOError):
-            core.validate_input_file_list(['data/asdfasdfasdf.wav', INPUT_FILE])
-
-    def test_invalid_format(self):
-        with self.assertRaises(SoxError):
-            core.validate_input_file_list([INPUT_FILE_INVALID, INPUT_FILE])
-
-
-class TestValidateOutputFile(unittest.TestCase):
-
-    def test_valid(self):
-        actual = core.validate_output_file(OUTPUT_FILE)
-        expected = None
-        self.assertEqual(expected, actual)
-
-    def test_not_writeable(self):
-        with self.assertRaises(IOError):
-            core.validate_output_file('data/notafolder/output.wav')
-
-    def test_invalid_format(self):
-        with self.assertRaises(SoxError):
-            core.validate_output_file('data/output.xyz')
-
-    def test_file_exists(self):
-        actual = core.validate_output_file(INPUT_FILE)
-        expected = None
-        self.assertEqual(expected, actual)
-
-
-class TestValidateVolumes(unittest.TestCase):
-
-    def test_valid_none(self):
-        actual = core.validate_volumes(None)
-        expected = None
-        self.assertEqual(expected, actual)
-
-    def test_valid_list(self):
-        actual = core.validate_volumes([1, 0.1, 3])
-        expected = None
-        self.assertEqual(expected, actual)
-
-    def test_invalid_type(self):
-        with self.assertRaises(TypeError):
-            core.validate_volumes(1)
-
-    def test_invalid_vol(self):
+    def test_invalid_argument(self):
         with self.assertRaises(ValueError):
-            core.validate_volumes([1.1, 'z', -0.5, 2])
+            core.soxi(INPUT_FILE, None)
+
+    def test_nonexistent_file(self):
+        with self.assertRaises(SoxiError):
+            core.soxi('data/asdf.wav', 's')
+
+    def test_invalid_filetype(self):
+        with self.assertRaises(SoxiError):
+            core.soxi(INPUT_FILE_INVALID, 's')
+
+    def test_soxi_error(self):
+        with self.assertRaises(SoxiError):
+            core.soxi(INPUT_FILE_CORRUPT, 's')
 
 
 class TestIsNumber(unittest.TestCase):
@@ -210,5 +140,38 @@ class TestIsNumber(unittest.TestCase):
 
     def test_nonnumeric3(self):
         actual = core.is_number([1])
+        expected = False
+        self.assertEqual(expected, actual)
+
+
+class TestAllEqual(unittest.TestCase):
+
+    def test_true(self):
+        actual = core.all_equal([2, 2, 2, 2, 2])
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_true2(self):
+        actual = core.all_equal(['a'])
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_true3(self):
+        actual = core.all_equal([])
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_false(self):
+        actual = core.all_equal([1, 2, 1, 2])
+        expected = False
+        self.assertEqual(expected, actual)
+
+    def test_false2(self):
+        actual = core.all_equal([1, 1, '1', 1])
+        expected = False
+        self.assertEqual(expected, actual)
+
+    def test_false3(self):
+        actual = core.all_equal(['ab', 'a', 'b'])
         expected = False
         self.assertEqual(expected, actual)

@@ -1,37 +1,13 @@
 import unittest
 
 from sox import file_info
-from sox.file_info import SoxiError
 from sox.core import SoxError
 
 INPUT_FILE = 'data/input.wav'
 INPUT_FILE2 = 'data/input.aiff'
 EMPTY_FILE = 'data/empty.wav'
-BREAK_SOXI_FILE = 'data/empty.aiff'
 INPUT_FILE_INVALID = 'data/input.xyz'
-
-class TestSoxi(unittest.TestCase):
-
-    def test_base_case(self):
-        actual = file_info.soxi(INPUT_FILE, 's')
-        expected = '441000'
-        self.assertEqual(expected, actual)
-
-    def test_invalid_argument(self):
-        with self.assertRaises(ValueError):
-            file_info.soxi(INPUT_FILE, None)
-
-    def test_nonexistent_file(self):
-        with self.assertRaises(IOError):
-            file_info.soxi('data/asdf.wav', 's')
-
-    def test_invalid_filetype(self):
-        with self.assertRaises(SoxError):
-            file_info.soxi(INPUT_FILE_INVALID, 's')
-
-    def test_soxi_error(self):
-        with self.assertRaises(SoxiError):
-            file_info.soxi(BREAK_SOXI_FILE, 's')
+OUTPUT_FILE = 'data/output.wav'
 
 
 class TestBitrate(unittest.TestCase):
@@ -176,3 +152,98 @@ class TestSampleRate(unittest.TestCase):
         expected = 44100
         self.assertEqual(expected, actual)
 
+class TestFileExtension(unittest.TestCase):
+
+    def test_ext1(self):
+        actual = file_info.file_extension('simplefile.xyz')
+        expected = 'xyz'
+        self.assertEqual(expected, actual)
+
+    def test_ext2(self):
+        actual = file_info.file_extension('less.simple.file.xyz')
+        expected = 'xyz'
+        self.assertEqual(expected, actual)
+
+    def test_ext3(self):
+        actual = file_info.file_extension('longext.asdf')
+        expected = 'asdf'
+        self.assertEqual(expected, actual)
+
+    def test_ext4(self):
+        actual = file_info.file_extension('this/has/a/path/file.123')
+        expected = '123'
+        self.assertEqual(expected, actual)
+
+    def test_ext5(self):
+        actual = file_info.file_extension('this.is/a/weird.path/file.x23zya')
+        expected = 'x23zya'
+        self.assertEqual(expected, actual)
+
+
+class TestValidateInputFile(unittest.TestCase):
+
+    def test_valid(self):
+        actual = file_info.validate_input_file(INPUT_FILE)
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_nonexistent(self):
+        with self.assertRaises(IOError):
+            file_info.validate_input_file('data/asdfasdfasdf.wav')
+
+    def test_invalid_format(self):
+        with self.assertRaises(SoxError):
+            file_info.validate_input_file(INPUT_FILE_INVALID)
+
+
+class TestValidateInputFileList(unittest.TestCase):
+
+    def test_valid(self):
+        actual = file_info.validate_input_file_list([INPUT_FILE, INPUT_FILE])
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_nonlist(self):
+        with self.assertRaises(TypeError):
+            file_info.validate_input_file_list(INPUT_FILE)
+
+    def test_empty_list(self):
+        with self.assertRaises(ValueError):
+            file_info.validate_input_file_list([])
+
+    def test_len_one_list(self):
+        with self.assertRaises(ValueError):
+            file_info.validate_input_file_list([INPUT_FILE])
+
+    def test_nonexistent(self):
+        with self.assertRaises(IOError):
+            file_info.validate_input_file_list(
+                ['data/asdfasdfasdf.wav', INPUT_FILE]
+            )
+
+    def test_invalid_format(self):
+        with self.assertRaises(SoxError):
+            file_info.validate_input_file_list(
+                [INPUT_FILE_INVALID, INPUT_FILE]
+            )
+
+
+class TestValidateOutputFile(unittest.TestCase):
+
+    def test_valid(self):
+        actual = file_info.validate_output_file(OUTPUT_FILE)
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_not_writeable(self):
+        with self.assertRaises(IOError):
+            file_info.validate_output_file('data/notafolder/output.wav')
+
+    def test_invalid_format(self):
+        with self.assertRaises(SoxError):
+            file_info.validate_output_file('data/output.xyz')
+
+    def test_file_exists(self):
+        actual = file_info.validate_output_file(INPUT_FILE)
+        expected = None
+        self.assertEqual(expected, actual)

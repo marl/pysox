@@ -12,6 +12,7 @@ from . import core
 from .core import sox
 from .core import SoxError
 from .core import is_number
+from . import file_info
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,9 +20,49 @@ VERBOSITY_VALS = [0, 1, 2, 3, 4]
 
 
 class Transformer(object):
+    """Audio file transformer.
+    Class which allows multiple effects to be chained to create an output
+    file, saved to output_filepath.
+
+    Attributes
+    ----------
+    input_filepath : str
+        Path to input audio file.
+    output_filepath : str
+        Path where the output file will be written.
+    input_format : list of str
+        Input file format arguments that will be passed to SoX.
+    output_format : list of str
+        Output file format arguments that will be bassed to SoX.
+    effects : list of str
+        Effects arguments that will be passed to SoX.
+    effects_log : list of str
+        Ordered sequence of effects applied.
+    globals : list of str
+        Global arguments that will be passed to SoX.
+
+    Methods
+    -------
+    set_globals
+        Overwrite the default global arguments.
+    build
+        Execute the current chain of commands and write output file.
+
+    """
+
     def __init__(self, input_filepath, output_filepath):
-        core.validate_input_file(input_filepath)
-        core.validate_output_file(output_filepath)
+        """
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input audio file.
+        output_filepath : str
+            Path to desired output file. If a file already exists at the given
+            path, the file will be overwritten.
+
+        """
+        file_info.validate_input_file(input_filepath)
+        file_info.validate_output_file(output_filepath)
 
         self.input_filepath = input_filepath
         self.output_filepath = output_filepath
@@ -389,6 +430,9 @@ class Transformer(object):
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('rate')
+
+    def remix(self):
+        raise NotImplementedError
 
     def repeat(self):
         raise NotImplementedError

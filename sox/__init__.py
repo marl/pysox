@@ -1,3 +1,4 @@
+""" init method for sox module """
 import logging
 import os
 logging.basicConfig(level=logging.DEBUG)
@@ -12,7 +13,7 @@ __NO_SOX = """SoX could not be found!
     path variables.
     """
 
-""" Check that SoX is installed and callable """
+# Check that SoX is installed and callable
 if not len(os.popen('sox -h').readlines()):
     logging.warning(__NO_SOX)
     assert False, "SoX assertion failed.\n" + __NO_SOX

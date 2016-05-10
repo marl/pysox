@@ -1,58 +1,11 @@
 """ Audio file info computed by soxi.
 """
 import logging
-import subprocess
-from subprocess import CalledProcessError
+import os
 
-from .core import validate_input_file
-
-SOXI_ARGS = ['b', 'c', 'a', 'D', 'e', 't', 's', 'r']
-
-
-def soxi(filepath, argument):
-    """ Base call to Soxi.
-
-    Parameters
-    ----------
-    filepath : str
-        Path to audio file.
-    argument : str
-        Argument to pass to Soxi.
-
-    Returns
-    -------
-    shell_output : str
-        command line output of Soxi
-
-    """
-    validate_input_file(filepath)
-
-    if argument not in SOXI_ARGS:
-        raise ValueError("Invalid argument '{}' to Soxi".format(argument))
-
-    args = ['soxi']
-    args.append("-{}".format(argument))
-    args.append(filepath)
-
-    try:
-        shell_output = subprocess.check_output(
-            " ".join(args),
-            shell=True
-        )
-    except CalledProcessError as cpe:
-        logging.info("Soxi error message: {}".format(cpe.output))
-        raise SoxiError("Soxi failed with exit code {}".format(cpe.returncode))
-
-    shell_output = shell_output.decode("utf-8")
-
-    return str(shell_output).strip('\n')
-
-
-class SoxiError(Exception):
-    """Exception to be raised when SoXi exits with non-zero status.
-    """
-    def __init__(self, *args, **kwargs):
-        Exception.__init__(self, *args, **kwargs)
+from .core import VALID_FORMATS
+from .core import soxi
+from .core import SoxError
 
 
 def bitrate(input_filepath):
@@ -70,6 +23,7 @@ def bitrate(input_filepath):
         number of bits per sample
         returns 0 if not applicable
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 'b')
     if output == '0':
         logging.warning("Bitrate unavailable for %s", input_filepath)
@@ -90,6 +44,7 @@ def channels(input_filepath):
     channels : int
         number of channels
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 'c')
     return int(output)
 
@@ -109,6 +64,7 @@ def comments(input_filepath):
         File comments from header.
         If no comments are present, returns an empty string.
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 'a')
     return str(output)
 
@@ -128,6 +84,7 @@ def duration(input_filepath):
         Duration of audio file in seconds.
         If unavailable or empty, returns 0.
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 'D')
     if output == '0':
         logging.warning("Duration unavailable for %s", input_filepath)
@@ -149,6 +106,7 @@ def encoding(input_filepath):
     encoding : str
         audio encoding type
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 'e')
     return str(output)
 
@@ -167,6 +125,7 @@ def file_type(input_filepath):
     file_type : str
         file format type (ex. 'wav')
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 't')
     return str(output)
 
@@ -186,6 +145,7 @@ def num_samples(input_filepath):
         total number of samples in audio file.
         Returns 0 if empty or unavailable
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 's')
     if output == '0':
         logging.warning("Number of samples unavailable for %s", input_filepath)
@@ -206,5 +166,94 @@ def sample_rate(input_filepath):
     samplerate : float
         number of samples/second
     """
+    validate_input_file(input_filepath)
     output = soxi(input_filepath, 'r')
     return float(output)
+
+
+def validate_input_file(input_filepath):
+    """Input file validation function. Checks that file exists and can be
+    processed by SoX.
+
+    Parameters
+    ----------
+    input_filepath : str
+        The input filepath.
+
+    """
+    if not os.path.exists(input_filepath):
+        raise IOError(
+            "input_filepath {} does not exist.".format(input_filepath)
+        )
+    ext = file_extension(input_filepath)
+    if ext not in VALID_FORMATS:
+        logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
+        raise SoxError(
+            "This install of SoX cannot process .{} files.".format(ext)
+        )
+
+
+def validate_input_file_list(input_filepath_list):
+    """Input file list validation function. Checks that object is a list and
+    contains valid filepaths that can be processed by SoX.
+
+    Parameters
+    ----------
+    input_filepath_list : list
+        A list of filepaths.
+
+    """
+    if not isinstance(input_filepath_list, list):
+        raise TypeError("input_filepath_list must be a list.")
+    elif len(input_filepath_list) < 2:
+        raise ValueError("input_filepath_list must have at least 2 files.")
+
+    for input_filepath in input_filepath_list:
+        validate_input_file(input_filepath)
+
+
+def validate_output_file(output_filepath):
+    """Output file validation function. Checks that file can be written, and
+    has a valid file extension. Throws a warning if the path already exists,
+    as it will be overwritten on build.
+
+    Parameters
+    ----------
+    output_filepath : str
+        The output filepath.
+
+    Returns:
+    --------
+    output_filepath : str
+        The output filepath.
+
+    """
+    if not os.access(os.path.dirname(output_filepath), os.W_OK):
+        raise IOError(
+            "SoX cannot write to output_filepath {}".format(output_filepath)
+        )
+
+    ext = file_extension(output_filepath)
+    if ext not in VALID_FORMATS:
+        logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
+        raise SoxError(
+            "This install of SoX cannot process .{} files.".format(ext)
+        )
+
+    if os.path.exists(output_filepath):
+        logging.warning(
+            'output_file: %s already exists and will be overwritten on build',
+            output_filepath
+        )
+
+
+def file_extension(filepath):
+    """Get the extension of a filepath.
+
+    Parameters
+    ----------
+    filepath : str
+        File path.
+
+    """
+    return os.path.splitext(filepath)[1][1:]
