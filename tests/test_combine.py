@@ -5,6 +5,7 @@ from sox.core import SoxError
 
 INPUT_WAV = 'data/input.wav'
 INPUT_WAV2 = 'data/input2.wav'
+INPUT_WAV3 = 'data/input3.wav'
 INPUT_AIFF = 'data/input.aiff'
 INPUT_FILE_INVALID = 'data/input.xyz'
 OUTPUT_FILE = 'data/output.wav'
@@ -125,7 +126,7 @@ class TestValidateFileFormats(unittest.TestCase):
     def test_different_num_channels(self):
         with self.assertRaises(IOError):
             combine.Combiner(
-                [INPUT_WAV, INPUT_AIFF], OUTPUT_FILE, 'concatenate'
+                [INPUT_WAV, INPUT_WAV3], OUTPUT_FILE, 'concatenate'
             )
 
 
