@@ -118,6 +118,22 @@ class TestValidateInputFile(unittest.TestCase):
             core.validate_input_file(INPUT_FILE_INVALID)
 
 
+class TestValidateInputFileList(unittest.TestCase):
+
+    def test_valid(self):
+        actual = core.validate_input_file_list([INPUT_FILE, INPUT_FILE])
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_nonexistent(self):
+        with self.assertRaises(IOError):
+            core.validate_input_file_list(['data/asdfasdfasdf.wav', INPUT_FILE])
+
+    def test_invalid_format(self):
+        with self.assertRaises(SoxError):
+            core.validate_input_file_list([INPUT_FILE_INVALID, INPUT_FILE])
+
+
 class TestValidateOutputFile(unittest.TestCase):
 
     def test_valid(self):
@@ -137,6 +153,27 @@ class TestValidateOutputFile(unittest.TestCase):
         actual = core.validate_output_file(INPUT_FILE)
         expected = None
         self.assertEqual(expected, actual)
+
+
+class TestValidateVolumes(unittest.TestCase):
+
+    def test_valid_none(self):
+        actual = core.validate_volumes(None)
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_valid_list(self):
+        actual = core.validate_volumes([1, 0.1, 3])
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_invalid_type(self):
+        with self.assertRaises(TypeError):
+            core.validate_volumes(1)
+
+    def test_invalid_vol(self):
+        with self.assertRaises(ValueError):
+            core.validate_volumes([1.1, 'z', -0.5, 2])
 
 
 class TestIsNumber(unittest.TestCase):
