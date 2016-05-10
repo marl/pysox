@@ -84,7 +84,7 @@ class Combiner(Transformer):
         """
         self._validate_sample_rates()
 
-        if self.combine == 'concatenate':
+        if self.combine == ['--combine', 'concatenate']:
             self._validate_num_channels()
 
     def _validate_sample_rates(self):

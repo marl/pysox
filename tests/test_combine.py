@@ -207,6 +207,14 @@ class TestSetInputFormatList(unittest.TestCase):
         actual_input_args = cbn.input_args
         self.assertEqual(expected_input_args, actual_input_args)
 
+    def test_unequal_args(self):
+        cbn = combine.Combiner(
+            [INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix'
+        )
+        cbn.input_format_list = cbn.input_filepath_list[0]
+        with self.assertRaises(ValueError):
+            cbn.build()
+
 
 class TestValidateCombineType(unittest.TestCase):
 
