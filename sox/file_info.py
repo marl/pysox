@@ -43,6 +43,8 @@ def soxi(filepath, argument):
         logging.info("Soxi error message: {}".format(cpe.output))
         raise SoxiError("Soxi failed with exit code {}".format(cpe.returncode))
 
+    shell_output = shell_output.decode("utf-8")
+
     return str(shell_output).strip('\n')
 
 
