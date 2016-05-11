@@ -465,6 +465,93 @@ class TestTransformerFade(unittest.TestCase):
             tfm.fade(fade_shape='x')
 
 
+class TestTransformerGain(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.gain()
+
+        actual_args = tfm.effects
+        expected_args = ['gain', '-n', '0.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['gain']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_valid(self):
+        tfm = new_transformer()
+        tfm.gain(gain_db=6)
+
+        actual_args = tfm.effects
+        expected_args = ['gain', '-n', '6']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.gain(gain_db=None)
+
+    def test_normalize_valid(self):
+        tfm = new_transformer()
+        tfm.gain(normalize=False)
+
+        actual_args = tfm.effects
+        expected_args = ['gain', '0.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_normalize_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.gain(normalize='6')
+
+    def test_limiter_valid(self):
+        tfm = new_transformer()
+        tfm.gain(limiter=True)
+
+        actual_args = tfm.effects
+        expected_args = ['gain', '-n', '-l', '0.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_limiter_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.gain(limiter='0')
+
+    def test_balance_valid(self):
+        tfm = new_transformer()
+        tfm.gain(balance='B')
+
+        actual_args = tfm.effects
+        expected_args = ['gain', '-B', '-n', '0.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_balance_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.gain(balance='h')
+
+
 class TestTransformerNorm(unittest.TestCase):
 
     def test_default(self):
@@ -472,7 +559,7 @@ class TestTransformerNorm(unittest.TestCase):
         tfm.norm()
 
         actual_args = tfm.effects
-        expected_args = ['norm', '-3']
+        expected_args = ['norm', '-3.0']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -508,7 +595,7 @@ class TestTransformerPad(unittest.TestCase):
         tfm.pad()
 
         actual_args = tfm.effects
-        expected_args = ['pad', '0', '0']
+        expected_args = ['pad', '0.0', '0.0']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -524,7 +611,7 @@ class TestTransformerPad(unittest.TestCase):
         tfm.pad(start_duration=3)
 
         actual_args = tfm.effects
-        expected_args = ['pad', '3', '0']
+        expected_args = ['pad', '3', '0.0']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build()
@@ -541,7 +628,7 @@ class TestTransformerPad(unittest.TestCase):
         tfm.pad(end_duration=0.2)
 
         actual_args = tfm.effects
-        expected_args = ['pad', '0', '0.2']
+        expected_args = ['pad', '0.0', '0.2']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build()

@@ -144,7 +144,7 @@ class Transformer(object):
         self.globals = global_args
 
     def build(self):
-        """ Executes SoX. """
+        """ Executes the current set of commands. """
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
@@ -212,6 +212,9 @@ class Transformer(object):
             Transfer function points as a list of tuples corresponding to
             points in (dB, dB) defining the compander's transfer function.
 
+        See Also
+        --------
+        mcompand, contrast
         """
         if not is_number(attack_time) or attack_time <= 0:
             raise ValueError("attack_time must be a positive number.")
@@ -285,6 +288,10 @@ class Transformer(object):
         bitdepth : int, default=None
             Desired bitdepth. If None, defaults to the same as input.
 
+        See Also
+        --------
+        rate
+
         """
         bitdepths = [8, 16, 24, 32, 64]
         if bitdepth is not None:
@@ -331,25 +338,29 @@ class Transformer(object):
     def equalizer(self):
         raise NotImplementedError
 
-    def fade(self, fade_in_len=0, fade_out_len=0, fade_shape='q'):
+    def fade(self, fade_in_len=0.0, fade_out_len=0.0, fade_shape='q'):
         """Add a fade in and/or fade out to an audio file.
         Default fade shape is 1/4 sine wave.
 
         Parameters
         ----------
-        fade_in_len: float
+        fade_in_len: float, default=0.0
             Length of fade-in (seconds). If fade_in_len = 0,
             no fade in is applied.
-        fade_out_len: float
+        fade_out_len: float, defaut=0.0
             Length of fade-out (seconds). If fade_out_len = 0,
             no fade in is applied.
-        fade_shape: str
+        fade_shape: str, default='q'
             Shape of fade. Must be one of
              * 'q' for quarter sine (default),
              * 'h' for half sine,
              * 't' for linear,
              * 'l' for logarithmic
              * 'p' for inverted parabola.
+
+        See Also
+        --------
+        splice
 
         """
         fade_shapes = ['q', 'h', 't', 'l', 'p']
@@ -385,8 +396,63 @@ class Transformer(object):
     def flanger(self):
         raise NotImplementedError
 
-    def gain(self):
-        raise NotImplementedError
+    def gain(self, gain_db=0.0, normalize=True, limiter=False, balance=None):
+        """Apply amplification or attenuation to the audio signal.
+
+        Parameters
+        ----------
+        gain_db : float, default=0.0
+            Target gain in decibels (dB).
+        normalize : bool, default=True
+            If True, audio is normalized to gain_db relative to full scale.
+            If False, simply adjusts the audio power level by gain_db.
+        limiter : bool, default=False
+            If True, a simple limiter is invoked to prevent clipping.
+        balance: str or None, default=None
+            Balance gain across channels. Can be one of:
+             * None applies no balancing (default)
+             * 'e' applies gain to all channels other than that with the
+                highest peak level, such that all channels attain the same
+                peak level
+             * 'B' applies gain to all channels other than that with the
+                highest RMS level, such that all channels attain the same
+                RMS level
+             * 'b' applies gain with clipping protection to all channels other
+                than that with the highest RMS level, such that all channels
+                attain the same RMS level
+            If normalize=True, 'B' and 'b' are equivalent.
+
+        See Also
+        --------
+        norm, vol
+
+        """
+        if not is_number(gain_db):
+            raise ValueError("gain_db must be a number.")
+
+        if not isinstance(normalize, bool):
+            raise ValueError("normalize must be a boolean.")
+
+        if not isinstance(limiter, bool):
+            raise ValueError("limiter must be a boolean.")
+
+        if balance not in [None, 'e', 'B', 'b']:
+            raise ValueError("balance must be one of None, 'e', 'B', or 'b'.")
+
+        effect_args = ['gain']
+
+        if balance is not None:
+            effect_args.append('-{}'.format(balance))
+
+        if normalize:
+            effect_args.append('-n')
+
+        if limiter:
+            effect_args.append('-l')
+
+        effect_args.append('{}'.format(gain_db))
+        self.effects.extend(effect_args)
+        self.effects_log.append('gain')
 
     def highpass(self):
         raise NotImplementedError
@@ -406,13 +472,18 @@ class Transformer(object):
     def noisered(self):
         raise NotImplementedError
 
-    def norm(self, db_level=-3):
+    def norm(self, db_level=-3.0):
         """Normalize an audio file to a particular db level.
+        This behaves identically to the gain effect with normalize=True.
 
         Parameters
         ----------
-        db_level : float, default=-3
+        db_level : float, default=-3.0
             Output volume (db)
+
+        See Also
+        --------
+        gain, vol
 
         """
         if not is_number(db_level):
@@ -431,7 +502,7 @@ class Transformer(object):
     def overdrive(self):
         raise NotImplementedError
 
-    def pad(self, start_duration=0, end_duration=0):
+    def pad(self, start_duration=0.0, end_duration=0.0):
         """Add silence to the beginning or end of a file.
         Calling this with the default arguments has no effect.
 
@@ -441,6 +512,10 @@ class Transformer(object):
             Number of seconds of silence to add to beginning.
         end_duration : float
             Number of seconds of silence to add to end.
+
+        See Also
+        --------
+        delay
 
         """
         if not is_number(start_duration) or start_duration < 0:
@@ -487,6 +562,10 @@ class Transformer(object):
             If True, leaves a buffer of min_silence_duration around removed
             silent regions.
 
+        See Also
+        --------
+        upsample, downsample, convert
+
         """
         quality_vals = ['q', 'l', 'm', 'h', 'v']
         if not is_number(samplerate) or samplerate <= 0:
@@ -523,20 +602,24 @@ class Transformer(object):
 
         Parameters
         ----------
-        location: int
+        location: int, default=0
             Where to remove silence. One of:
              * 0 to remove silence throughout the file (default),
              * 1 to remove silence from the beginning,
              * -1 to remove silence from the end,
-        silence_threshold: float
+        silence_threshold: float, default=0.1
             Silence threshold as percentage of maximum sample amplitude.
             Must be between 0 and 100.
-        min_silence_duration: float
+        min_silence_duration: float, default=0.1
             The minimum ammount of time in seconds required for a region to be
             considered non-silent.
-        buffer_around_silence: bool
+        buffer_around_silence: bool, default=False
             If True, leaves a buffer of min_silence_duration around removed
             silent regions.
+
+        See Also
+        --------
+        vad
 
         """
         if location not in [-1, 0, 1]:
