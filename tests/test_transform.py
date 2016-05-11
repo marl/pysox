@@ -552,6 +552,64 @@ class TestTransformerGain(unittest.TestCase):
             tfm.gain(balance='h')
 
 
+class TestTransformerLoudness(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.loudness()
+
+        actual_args = tfm.effects
+        expected_args = ['loudness', '-10.0', '65.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['loudness']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_valid(self):
+        tfm = new_transformer()
+        tfm.loudness(gain_db=0)
+
+        actual_args = tfm.effects
+        expected_args = ['loudness', '0', '65.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.loudness(gain_db='0dB')
+
+    def test_reference_level_valid(self):
+        tfm = new_transformer()
+        tfm.loudness(reference_level=50)
+
+        actual_args = tfm.effects
+        expected_args = ['loudness', '-10.0', '50']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_reference_level_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.loudness(reference_level=None)
+
+    def test_reference_level_oorange(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.loudness(reference_level=15.0)
+
+
 class TestTransformerNorm(unittest.TestCase):
 
     def test_default(self):

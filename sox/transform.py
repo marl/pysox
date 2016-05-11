@@ -424,7 +424,7 @@ class Transformer(object):
 
         See Also
         --------
-        norm, vol
+        norm, vol, loudness
 
         """
         if not is_number(gain_db):
@@ -463,8 +463,42 @@ class Transformer(object):
     def hilbert(self):
         raise NotImplementedError
 
-    def loudness(self):
-        raise NotImplementedError
+    def loudness(self, gain_db=-10.0, reference_level=65.0):
+        """Loudness control. Similar to the gain effect, but provides
+        equalisation for the human auditory system.
+
+        The gain is adjusted by gain_db and the signal equalised according to
+        ISO 226 w.r.t. reference_level.
+
+        Parameters
+        ----------
+        gain_db : float, default=-10.0
+            Output loudness (in dB)
+        reference_level : float, default=65.0
+            Reference level (in dB) according to which the signal is equalized.
+            Must be between 50 and 75 (dB)
+
+        See Also
+        --------
+        gain, vol, loudness
+
+        """
+        if not is_number(gain_db):
+            raise ValueError('gain_db must be a number.')
+
+        if not is_number(reference_level):
+            raise ValueError('reference_level must be a number')
+
+        if reference_level > 75 or reference_level < 50:
+            raise ValueError('reference_level must be between 50 and 75')
+
+        effect_args = [
+            'loudness',
+            '{}'.format(gain_db),
+            '{}'.format(reference_level)
+        ]
+        self.effects.extend(effect_args)
+        self.effects_log.append('loudness')
 
     def mcompand(self):
         raise NotImplementedError
@@ -483,7 +517,7 @@ class Transformer(object):
 
         See Also
         --------
-        gain, vol
+        gain, vol, loudness
 
         """
         if not is_number(db_level):
