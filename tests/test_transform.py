@@ -680,6 +680,59 @@ class TestTransformerNorm(unittest.TestCase):
             tfm.norm(db_level='-2dB')
 
 
+class TestTransformerOverdrive(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.overdrive()
+
+        actual_args = tfm.effects
+        expected_args = ['overdrive', '20.0', '20.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['overdrive']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_valid(self):
+        tfm = new_transformer()
+        tfm.overdrive(gain_db=2)
+
+        actual_args = tfm.effects
+        expected_args = ['overdrive', '2', '20.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.overdrive(gain_db='-2dB')
+
+    def test_colour_valid(self):
+        tfm = new_transformer()
+        tfm.overdrive(colour=0)
+
+        actual_args = tfm.effects
+        expected_args = ['overdrive', '20.0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_colour_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.overdrive(colour=None)
+
+
 class TestTransformerPad(unittest.TestCase):
 
     def test_default(self):

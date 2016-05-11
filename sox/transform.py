@@ -567,8 +567,30 @@ class Transformer(object):
     def oops(self):
         raise NotImplementedError
 
-    def overdrive(self):
-        raise NotImplementedError
+    def overdrive(self, gain_db=20.0, colour=20.0):
+        """Apply non-linear distortion.
+
+        Parameters
+        ----------
+        gain_db : float, default=20
+            Controls the amount of distortion (dB).
+        colour : float, default=20
+            Controls the amount of even harmonic content in the output (dB).
+
+        """
+        if not is_number(gain_db):
+            raise ValueError('db_level must be a number.')
+
+        if not is_number(colour):
+            raise ValueError('colour must be a number.')
+
+        effect_args = [
+            'overdrive',
+            '{}'.format(gain_db),
+            '{}'.format(colour)
+        ]
+        self.effects.extend(effect_args)
+        self.effects_log.append('overdrive')
 
     def pad(self, start_duration=0.0, end_duration=0.0):
         """Add silence to the beginning or end of a file.
