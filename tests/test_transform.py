@@ -162,6 +162,164 @@ class TestTransformerBuild(unittest.TestCase):
             self.transformer_invalid.build()
 
 
+class TestTransformerCompand(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.compand()
+
+        actual_args = tfm.effects
+        expected_args = ['compand', '0.3,0.8', '6.0:-70,-70,-60,-20,0,0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['compand']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_attack_time_valid(self):
+        tfm = new_transformer()
+        tfm.compand(attack_time=0.5)
+
+        actual_args = tfm.effects
+        expected_args = ['compand', '0.5,0.8', '6.0:-70,-70,-60,-20,0,0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_attack_time_invalid_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(attack_time=-1)
+
+    def test_attack_time_invalid_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(attack_time=None)
+
+    def test_decay_time_valid(self):
+        tfm = new_transformer()
+        tfm.compand(decay_time=0.5)
+
+        actual_args = tfm.effects
+        expected_args = ['compand', '0.3,0.5', '6.0:-70,-70,-60,-20,0,0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decay_time_invalid_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(decay_time=0.0)
+
+    def test_decay_time_invalid_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(decay_time='a')
+
+    def test_attack_bigger_decay(self):
+        tfm = new_transformer()
+        tfm.compand(attack_time=1.0, decay_time=0.5)
+
+        actual_args = tfm.effects
+        expected_args = ['compand', '1.0,0.5', '6.0:-70,-70,-60,-20,0,0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_soft_knee_valid(self):
+        tfm = new_transformer()
+        tfm.compand(soft_knee_db=-2)
+
+        actual_args = tfm.effects
+        expected_args = ['compand', '0.3,0.8', '-2:-70,-70,-60,-20,0,0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_soft_knee_none(self):
+        tfm = new_transformer()
+        tfm.compand(soft_knee_db=None)
+
+        actual_args = tfm.effects
+        expected_args = ['compand', '0.3,0.8', '-70,-70,-60,-20,0,0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_soft_knee_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(soft_knee_db='s')
+
+    def test_tf_points_valid(self):
+        tfm = new_transformer()
+        tfm.compand(tf_points=[(0, -4), (-70, -60), (-60, -20), (-40, -40)])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'compand', '0.3,0.8', '6.0:-70,-60,-60,-20,-40,-40,0,-4'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_tf_points_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(TypeError):
+            tfm.compand(tf_points=(0, 0))
+
+    def test_tf_points_empty(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(tf_points=[])
+
+    def test_tf_points_nontuples(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(tf_points=[[-70, -70], [-60, -20]])
+
+    def test_tf_points_tup_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(tf_points=[(0, -2), (-60, -20), (-70, -70, 0)])
+
+    def test_tf_points_tup_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(tf_points=[(0, -2), ('a', -20)])
+
+    def test_tf_points_tup_nonnum2(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(tf_points=[('a', 'b'), ('c', 'd')])
+
+    def test_tf_points_tup_positive(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(tf_points=[(0, 2), (40, -20)])
+
+    def test_tf_points_tup_dups(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.compand(tf_points=[(0, -2), (0, -20)])
+
+
 class TestTransformerConvert(unittest.TestCase):
 
     def test_default(self):
