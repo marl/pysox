@@ -335,8 +335,42 @@ class Transformer(object):
     def echos(self):
         raise NotImplementedError
 
-    def equalizer(self):
-        raise NotImplementedError
+    def equalizer(self, frequency, width_q, gain_db):
+        """Apply a two-pole peaking equalisation (EQ) filter to boost or
+        reduce around a given frequency.
+        This effect can be applied multiple times to produce complex EQ curves.
+
+        Parameters
+        ----------
+        frequency : float
+            The filter's central frequency in Hz.
+        width_q : float
+            The filter's with as a Q-factor.
+        gain_db : float
+            The filter's gain in dB.
+
+        See Also
+        --------
+        bass, treble
+
+        """
+        if not is_number(frequency) or frequency <= 0:
+            raise ValueError("frequency must be a positive number.")
+
+        if not is_number(width_q) or width_q <= 0:
+            raise ValueError("width_q must be a positive number.")
+
+        if not is_number(gain_db):
+            raise ValueError("gain_db must be a number.")
+
+        effect_args = [
+            'equalizer',
+            '{}'.format(frequency),
+            '{}q'.format(width_q),
+            '{}'.format(gain_db)
+        ]
+        self.effects.extend(effect_args)
+        self.effects_log.append('equalizer')
 
     def fade(self, fade_in_len=0.0, fade_out_len=0.0, fade_shape='q'):
         """Add a fade in and/or fade out to an audio file.
@@ -344,13 +378,13 @@ class Transformer(object):
 
         Parameters
         ----------
-        fade_in_len: float, default=0.0
+        fade_in_len : float, default=0.0
             Length of fade-in (seconds). If fade_in_len = 0,
             no fade in is applied.
-        fade_out_len: float, defaut=0.0
+        fade_out_len : float, defaut=0.0
             Length of fade-out (seconds). If fade_out_len = 0,
             no fade in is applied.
-        fade_shape: str, default='q'
+        fade_shape : str, default='q'
             Shape of fade. Must be one of
              * 'q' for quarter sine (default),
              * 'h' for half sine,
@@ -424,7 +458,7 @@ class Transformer(object):
 
         See Also
         --------
-        norm, vol, loudness
+        norm, loudness
 
         """
         if not is_number(gain_db):
@@ -480,7 +514,7 @@ class Transformer(object):
 
         See Also
         --------
-        gain, vol, loudness
+        gain, loudness
 
         """
         if not is_number(gain_db):
@@ -517,7 +551,7 @@ class Transformer(object):
 
         See Also
         --------
-        gain, vol, loudness
+        gain, loudness
 
         """
         if not is_number(db_level):
@@ -760,7 +794,4 @@ class Transformer(object):
         raise NotImplementedError
 
     def vad(self):
-        raise NotImplementedError
-
-    def vol(self):
         raise NotImplementedError

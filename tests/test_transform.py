@@ -395,6 +395,40 @@ class TestTransformerConvert(unittest.TestCase):
             tfm.convert(bitdepth=17)
 
 
+class TestTransformerEqualizer(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.equalizer(500.0, 2, 3)
+
+        actual_args = tfm.effects
+        expected_args = ['equalizer', '500.0', '2q', '3']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['equalizer']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.equalizer(-20, 2, 3)
+
+    def test_width_q_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.equalizer(500.0, 0, 3)
+
+    def test_gain_db_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.equalizer(500.0, 0.5, None)
+
+
 class TestTransformerFade(unittest.TestCase):
 
     def test_default(self):
