@@ -17,3 +17,11 @@ __NO_SOX = """SoX could not be found!
 if not len(os.popen('sox -h').readlines()):
     logging.warning(__NO_SOX)
     assert False, "SoX assertion failed.\n" + __NO_SOX
+
+from . import file_info
+from .combine import Combiner
+from .transform import Transformer
+from .core import SoxError
+from .core import SoxiError
+
+__version__ = '0.1'
