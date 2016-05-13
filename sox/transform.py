@@ -625,8 +625,47 @@ class Transformer(object):
     def phaser(self):
         raise NotImplementedError
 
-    def pitch(self):
-        raise NotImplementedError
+    def pitch(self, shift, quick=False):
+        """Pitch shift the audio without changing the tempo.
+
+        This effect uses the WSOLA algorithm. The audio is chopped up into
+        segments which are then shifted in the time domain and overlapped
+        (cross-faded) at points where their waveforms are most similar as
+        determined by measurement of least squares.
+
+        Parameters
+        ----------
+        shift: float
+            The number of semitones to shift. Can be positive or negative.
+        quick: bool, default=False
+            If True, this effect will run faster but with lower sound quality.
+
+        See Also
+        --------
+        bend, speed, tempo
+
+        """
+        if not is_number(shift):
+            raise ValueError("shift must be a positive number")
+
+        if shift < -12 or shift > 12:
+            logging.warning(
+                "Using an extreme pitch shift. "
+                "Quality of results will be poor"
+            )
+
+        if not isinstance(quick, bool):
+            raise ValueError("quick must be a boolean.")
+
+        effect_args = ['pitch']
+
+        if quick:
+            effect_args.append('-q')
+
+        effect_args.append('{}'.format(shift * 100.))
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('pitch')
 
     def rate(self, samplerate, quality='h'):
         """Change the audio sampling rate (i.e. resample the audio) to any
@@ -776,8 +815,61 @@ class Transformer(object):
     def stretch(self):
         raise NotImplementedError
 
-    def tempo(self):
-        raise NotImplementedError
+    def tempo(self, factor, audio_type=None, quick=False):
+        """Time stretch audio without changing pitch.
+
+        This effect uses the WSOLA algorithm. The audio is chopped up into
+        segments which are then shifted in the time domain and overlapped
+        (cross-faded) at points where their waveforms are most similar as
+        determined by measurement of least squares.
+
+        Parameters
+        ----------
+        factor: float
+            The ratio of new tempo to the old tempo.
+            For ex. 1.1 speeds up the tempo by 10%; 0.9 slows it down by 10%.
+        audio_type: str
+            Type of audio, which optimizes algorithm parameters. One of:
+             * m : Music,
+             * s : Speech,
+             * l : Linear (useful when factor is close to 1),
+        quick: bool, default=False
+            If True, this effect will run faster but with lower sound quality.
+
+        See Also
+        --------
+        stretch, speed, pitch
+
+        """
+        if not is_number(factor) or factor <= 0:
+            raise ValueError("factor must be a positive number")
+
+        if factor < 0.5 or factor > 2:
+            logging.warning(
+                "Using an extreme time stretching factor. "
+                "Quality of results will be poor"
+            )
+
+        if audio_type not in [None, 'm', 's', 'l']:
+            raise ValueError(
+                "audio_type must be one of None, 'm', 's', or 'l'."
+            )
+
+        if not isinstance(quick, bool):
+            raise ValueError("quick must be a boolean.")
+
+        effect_args = ['tempo']
+
+        if quick:
+            effect_args.append('-q')
+
+        if audio_type is not None:
+            effect_args.append('-{}'.format(audio_type))
+
+        effect_args.append('{}'.format(factor))
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('tempo')
 
     def treble(self):
         raise NotImplementedError

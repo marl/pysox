@@ -786,6 +786,71 @@ class TestTransformerPad(unittest.TestCase):
             tfm.pad(end_duration='foo')
 
 
+class TestTransformerPitch(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.pitch(0.0)
+
+        actual_args = tfm.effects
+        expected_args = ['pitch', '0.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['pitch']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_shift_valid(self):
+        tfm = new_transformer()
+        tfm.pitch(-3.0)
+
+        actual_args = tfm.effects
+        expected_args = ['pitch', '-300.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_shift_warning(self):
+        tfm = new_transformer()
+        tfm.pitch(13.0)
+
+        actual_args = tfm.effects
+        expected_args = ['pitch', '1300.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_shift_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.pitch('a')
+
+    def test_quick_valid(self):
+        tfm = new_transformer()
+        tfm.pitch(1.0, quick=True)
+
+        actual_args = tfm.effects
+        expected_args = ['pitch', '-q', '100.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_quick_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.pitch(1.0, quick=1)
+
+
 class TestTransformerRate(unittest.TestCase):
 
     def test_default(self):
@@ -943,6 +1008,88 @@ class TestTransformerSilence(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.silence(buffer_around_silence=0)
+
+
+class TestTransformerTempo(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.tempo(1.1)
+
+        actual_args = tfm.effects
+        expected_args = ['tempo', '1.1']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['tempo']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_valid(self):
+        tfm = new_transformer()
+        tfm.tempo(0.9)
+
+        actual_args = tfm.effects
+        expected_args = ['tempo', '0.9']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_warning(self):
+        tfm = new_transformer()
+        tfm.tempo(0.1)
+
+        actual_args = tfm.effects
+        expected_args = ['tempo', '0.1']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.tempo(-1.1)
+
+    def test_audio_type_valid(self):
+        tfm = new_transformer()
+        tfm.tempo(1.5, audio_type='m')
+
+        actual_args = tfm.effects
+        expected_args = ['tempo', '-m', '1.5']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_audio_type_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.tempo(1.5, audio_type=1)
+
+    def test_quick_valid(self):
+        tfm = new_transformer()
+        tfm.tempo(1.5, quick=True)
+
+        actual_args = tfm.effects
+        expected_args = ['tempo', '-q', '1.5']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_quick_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.tempo(1.5, quick=1)
 
 
 class TestTransformerTrim(unittest.TestCase):
