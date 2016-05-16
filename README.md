@@ -10,26 +10,38 @@ Python wrapper around sox.
 This requires that [SoX](http://sox.sourceforge.net/) version 14.4.2 or higher is installed.
 
 To install SoX on Mac with Homebrew:
+
 ```brew install sox```
+
 on Linux:
+
 ```apt-get install sox```
+
 or install [from source](https://sourceforge.net/projects/sox/files/sox/).
 
 
 To install this module:
+
 ```pip install git+https://github.com/rabitt/pysox.git```
+
 or
-```git clone https://github.com/rabitt/pysox.git```
-```cd pysox```
-```python setup.py install```
+
+```
+git clone https://github.com/rabitt/pysox.git
+cd pysox
+python setup.py install
+```
 
 
 # Tests
 
 If you have a different version of SoX installed, it's recommended that you run
 the tests locally to make sure everything behaves as expected:
-```cd tests```
-```nosetests .```
+
+```
+cd tests
+nosetests .
+```
 
 # Examples
 
