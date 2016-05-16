@@ -804,7 +804,7 @@ class TestTransformerPitch(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
-    def test_shift_valid(self):
+    def test_n_semitones_valid(self):
         tfm = new_transformer()
         tfm.pitch(-3.0)
 
@@ -816,7 +816,7 @@ class TestTransformerPitch(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
-    def test_shift_warning(self):
+    def test_n_semitones_warning(self):
         tfm = new_transformer()
         tfm.pitch(13.0)
 
@@ -828,7 +828,7 @@ class TestTransformerPitch(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
-    def test_shift_invalid(self):
+    def test_n_semitones_invalid(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.pitch('a')

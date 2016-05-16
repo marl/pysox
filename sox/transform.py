@@ -625,7 +625,7 @@ class Transformer(object):
     def phaser(self):
         raise NotImplementedError
 
-    def pitch(self, shift, quick=False):
+    def pitch(self, n_semitones, quick=False):
         """Pitch shift the audio without changing the tempo.
 
         This effect uses the WSOLA algorithm. The audio is chopped up into
@@ -635,7 +635,7 @@ class Transformer(object):
 
         Parameters
         ----------
-        shift: float
+        n_semitones: float
             The number of semitones to shift. Can be positive or negative.
         quick: bool, default=False
             If True, this effect will run faster but with lower sound quality.
@@ -645,10 +645,10 @@ class Transformer(object):
         bend, speed, tempo
 
         """
-        if not is_number(shift):
-            raise ValueError("shift must be a positive number")
+        if not is_number(n_semitones):
+            raise ValueError("n_semitones must be a positive number")
 
-        if shift < -12 or shift > 12:
+        if n_semitones < -12 or n_semitones > 12:
             logging.warning(
                 "Using an extreme pitch shift. "
                 "Quality of results will be poor"
@@ -662,7 +662,7 @@ class Transformer(object):
         if quick:
             effect_args.append('-q')
 
-        effect_args.append('{}'.format(shift * 100.))
+        effect_args.append('{}'.format(n_semitones * 100.))
 
         self.effects.extend(effect_args)
         self.effects_log.append('pitch')
