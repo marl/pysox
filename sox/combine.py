@@ -31,36 +31,35 @@ class Combiner(Transformer):
 
     Inherits all methods from the Transformer class, thus any effects can be
     applied after combining.
+
+    Parameters
+    ----------
+    input_filepath_list : list of str
+        List of paths to input audio files.
+    output_filepath : str
+        Path to desired output file. If a file already exists at the given
+        path, the file will be overwritten.
+    combine_type : str
+        Input file combining method. One of the following values:
+            * concatenate : combine input files by concatenating in the
+                order given.
+            * merge : combine input files by stacking each input file into
+                a new channel of the output file.
+            * mix : combine input files by summing samples in corresponding
+                channels.
+            * mix-power : combine input files with volume adjustments such
+                that the output volume is roughly equivlent to one of the
+                input signals.
+            * multiply : combine input files by multiplying samples in
+                corresponding samples.
+    input_volumes : list of float, default=None
+        List of volumes to be applied upon combining input files. Volumes
+        are applied to the input files in order.
+        If None, input files will be combined at their original volumes.
+
     '''
     def __init__(self, input_filepath_list, output_filepath,
                  combine_type, input_volumes=None):
-        '''
-        Parameters
-        ----------
-        input_filepath_list : list of str
-            List of paths to input audio files.
-        output_filepath : str
-            Path to desired output file. If a file already exists at the given
-            path, the file will be overwritten.
-        combine_type : str
-            Input file combining method. One of the following values:
-                * concatenate : combine input files by concatenating in the
-                    order given.
-                * merge : combine input files by stacking each input file into
-                    a new channel of the output file.
-                * mix : combine input files by summing samples in corresponding
-                    channels.
-                * mix-power : combine input files with volume adjustments such
-                    that the output volume is roughly equivlent to one of the
-                    input signals.
-                * multiply : combine input files by multiplying samples in
-                    corresponding samples.
-        input_volumes : list of float, default=None
-            List of volumes to be applied upon combining input files. Volumes
-            are applied to the input files in order.
-            If None, input files will be combined at their original volumes.
-
-        '''
         file_info.validate_input_file_list(input_filepath_list)
         file_info.validate_output_file(output_filepath)
         _validate_combine_type(combine_type)

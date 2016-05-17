@@ -24,6 +24,14 @@ class Transformer(object):
     Class which allows multiple effects to be chained to create an output
     file, saved to output_filepath.
 
+    Parameters
+    ----------
+    input_filepath : str
+        Path to input audio file.
+    output_filepath : str
+        Path to desired output file. If a file already exists at the given
+        path, the file will be overwritten.
+
     Attributes
     ----------
     input_filepath : str
@@ -51,16 +59,6 @@ class Transformer(object):
     '''
 
     def __init__(self, input_filepath, output_filepath):
-        '''
-        Parameters
-        ----------
-        input_filepath : str
-            Path to input audio file.
-        output_filepath : str
-            Path to desired output file. If a file already exists at the given
-            path, the file will be overwritten.
-
-        '''
         file_info.validate_input_file(input_filepath)
         file_info.validate_output_file(output_filepath)
 
