@@ -1,8 +1,9 @@
 # pysox
-Python wrapper around sox.
+Python wrapper around sox. Read the docs [here](pysox.readthedocs.org).
 
 [![Build Status](https://travis-ci.org/rabitt/pysox.svg?branch=master)](https://travis-ci.org/rabitt/pysox)
 [![Coverage Status](https://coveralls.io/repos/github/rabitt/pysox/badge.svg?branch=master)](https://coveralls.io/github/rabitt/pysox?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/resampy/badge/?version=latest)](http://pysox.readthedocs.io/en/latest/?badge=latest)
 
 
 # Install
@@ -18,6 +19,7 @@ on Linux:
 ```apt-get install sox```
 
 or install [from source](https://sourceforge.net/projects/sox/files/sox/).
+
 
 
 To install this module:
@@ -47,7 +49,6 @@ nosetests .
 
 ```python
 import sox
-
 # create trasnformer
 tfm = sox.Transformer('path/to/input_audio.wav', 'path/to/output/audio.aiff')
 # trim the audio between 5 and 10.5 seconds.
@@ -67,7 +68,6 @@ tfm.effects_log
 Concatenate 3 audio files:
 ```python
 import sox
-
 # create combiner
 cbn = sox.Combiner(
     ['input1.wav', 'input2.wav', 'input3.wav'], output.wav, 'concatenate'

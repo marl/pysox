@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+'''
 Python wrapper around the SoX library.
 This module requires that SoX is installed.
-"""
+'''
 
 from __future__ import print_function
 import logging
@@ -19,7 +19,7 @@ VERBOSITY_VALS = [0, 1, 2, 3, 4]
 
 
 class Transformer(object):
-    """Audio file transformer.
+    '''Audio file transformer.
     Class which allows multiple effects to be chained to create an output
     file, saved to output_filepath.
 
@@ -47,10 +47,10 @@ class Transformer(object):
     build
         Execute the current chain of commands and write output file.
 
-    """
+    '''
 
     def __init__(self, input_filepath, output_filepath):
-        """
+        '''
         Parameters
         ----------
         input_filepath : str
@@ -59,7 +59,7 @@ class Transformer(object):
             Path to desired output file. If a file already exists at the given
             path, the file will be overwritten.
 
-        """
+        '''
         file_info.validate_input_file(input_filepath)
         file_info.validate_output_file(output_filepath)
 
@@ -77,7 +77,7 @@ class Transformer(object):
 
     def set_globals(self, dither=False, guard=False, multithread=False,
                     replay_gain=False, verbosity=2):
-        """Sets SoX's global arguments.
+        '''Sets SoX's global arguments.
         Overwrites any previously set global arguments.
         If this function is not explicity called, globals are set to this
         function's defaults.
@@ -88,9 +88,9 @@ class Transformer(object):
             If True, dithering is applied for low files with low bit rates.
         guard : bool, default=False
             If True, invokes the gain effect to guard against clipping.
-        multithread: bool, default=False
+        multithread : bool, default=False
             If True, each channel is processed in parallel.
-        replay_gain: bool, default=False
+        replay_gain : bool, default=False
             If True, applies replay-gain adjustment to input-files.
         verbosity : int, default=2
             SoX's verbosity level. One of:
@@ -105,7 +105,7 @@ class Transformer(object):
                     Useful for seeing exactly how SoX is processing your audio.
                 * 4, >4 : Messages to help with debugging SoX are also shown.
 
-        """
+        '''
         if not isinstance(dither, bool):
             raise ValueError('dither must be a boolean.')
 
@@ -144,7 +144,7 @@ class Transformer(object):
         self.globals = global_args
 
     def build(self):
-        """ Executes the current set of commands. """
+        ''' Executes the current set of commands. '''
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
@@ -194,7 +194,7 @@ class Transformer(object):
 
     def compand(self, attack_time=0.3, decay_time=0.8, soft_knee_db=6.0,
                 tf_points=[(-70, -70), (-60, -20), (0, 0)]):
-        """Compand (compress or expand) the dynamic range of the audio.
+        '''Compand (compress or expand) the dynamic range of the audio.
 
         Parameters
         ----------
@@ -215,7 +215,7 @@ class Transformer(object):
         See Also
         --------
         mcompand, contrast
-        """
+        '''
         if not is_number(attack_time) or attack_time <= 0:
             raise ValueError("attack_time must be a positive number.")
 
@@ -277,7 +277,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def convert(self, samplerate=None, channels=None, bitdepth=None):
-        """Converts output audio to the specified format.
+        '''Converts output audio to the specified format.
 
         Parameters
         ----------
@@ -292,7 +292,7 @@ class Transformer(object):
         --------
         rate
 
-        """
+        '''
         bitdepths = [8, 16, 24, 32, 64]
         if bitdepth is not None:
             if bitdepth not in bitdepths:
@@ -336,7 +336,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def equalizer(self, frequency, width_q, gain_db):
-        """Apply a two-pole peaking equalisation (EQ) filter to boost or
+        '''Apply a two-pole peaking equalisation (EQ) filter to boost or
         reduce around a given frequency.
         This effect can be applied multiple times to produce complex EQ curves.
 
@@ -353,7 +353,7 @@ class Transformer(object):
         --------
         bass, treble
 
-        """
+        '''
         if not is_number(frequency) or frequency <= 0:
             raise ValueError("frequency must be a positive number.")
 
@@ -373,7 +373,7 @@ class Transformer(object):
         self.effects_log.append('equalizer')
 
     def fade(self, fade_in_len=0.0, fade_out_len=0.0, fade_shape='q'):
-        """Add a fade in and/or fade out to an audio file.
+        '''Add a fade in and/or fade out to an audio file.
         Default fade shape is 1/4 sine wave.
 
         Parameters
@@ -396,7 +396,7 @@ class Transformer(object):
         --------
         splice
 
-        """
+        '''
         fade_shapes = ['q', 'h', 't', 'l', 'p']
         if fade_shape not in fade_shapes:
             raise ValueError(
@@ -431,7 +431,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def gain(self, gain_db=0.0, normalize=True, limiter=False, balance=None):
-        """Apply amplification or attenuation to the audio signal.
+        '''Apply amplification or attenuation to the audio signal.
 
         Parameters
         ----------
@@ -442,7 +442,7 @@ class Transformer(object):
             If False, simply adjusts the audio power level by gain_db.
         limiter : bool, default=False
             If True, a simple limiter is invoked to prevent clipping.
-        balance: str or None, default=None
+        balance : str or None, default=None
             Balance gain across channels. Can be one of:
              * None applies no balancing (default)
              * 'e' applies gain to all channels other than that with the
@@ -460,7 +460,7 @@ class Transformer(object):
         --------
         norm, loudness
 
-        """
+        '''
         if not is_number(gain_db):
             raise ValueError("gain_db must be a number.")
 
@@ -498,7 +498,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def loudness(self, gain_db=-10.0, reference_level=65.0):
-        """Loudness control. Similar to the gain effect, but provides
+        '''Loudness control. Similar to the gain effect, but provides
         equalisation for the human auditory system.
 
         The gain is adjusted by gain_db and the signal equalised according to
@@ -516,7 +516,7 @@ class Transformer(object):
         --------
         gain, loudness
 
-        """
+        '''
         if not is_number(gain_db):
             raise ValueError('gain_db must be a number.')
 
@@ -541,7 +541,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def norm(self, db_level=-3.0):
-        """Normalize an audio file to a particular db level.
+        '''Normalize an audio file to a particular db level.
         This behaves identically to the gain effect with normalize=True.
 
         Parameters
@@ -553,7 +553,7 @@ class Transformer(object):
         --------
         gain, loudness
 
-        """
+        '''
         if not is_number(db_level):
             raise ValueError('db_level must be a number.')
 
@@ -568,7 +568,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def overdrive(self, gain_db=20.0, colour=20.0):
-        """Apply non-linear distortion.
+        '''Apply non-linear distortion.
 
         Parameters
         ----------
@@ -577,7 +577,7 @@ class Transformer(object):
         colour : float, default=20
             Controls the amount of even harmonic content in the output (dB).
 
-        """
+        '''
         if not is_number(gain_db):
             raise ValueError('db_level must be a number.')
 
@@ -593,7 +593,7 @@ class Transformer(object):
         self.effects_log.append('overdrive')
 
     def pad(self, start_duration=0.0, end_duration=0.0):
-        """Add silence to the beginning or end of a file.
+        '''Add silence to the beginning or end of a file.
         Calling this with the default arguments has no effect.
 
         Parameters
@@ -607,7 +607,7 @@ class Transformer(object):
         --------
         delay
 
-        """
+        '''
         if not is_number(start_duration) or start_duration < 0:
             raise ValueError("Start duration must be a positive number.")
 
@@ -626,7 +626,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def pitch(self, n_semitones, quick=False):
-        """Pitch shift the audio without changing the tempo.
+        '''Pitch shift the audio without changing the tempo.
 
         This effect uses the WSOLA algorithm. The audio is chopped up into
         segments which are then shifted in the time domain and overlapped
@@ -635,16 +635,16 @@ class Transformer(object):
 
         Parameters
         ----------
-        n_semitones: float
+        n_semitones : float
             The number of semitones to shift. Can be positive or negative.
-        quick: bool, default=False
+        quick : bool, default=False
             If True, this effect will run faster but with lower sound quality.
 
         See Also
         --------
         bend, speed, tempo
 
-        """
+        '''
         if not is_number(n_semitones):
             raise ValueError("n_semitones must be a positive number")
 
@@ -668,26 +668,26 @@ class Transformer(object):
         self.effects_log.append('pitch')
 
     def rate(self, samplerate, quality='h'):
-        """Change the audio sampling rate (i.e. resample the audio) to any
+        '''Change the audio sampling rate (i.e. resample the audio) to any
         given `samplerate`. Better the resampling quality = slower runtime.
 
         Parameters
         ----------
         samplerate : float
             Desired sample rate.
-        quality: str
+        quality : str
             Resampling quality. One of:
              * q : Quick - very low quality,
              * l : Low,
              * m : Medium,
              * h : High (default),
              * v : Very high
-        silence_threshold: float
+        silence_threshold : float
             Silence threshold as percentage of maximum sample amplitude.
-        min_silence_duration: float
+        min_silence_duration : float
             The minimum ammount of time in seconds required for a region to be
             considered non-silent.
-        buffer_around_silence: bool
+        buffer_around_silence : bool
             If True, leaves a buffer of min_silence_duration around removed
             silent regions.
 
@@ -695,7 +695,7 @@ class Transformer(object):
         --------
         upsample, downsample, convert
 
-        """
+        '''
         quality_vals = ['q', 'l', 'm', 'h', 'v']
         if not is_number(samplerate) or samplerate <= 0:
             raise ValueError("Samplerate must be a positive number.")
@@ -727,22 +727,22 @@ class Transformer(object):
 
     def silence(self, location=0, silence_threshold=0.1,
                 min_silence_duration=0.1, buffer_around_silence=False):
-        """Removes silent regions from an audio file.
+        '''Removes silent regions from an audio file.
 
         Parameters
         ----------
-        location: int, default=0
+        location : int, default=0
             Where to remove silence. One of:
              * 0 to remove silence throughout the file (default),
              * 1 to remove silence from the beginning,
              * -1 to remove silence from the end,
-        silence_threshold: float, default=0.1
+        silence_threshold : float, default=0.1
             Silence threshold as percentage of maximum sample amplitude.
             Must be between 0 and 100.
-        min_silence_duration: float, default=0.1
+        min_silence_duration : float, default=0.1
             The minimum ammount of time in seconds required for a region to be
             considered non-silent.
-        buffer_around_silence: bool, default=False
+        buffer_around_silence : bool, default=False
             If True, leaves a buffer of min_silence_duration around removed
             silent regions.
 
@@ -750,7 +750,7 @@ class Transformer(object):
         --------
         vad
 
-        """
+        '''
         if location not in [-1, 0, 1]:
             raise ValueError("location must be one of -1, 0, 1.")
 
@@ -816,7 +816,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def tempo(self, factor, audio_type=None, quick=False):
-        """Time stretch audio without changing pitch.
+        '''Time stretch audio without changing pitch.
 
         This effect uses the WSOLA algorithm. The audio is chopped up into
         segments which are then shifted in the time domain and overlapped
@@ -825,22 +825,22 @@ class Transformer(object):
 
         Parameters
         ----------
-        factor: float
+        factor : float
             The ratio of new tempo to the old tempo.
             For ex. 1.1 speeds up the tempo by 10%; 0.9 slows it down by 10%.
-        audio_type: str
+        audio_type : str
             Type of audio, which optimizes algorithm parameters. One of:
              * m : Music,
              * s : Speech,
              * l : Linear (useful when factor is close to 1),
-        quick: bool, default=False
+        quick : bool, default=False
             If True, this effect will run faster but with lower sound quality.
 
         See Also
         --------
         stretch, speed, pitch
 
-        """
+        '''
         if not is_number(factor) or factor <= 0:
             raise ValueError("factor must be a positive number")
 
@@ -878,7 +878,7 @@ class Transformer(object):
         raise NotImplementedError
 
     def trim(self, start_time, end_time):
-        """Excerpt a clip from an audio file, given a start and end time.
+        '''Excerpt a clip from an audio file, given a start and end time.
 
         Parameters
         ----------
@@ -887,7 +887,7 @@ class Transformer(object):
         end_time : float
             End time of the clip (seconds)
 
-        """
+        '''
         if not is_number(start_time) or start_time < 0:
             raise ValueError("start_time must be a positive number.")
         if not is_number(end_time) or end_time < 0:

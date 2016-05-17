@@ -9,9 +9,9 @@ if __name__ == "__main__":
 
         description='Python wrapper around SoX.',
 
-        author='Rachel Bittner, Eric Humphrey',
+        author='Rachel Bittner',
 
-        author_email='rachel.bittner@nyu.edu, humphrey.eric@gmail.com',
+        author_email='rachel.bittner@nyu.edu',
 
         url='https://github.com/rabitt/pysox',
 
@@ -56,5 +56,4 @@ if __name__ == "__main__":
                 'numpydoc',
             ],
         }
-
     )

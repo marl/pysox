@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+'''
 Python wrapper around the SoX library.
 This module requires that SoX is installed.
-"""
+'''
 
 from __future__ import print_function
 import logging
@@ -25,16 +25,16 @@ COMBINE_VALS = [
 
 
 class Combiner(Transformer):
-    """Audio file combiner.
+    '''Audio file combiner.
     Class which allows multiple files to be combined to create an output
     file, saved to output_filepath.
 
     Inherits all methods from the Transformer class, thus any effects can be
     applied after combining.
-    """
+    '''
     def __init__(self, input_filepath_list, output_filepath,
                  combine_type, input_volumes=None):
-        """
+        '''
         Parameters
         ----------
         input_filepath_list : list of str
@@ -60,7 +60,7 @@ class Combiner(Transformer):
             are applied to the input files in order.
             If None, input files will be combined at their original volumes.
 
-        """
+        '''
         file_info.validate_input_file_list(input_filepath_list)
         file_info.validate_output_file(output_filepath)
         _validate_combine_type(combine_type)
@@ -79,17 +79,17 @@ class Combiner(Transformer):
         self.input_args = []
 
     def _validate_file_formats(self):
-        """Validate that combine method can be performed with given files.
+        '''Validate that combine method can be performed with given files.
         Raises IOError if input file formats are incompatible.
-        """
+        '''
         self._validate_sample_rates()
 
         if self.combine == ['--combine', 'concatenate']:
             self._validate_num_channels()
 
     def _validate_sample_rates(self):
-        """ Check if files in input file list have the same sample rate
-        """
+        ''' Check if files in input file list have the same sample rate
+        '''
         sample_rates = [
             file_info.sample_rate(f) for f in self.input_filepath_list
         ]
@@ -101,8 +101,8 @@ class Combiner(Transformer):
             )
 
     def _validate_num_channels(self):
-        """ Check if files in input file list have the same number of channels
-        """
+        ''' Check if files in input file list have the same number of channels
+        '''
         channels = [
             file_info.channels(f) for f in self.input_filepath_list
         ]
@@ -115,7 +115,7 @@ class Combiner(Transformer):
             )
 
     def _set_input_format_list(self, input_volumes):
-        """Set input formats given input_volumes.
+        '''Set input formats given input_volumes.
 
         Parameters
         ----------
@@ -124,7 +124,7 @@ class Combiner(Transformer):
             are applied to the input files in order.
             If None, input files will be combined at their original volumes.
 
-        """
+        '''
         n_inputs = len(self.input_filepath_list)
         input_format_list = []
         if input_volumes is None:
@@ -154,9 +154,9 @@ class Combiner(Transformer):
         self.input_format_list = input_format_list
 
     def _build_input_args(self):
-        """ Builds input arguments by stitching input filepaths and input
+        ''' Builds input arguments by stitching input filepaths and input
         formats together.
-        """
+        '''
         if len(self.input_format_list) != len(self.input_filepath_list):
             raise ValueError(
                 "input_format_list & input_filepath_list are not the same size"
@@ -171,7 +171,7 @@ class Combiner(Transformer):
         self.input_args = input_args
 
     def build(self):
-        """ Executes SoX. """
+        ''' Executes SoX. '''
         args = []
         args.extend(self.globals)
         args.extend(self.combine)
@@ -198,14 +198,14 @@ class Combiner(Transformer):
 
 
 def _validate_combine_type(combine_type):
-    """Check that the combine_type is valid.
+    '''Check that the combine_type is valid.
 
     Parameters
     ----------
     combine_type : str
         Combine type.
 
-    """
+    '''
     if combine_type not in COMBINE_VALS:
         raise ValueError(
             'Invalid value for combine_type. Must be one of {}'.format(
@@ -214,14 +214,14 @@ def _validate_combine_type(combine_type):
 
 
 def _validate_volumes(input_volumes):
-    """Check input_volumes contains a valid list of volumes.
+    '''Check input_volumes contains a valid list of volumes.
 
     Parameters
     ----------
     input_volumes : list
         list of volume values. Castable to numbers.
 
-    """
+    '''
     if not (input_volumes is None or isinstance(input_volumes, list)):
         raise TypeError("input_volumes must be None or a list.")
 

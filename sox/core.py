@@ -1,13 +1,15 @@
-"""Base module for calling SoX """
+'''Base module for calling SoX '''
 import logging
 import subprocess
 from subprocess import CalledProcessError
+
+from . import NO_SOX
 
 SOXI_ARGS = ['b', 'c', 'a', 'D', 'e', 't', 's', 'r']
 
 
 def sox(args):
-    """Pass an argument list to SoX.
+    '''Pass an argument list to SoX.
 
     Parameters
     ----------
@@ -20,7 +22,7 @@ def sox(args):
     status : bool
         True on success.
 
-    """
+    '''
     if args[0].lower() != "sox":
         args.insert(0, "sox")
     else:
@@ -51,14 +53,14 @@ def sox(args):
 
 
 class SoxError(Exception):
-    """Exception to be raised when SoX exits with non-zero status.
-    """
+    '''Exception to be raised when SoX exits with non-zero status.
+    '''
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
 
 def _get_valid_formats():
-    """ Calls SoX help for a lists of audio formats available with the current
+    ''' Calls SoX help for a lists of audio formats available with the current
     install of SoX.
 
     Returns:
@@ -66,7 +68,10 @@ def _get_valid_formats():
     formats : list
         List of audio file extensions that SoX can process.
 
-    """
+    '''
+    if NO_SOX:
+        return []
+
     shell_output = subprocess.check_output(
         "sox -h | grep 'AUDIO FILE FORMATS'",
         shell=True
@@ -79,7 +84,7 @@ VALID_FORMATS = _get_valid_formats()
 
 
 def soxi(filepath, argument):
-    """ Base call to Soxi.
+    ''' Base call to Soxi.
 
     Parameters
     ----------
@@ -93,7 +98,7 @@ def soxi(filepath, argument):
     shell_output : str
         command line output of Soxi
 
-    """
+    '''
 
     if argument not in SOXI_ARGS:
         raise ValueError("Invalid argument '{}' to Soxi".format(argument))
@@ -117,14 +122,14 @@ def soxi(filepath, argument):
 
 
 class SoxiError(Exception):
-    """Exception to be raised when SoXi exits with non-zero status.
-    """
+    '''Exception to be raised when SoXi exits with non-zero status.
+    '''
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
 
 def is_number(var):
-    """Check if variable is a numeric value.
+    '''Check if variable is a numeric value.
 
     Parameters
     ----------
@@ -134,7 +139,7 @@ def is_number(var):
     --------
     bool
         True if var is numeric, False otherwise.
-    """
+    '''
     try:
         float(var)
         return True
@@ -145,7 +150,7 @@ def is_number(var):
 
 
 def all_equal(list_of_things):
-    """Check if a list contains identical elements.
+    '''Check if a list contains identical elements.
 
     Parameters
     ----------
@@ -156,5 +161,5 @@ def all_equal(list_of_things):
     --------
     bool
         True if all list elements are the same.
-    """
+    '''
     return len(set(list_of_things)) <= 1
