@@ -121,6 +121,33 @@ def soxi(filepath, argument):
     return str(shell_output).strip('\n')
 
 
+def play(args):
+    '''Pass an argument list to play.
+
+    Parameters
+    ----------
+    args : iterable
+        Argument list for play. The first item can, but does not
+        need to, be 'play'.
+
+    Returns:
+    --------
+    status : bool
+        True on success.
+
+    '''
+    if args[0].lower() != "play":
+        args.insert(0, "play")
+    else:
+        args[0] = "play"
+
+    logging.info("Executing: %s", " ".join(args))
+    process_handle = subprocess.Popen(args, stderr=subprocess.PIPE)
+    status = process_handle.wait()
+    logging.info(process_handle.stdout)
+    return status == 0
+
+
 class SoxiError(Exception):
     '''Exception to be raised when SoXi exits with non-zero status.
     '''

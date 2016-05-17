@@ -11,6 +11,7 @@ import logging
 from .core import sox
 from .core import SoxError
 from .core import is_number
+from .core import play
 from . import file_info
 
 logging.basicConfig(level=logging.DEBUG)
@@ -144,7 +145,8 @@ class Transformer(object):
         self.globals = global_args
 
     def build(self):
-        ''' Executes the current set of commands. '''
+        '''Builds the output_file by executing the current set of commands.
+        '''
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
@@ -164,6 +166,18 @@ class Transformer(object):
                 " ".join(self.effects_log)
             )
             return True
+
+    def preview(self):
+        '''Play a preview of the output with the current set of effects
+        '''
+        args = ["play", "--no-show-progress"]
+        args.extend(self.globals)
+        args.extend(self.input_format)
+        args.append(self.input_filepath)
+        args.extend(self.effects)
+
+        play(args)
+
 
     def allpass(self):
         raise NotImplementedError
