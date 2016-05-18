@@ -1,5 +1,5 @@
 # pysox
-Python wrapper around sox. Read the docs [here](pysox.readthedocs.org).
+Python wrapper around sox. [Read the Docs here](http://pysox.readthedocs.org).
 
 [![Build Status](https://travis-ci.org/rabitt/pysox.svg?branch=master)](https://travis-ci.org/rabitt/pysox)
 [![Coverage Status](https://coveralls.io/repos/github/rabitt/pysox/badge.svg?branch=master)](https://coveralls.io/github/rabitt/pysox?branch=master)
