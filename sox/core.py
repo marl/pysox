@@ -141,11 +141,26 @@ def play(args):
     else:
         args[0] = "play"
 
-    logging.info("Executing: %s", " ".join(args))
-    process_handle = subprocess.Popen(args, stderr=subprocess.PIPE)
-    status = process_handle.wait()
-    logging.info(process_handle.stdout)
-    return status == 0
+    try:
+        logging.info("Executing: %s", " ".join(args))
+        process_handle = subprocess.Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        status = process_handle.wait()
+        if process_handle.stderr is not None:
+            logging.info(process_handle.stderr)
+
+        if status == 0:
+            return True
+        else:
+            logging.info("Play returned with error code %s", status)
+            return False
+    except OSError as error_msg:
+        logging.error("OSError: Play failed! %s", error_msg)
+    except TypeError as error_msg:
+        logging.error("TypeError: %s", error_msg)
+    return False
 
 
 class SoxiError(Exception):

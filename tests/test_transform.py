@@ -162,6 +162,19 @@ class TestTransformerBuild(unittest.TestCase):
             self.transformer_invalid.build()
 
 
+class TestTransformerPreview(unittest.TestCase):
+    def setUp(self):
+        self.transformer_valid = transform.Transformer(
+            INPUT_FILE, OUTPUT_FILE
+        )
+        self.transformer_valid.trim(0, 0.1)
+
+    def test_valid(self):
+        expected = None
+        actual = self.transformer_valid.preview()
+        self.assertEqual(expected, actual)
+
+
 class TestTransformerCompand(unittest.TestCase):
 
     def test_default(self):
