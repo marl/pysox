@@ -66,6 +66,15 @@ class TestGetValidFormats(unittest.TestCase):
         self.assertNotIn('FORMATS', self.formats)
         self.assertNotIn('AUDIO FILE FORMATS', self.formats)
 
+    def test_nosox(self):
+        core.NO_SOX = True
+        expected = []
+        actual = core._get_valid_formats()
+        self.assertEqual(expected, actual)
+
+    def tearDown(self):
+        core.NO_SOX = False
+
 
 class TestValidFormats(unittest.TestCase):
 
@@ -104,6 +113,45 @@ class TestSoxi(unittest.TestCase):
     def test_soxi_error(self):
         with self.assertRaises(SoxiError):
             core.soxi(INPUT_FILE_CORRUPT, 's')
+
+
+class TestPlay(unittest.TestCase):
+
+    def test_base_case(self):
+        args = ['play', INPUT_FILE, 'trim', '0', '0.01']
+        expected = True
+        actual = core.play(args)
+        self.assertEqual(expected, actual)
+
+    def test_base_case2(self):
+        args = [INPUT_FILE, 'trim', '0', '0.01']
+        expected = True
+        actual = core.play(args)
+        self.assertEqual(expected, actual)
+
+    def test_play_fail_bad_args(self):
+        args = ['', 'trim', '0', '0.01']
+        expected = False
+        actual = core.play(args)
+        self.assertEqual(expected, actual)
+
+    def test_play_fail_bad_files(self):
+        args = ['asdf.wav', 'trim', '0', '0.01']
+        expected = False
+        actual = core.play(args)
+        self.assertEqual(expected, actual)
+
+    def test_play_fail_bad_ext(self):
+        args = ['output.xyz', 'trim', '0', '0.01']
+        expected = False
+        actual = core.play(args)
+        self.assertEqual(expected, actual)
+
+    def test_play_fail_corrupt_file(self):
+        args = [INPUT_FILE_CORRUPT, 'trim', '0', '0.01']
+        expected = False
+        actual = core.play(args)
+        self.assertEqual(expected, actual)
 
 
 class TestIsNumber(unittest.TestCase):
