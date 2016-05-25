@@ -599,6 +599,106 @@ class TestTransformerGain(unittest.TestCase):
             tfm.gain(balance='h')
 
 
+class TestTransformerHighpass(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.highpass(1000.0)
+
+        actual_args = tfm.effects
+        expected_args = ['highpass', '-2', '1000.0', '0.707q']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['highpass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_one_pole(self):
+        tfm = new_transformer()
+        tfm.highpass(1000.0, n_poles=1)
+
+        actual_args = tfm.effects
+        expected_args = ['highpass', '-1', '1000.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['highpass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.highpass(-20)
+
+    def test_width_q_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.highpass(1000.0, width_q=0.0)
+
+    def test_n_poles_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.highpass(1000.0, n_poles=3)
+
+
+class TestTransformerLowpass(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.lowpass(1000.0)
+
+        actual_args = tfm.effects
+        expected_args = ['lowpass', '-2', '1000.0', '0.707q']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['lowpass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_one_pole(self):
+        tfm = new_transformer()
+        tfm.lowpass(1000.0, n_poles=1)
+
+        actual_args = tfm.effects
+        expected_args = ['lowpass', '-1', '1000.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['lowpass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.lowpass(-20)
+
+    def test_width_q_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.lowpass(1000.0, width_q=0.0)
+
+    def test_n_poles_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.lowpass(1000.0, n_poles=3)
+
+
 class TestTransformerLoudness(unittest.TestCase):
 
     def test_default(self):

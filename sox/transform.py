@@ -176,7 +176,6 @@ class Transformer(object):
 
         play(args)
 
-
     def allpass(self):
         raise NotImplementedError
 
@@ -357,7 +356,7 @@ class Transformer(object):
         frequency : float
             The filter's central frequency in Hz.
         width_q : float
-            The filter's with as a Q-factor.
+            The filter's width as a Q-factor.
         gain_db : float
             The filter's gain in dB.
 
@@ -500,11 +499,83 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('gain')
 
-    def highpass(self):
-        raise NotImplementedError
+    def highpass(self, frequency, width_q=0.707, n_poles=2):
+        '''Apply a high-pass filter with 3dB point frequency. The filter can be
+        either single-pole or double-pole. The filters roll off at 6dB per pole
+        per octave (20dB per pole per decade).
 
-    def lowpass(self):
-        raise NotImplementedError
+        Parameters
+        ----------
+        frequency : float
+            The filter's cutoff frequency in Hz.
+        width_q : float, default=0.707
+            The filter's width as a Q-factor. Applies only when n_poles=2.
+            The default gives a Butterworth response.
+        n_poles : int, default=2
+            The number of poles in the filter. Must be either 1 or 2
+
+        See Also
+        --------
+        lowpass, equalizer, sinc
+
+        '''
+        if not is_number(frequency) or frequency <= 0:
+            raise ValueError("frequency must be a positive number.")
+
+        if not is_number(width_q) or width_q <= 0:
+            raise ValueError("width_q must be a positive number.")
+
+        if n_poles not in [1, 2]:
+            raise ValueError("n_poles must be 1 or 2.")
+
+        effect_args = [
+            'highpass', '-{}'.format(n_poles), '{}'.format(frequency)
+        ]
+
+        if n_poles == 2:
+            effect_args.append('{}q'.format(width_q))
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('highpass')
+
+    def lowpass(self, frequency, width_q=0.707, n_poles=2):
+        '''Apply a low-pass filter with 3dB point frequency. The filter can be
+        either single-pole or double-pole. The filters roll off at 6dB per pole
+        per octave (20dB per pole per decade).
+
+        Parameters
+        ----------
+        frequency : float
+            The filter's cutoff frequency in Hz.
+        width_q : float, default=0.707
+            The filter's width as a Q-factor. Applies only when n_poles=2.
+            The default gives a Butterworth response.
+        n_poles : int, default=2
+            The number of poles in the filter. Must be either 1 or 2
+
+        See Also
+        --------
+        highpass, equalizer, sinc
+
+        '''
+        if not is_number(frequency) or frequency <= 0:
+            raise ValueError("frequency must be a positive number.")
+
+        if not is_number(width_q) or width_q <= 0:
+            raise ValueError("width_q must be a positive number.")
+
+        if n_poles not in [1, 2]:
+            raise ValueError("n_poles must be 1 or 2.")
+
+        effect_args = [
+            'lowpass', '-{}'.format(n_poles), '{}'.format(frequency)
+        ]
+
+        if n_poles == 2:
+            effect_args.append('{}q'.format(width_q))
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('lowpass')
 
     def hilbert(self):
         raise NotImplementedError
