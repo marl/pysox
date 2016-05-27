@@ -175,6 +175,35 @@ class TestTransformerPreview(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+class TestTransformerAllpass(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.allpass(500.0)
+
+        actual_args = tfm.effects
+        expected_args = ['allpass', '500.0', '2.0q']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['allpass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.allpass(0)
+
+    def test_width_q_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.allpass(500.0, width_q='a')
+
+
 class TestTransformerCompand(unittest.TestCase):
 
     def test_default(self):
