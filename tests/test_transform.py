@@ -204,6 +204,85 @@ class TestTransformerAllpass(unittest.TestCase):
             tfm.allpass(500.0, width_q='a')
 
 
+class TestTransformerBandpass(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.bandpass(500.0)
+
+        actual_args = tfm.effects
+        expected_args = ['bandpass', '500.0', '2.0q']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['bandpass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_constant_skirt(self):
+        tfm = new_transformer()
+        tfm.bandpass(500.0, constant_skirt=True)
+
+        actual_args = tfm.effects
+        expected_args = ['bandpass', '-c', '500.0', '2.0q']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['bandpass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bandpass(0)
+
+    def test_width_q_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bandpass(500.0, width_q='a')
+
+    def test_constant_skirt_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bandpass(500.0, constant_skirt=0)
+
+
+class TestTransformerBandreject(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.bandreject(500.0)
+
+        actual_args = tfm.effects
+        expected_args = ['bandreject', '500.0', '2.0q']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['bandreject']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bandreject(0)
+
+    def test_width_q_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bandreject(500.0, width_q='a')
+
+
 class TestTransformerCompand(unittest.TestCase):
 
     def test_default(self):
