@@ -283,6 +283,40 @@ class TestTransformerBandreject(unittest.TestCase):
             tfm.bandreject(500.0, width_q='a')
 
 
+class TestTransformerBass(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.bass(-20.0)
+
+        actual_args = tfm.effects
+        expected_args = ['bass', '-20.0', '100.0', '0.5s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['bass']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bass('x')
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bass(20.0, frequency=0)
+
+    def test_slope_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bass(5.0, slope=0)
+
+
 class TestTransformerCompand(unittest.TestCase):
 
     def test_default(self):
@@ -1311,6 +1345,40 @@ class TestTransformerTempo(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.tempo(1.5, quick=1)
+
+
+class TestTransformerTreble(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.treble(20.0)
+
+        actual_args = tfm.effects
+        expected_args = ['treble', '20.0', '3000.0', '0.5s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['treble']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_db_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.treble('x')
+
+    def test_frequency_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.treble(-20.0, frequency=0)
+
+    def test_slope_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.treble(-20, slope=0)
 
 
 class TestTransformerTrim(unittest.TestCase):
