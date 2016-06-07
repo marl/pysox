@@ -5,7 +5,7 @@ Python wrapper around sox. [Read the Docs here](http://pysox.readthedocs.org).
 [![Coverage Status](https://coveralls.io/repos/github/rabitt/pysox/badge.svg?branch=master)](https://coveralls.io/github/rabitt/pysox?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/resampy/badge/?version=latest)](http://pysox.readthedocs.io/en/latest/?badge=latest)
 
-![GitHub Logo](https://s-media-cache-ak0.pinimg.com/736x/62/6f/bc/626fbcae9618eccee1c4c7c947bf9d94.jpg)
+![PySocks](https://s-media-cache-ak0.pinimg.com/736x/62/6f/bc/626fbcae9618eccee1c4c7c947bf9d94.jpg)
 
 
 # Install
