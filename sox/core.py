@@ -8,6 +8,14 @@ from . import NO_SOX
 SOXI_ARGS = ['b', 'c', 'a', 'D', 'e', 't', 's', 'r']
 
 
+def enquote_filepath(fpath):
+    """Wrap a filepath in double-quotes to protect difficult characters.
+    """
+    if ' ' in fpath:
+        fpath = '"{}"'.format(fpath.strip("'").strip('"'))
+    return fpath
+
+
 def sox(args):
     '''Pass an argument list to SoX.
 
@@ -55,6 +63,7 @@ def sox(args):
 class SoxError(Exception):
     '''Exception to be raised when SoX exits with non-zero status.
     '''
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
@@ -105,7 +114,7 @@ def soxi(filepath, argument):
 
     args = ['soxi']
     args.append("-{}".format(argument))
-    args.append(filepath)
+    args.append(enquote_filepath(filepath))
 
     try:
         shell_output = subprocess.check_output(

@@ -9,6 +9,7 @@ def relpath(f):
     return os.path.join(os.path.dirname(__file__), f)
 
 
+SPACEY_FILE = relpath("data/annoying filename (derp).wav")
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE_INVALID = relpath('data/input.xyz')
 INPUT_FILE_CORRUPT = relpath('data/empty.aiff')
@@ -101,6 +102,11 @@ class TestSoxi(unittest.TestCase):
     def test_base_case(self):
         actual = core.soxi(INPUT_FILE, 's')
         expected = '441000'
+        self.assertEqual(expected, actual)
+
+    def test_spacey_wav(self):
+        actual = core.soxi(SPACEY_FILE, 's')
+        expected = '80000'
         self.assertEqual(expected, actual)
 
     def test_invalid_argument(self):

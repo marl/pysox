@@ -33,12 +33,12 @@ class TestTransformDefault(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_input_filepath(self):
-        expected = 'data/input.wav'
+        expected = INPUT_FILE
         actual = self.transformer.input_filepath
         self.assertEqual(expected, actual)
 
     def test_output_filepath(self):
-        expected = 'data/output.wav'
+        expected = OUTPUT_FILE
         actual = self.transformer.output_filepath
         self.assertEqual(expected, actual)
 

@@ -78,6 +78,11 @@ class TestDuration(unittest.TestCase):
         expected = 10.0
         self.assertEqual(expected, actual)
 
+    def test_spacey_wav(self):
+        actual = file_info.duration(SPACEY_FILE)
+        expected = 10.0
+        self.assertEqual(expected, actual)
+
     def test_aiff(self):
         actual = file_info.duration(INPUT_FILE2)
         expected = 10.0
