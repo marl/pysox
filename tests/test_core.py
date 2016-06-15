@@ -1,13 +1,18 @@
 import unittest
+import os
 
 from sox import core
-from sox.core import SoxError
 from sox.core import SoxiError
 
-INPUT_FILE = 'data/input.wav'
-INPUT_FILE_INVALID = 'data/input.xyz'
-INPUT_FILE_CORRUPT = 'data/empty.aiff'
-OUTPUT_FILE = 'data/output.wav'
+
+def relpath(f):
+    return os.path.join(os.path.dirname(__file__), f)
+
+
+INPUT_FILE = relpath('data/input.wav')
+INPUT_FILE_INVALID = relpath('data/input.xyz')
+INPUT_FILE_CORRUPT = relpath('data/empty.aiff')
+OUTPUT_FILE = relpath('data/output.wav')
 
 
 class TestSox(unittest.TestCase):

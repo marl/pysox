@@ -1,10 +1,16 @@
 import unittest
+import os
 
 from sox import transform
 from sox.core import SoxError
 
-INPUT_FILE = 'data/input.wav'
-OUTPUT_FILE = 'data/output.wav'
+
+def relpath(f):
+    return os.path.join(os.path.dirname(__file__), f)
+
+
+INPUT_FILE = relpath('data/input.wav')
+OUTPUT_FILE = relpath('data/output.wav')
 
 
 def new_transformer():

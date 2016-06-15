@@ -1,14 +1,20 @@
 import unittest
+import os
 
 from sox import combine
 from sox.core import SoxError
 
-INPUT_WAV = 'data/input.wav'
-INPUT_WAV2 = 'data/input2.wav'
-INPUT_WAV3 = 'data/input3.wav'
-INPUT_AIFF = 'data/input.aiff'
-INPUT_FILE_INVALID = 'data/input.xyz'
-OUTPUT_FILE = 'data/output.wav'
+
+def relpath(f):
+    return os.path.join(os.path.dirname(__file__), f)
+
+
+INPUT_WAV = relpath('data/input.wav')
+INPUT_WAV2 = relpath('data/input2.wav')
+INPUT_WAV3 = relpath('data/input3.wav')
+INPUT_AIFF = relpath('data/input.aiff')
+INPUT_FILE_INVALID = relpath('data/input.xyz')
+OUTPUT_FILE = relpath('data/output.wav')
 
 
 def new_combiner(combiner='concatenate'):
@@ -27,12 +33,12 @@ class TestCombineDefault(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_input_filepath_list(self):
-        expected = ['data/input.wav', 'data/input.wav']
+        expected = [INPUT_WAV, INPUT_WAV]
         actual = self.cbn.input_filepath_list
         self.assertEqual(expected, actual)
 
     def test_output_filepath(self):
-        expected = 'data/output.wav'
+        expected = OUTPUT_FILE
         actual = self.cbn.output_filepath
         self.assertEqual(expected, actual)
 
@@ -71,7 +77,7 @@ class TestCombineDefault(unittest.TestCase):
         actual_result = self.cbn.build()
         self.assertEqual(expected_result, actual_result)
 
-        expected = ['-v', '1', 'data/input.wav', '-v', '1', 'data/input.wav']
+        expected = ['-v', '1', INPUT_WAV, '-v', '1', INPUT_WAV]
         actual = self.cbn.input_args
         self.assertEqual(expected, actual)
 
@@ -145,7 +151,7 @@ class TestSetInputFormatList(unittest.TestCase):
         self.assertEqual(expected_res, actual_res)
 
         expected_input_args = [
-            '-v', '1', 'data/input.wav', '-v', '1', 'data/input.wav'
+            '-v', '1', INPUT_WAV, '-v', '1', INPUT_WAV
         ]
         actual_input_args = cbn.input_args
         self.assertEqual(expected_input_args, actual_input_args)
@@ -164,7 +170,7 @@ class TestSetInputFormatList(unittest.TestCase):
         self.assertEqual(expected_res, actual_res)
 
         expected_input_args = [
-            '-v', '0.5', 'data/input.wav', '-v', '1.1', 'data/input.wav'
+            '-v', '0.5', INPUT_WAV, '-v', '1.1', INPUT_WAV
         ]
         actual_input_args = cbn.input_args
         self.assertEqual(expected_input_args, actual_input_args)
@@ -183,7 +189,7 @@ class TestSetInputFormatList(unittest.TestCase):
         self.assertEqual(expected_res, actual_res)
 
         expected_input_args = [
-            '-v', '0.5', 'data/input.wav', '-v', '1.1', 'data/input.wav'
+            '-v', '0.5', INPUT_WAV, '-v', '1.1', INPUT_WAV
         ]
         actual_input_args = cbn.input_args
         self.assertEqual(expected_input_args, actual_input_args)
@@ -202,8 +208,8 @@ class TestSetInputFormatList(unittest.TestCase):
         self.assertEqual(expected_res, actual_res)
 
         expected_input_args = [
-            '-v', '0.5', 'data/input.wav', '-v', '1.1', 'data/input.wav',
-            '-v', '1', 'data/input.wav'
+            '-v', '0.5', INPUT_WAV, '-v', '1.1', INPUT_WAV,
+            '-v', '1', INPUT_WAV
         ]
         actual_input_args = cbn.input_args
         self.assertEqual(expected_input_args, actual_input_args)
