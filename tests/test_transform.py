@@ -1186,6 +1186,163 @@ class TestTransformerRate(unittest.TestCase):
             tfm.rate(44100.0, quality='foo')
 
 
+class TestTransformerReverb(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.reverb()
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '50', '50', '100', '100', '0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['reverb']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_reverberance_valid(self):
+        tfm = new_transformer()
+        tfm.reverb(reverberance=90)
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '90', '50', '100', '100', '0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_reverberance_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.reverb(reverberance=150)
+
+    def test_high_freq_damping_valid(self):
+        tfm = new_transformer()
+        tfm.reverb(high_freq_damping=10)
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '50', '10', '100', '100', '0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_high_freq_damping_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.reverb(high_freq_damping='a')
+
+    def test_room_scale_valid(self):
+        tfm = new_transformer()
+        tfm.reverb(room_scale=10)
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '50', '50', '10', '100', '0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_room_scale_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.reverb(room_scale=-100)
+
+    def test_stereo_depth_valid(self):
+        tfm = new_transformer()
+        tfm.reverb(stereo_depth=50)
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '50', '50', '100', '50', '0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_stereo_depth_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.reverb(stereo_depth=101)
+
+    def test_pre_delay_valid(self):
+        tfm = new_transformer()
+        tfm.reverb(pre_delay=10)
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '50', '50', '100', '100', '10', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_pre_delay_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.reverb(pre_delay=-1)
+
+    def test_wet_gain_valid(self):
+        tfm = new_transformer()
+        tfm.reverb(wet_gain=5)
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '50', '50', '100', '100', '0', '5']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_wet_gain_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.reverb(wet_gain='z')
+
+    def test_wet_only_valid(self):
+        tfm = new_transformer()
+        tfm.reverb(wet_only=True)
+
+        actual_args = tfm.effects
+        expected_args = ['reverb', '-w', '50', '50', '100', '100', '0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_wet_only_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.reverb(wet_only=6)
+
+
+class TestTransformerReverse(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.reverse()
+
+        actual_args = tfm.effects
+        expected_args = ['reverse']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['reverse']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+
 class TestTransformerSilence(unittest.TestCase):
 
     def test_default(self):
