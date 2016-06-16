@@ -1,10 +1,17 @@
 import unittest
+import os
 
 from sox import transform
 from sox.core import SoxError
 
-INPUT_FILE = 'data/input.wav'
-OUTPUT_FILE = 'data/output.wav'
+
+def relpath(f):
+    return os.path.join(os.path.dirname(__file__), f)
+
+
+SPACEY_FILE = relpath("data/annoying filename (derp).wav")
+INPUT_FILE = relpath('data/input.wav')
+OUTPUT_FILE = relpath('data/output.wav')
 
 
 def new_transformer():
@@ -27,12 +34,12 @@ class TestTransformDefault(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_input_filepath(self):
-        expected = 'data/input.wav'
+        expected = INPUT_FILE
         actual = self.transformer.input_filepath
         self.assertEqual(expected, actual)
 
     def test_output_filepath(self):
-        expected = 'data/output.wav'
+        expected = OUTPUT_FILE
         actual = self.transformer.output_filepath
         self.assertEqual(expected, actual)
 
@@ -151,7 +158,27 @@ class TestTransformerBuild(unittest.TestCase):
         self.transformer_invalid = transform.Transformer(
             INPUT_FILE, OUTPUT_FILE
         )
-        self.transformer_invalid.input_filepath = 'data/asdf.wav'
+        self.transformer_invalid.input_filepath = 'blah/asdf.wav'
+
+    def test_valid(self):
+        status = self.transformer_valid.build()
+        self.assertTrue(status)
+
+    def test_invalid(self):
+        with self.assertRaises(SoxError):
+            self.transformer_invalid.build()
+
+
+class TestTransformerBuildSpacey(unittest.TestCase):
+    def setUp(self):
+        self.transformer_valid = transform.Transformer(
+            SPACEY_FILE, OUTPUT_FILE
+        )
+
+        self.transformer_invalid = transform.Transformer(
+            SPACEY_FILE, OUTPUT_FILE
+        )
+        self.transformer_invalid.input_filepath = 'blah/asdf.wav'
 
     def test_valid(self):
         status = self.transformer_valid.build()

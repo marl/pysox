@@ -1,13 +1,20 @@
 import unittest
+import os
 
 from sox import file_info
 from sox.core import SoxError
 
-INPUT_FILE = 'data/input.wav'
-INPUT_FILE2 = 'data/input.aiff'
-EMPTY_FILE = 'data/empty.wav'
-INPUT_FILE_INVALID = 'data/input.xyz'
-OUTPUT_FILE = 'data/output.wav'
+
+def relpath(f):
+    return os.path.join(os.path.dirname(__file__), f)
+
+
+SPACEY_FILE = relpath("data/annoying filename (derp).wav")
+INPUT_FILE = relpath('data/input.wav')
+INPUT_FILE2 = relpath('data/input.aiff')
+EMPTY_FILE = relpath('data/empty.wav')
+INPUT_FILE_INVALID = relpath('data/input.xyz')
+OUTPUT_FILE = relpath('data/output.wav')
 
 
 class TestBitrate(unittest.TestCase):
@@ -26,6 +33,7 @@ class TestBitrate(unittest.TestCase):
         actual = file_info.bitrate(EMPTY_FILE)
         expected = 16
         self.assertEqual(expected, actual)
+
 
 class TestChannels(unittest.TestCase):
 
@@ -67,6 +75,11 @@ class TestDuration(unittest.TestCase):
 
     def test_wav(self):
         actual = file_info.duration(INPUT_FILE)
+        expected = 10.0
+        self.assertEqual(expected, actual)
+
+    def test_spacey_wav(self):
+        actual = file_info.duration(SPACEY_FILE)
         expected = 10.0
         self.assertEqual(expected, actual)
 
@@ -152,6 +165,7 @@ class TestSampleRate(unittest.TestCase):
         expected = 44100
         self.assertEqual(expected, actual)
 
+
 class TestFileExtension(unittest.TestCase):
 
     def test_ext1(self):
@@ -184,6 +198,11 @@ class TestValidateInputFile(unittest.TestCase):
 
     def test_valid(self):
         actual = file_info.validate_input_file(INPUT_FILE)
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_valid_wspaces(self):
+        actual = file_info.validate_input_file(SPACEY_FILE)
         expected = None
         self.assertEqual(expected, actual)
 
@@ -237,11 +256,14 @@ class TestValidateOutputFile(unittest.TestCase):
 
     def test_not_writeable(self):
         with self.assertRaises(IOError):
-            file_info.validate_output_file('data/notafolder/output.wav')
+            file_info.validate_output_file('notafolder/output.wav')
 
     def test_invalid_format(self):
         with self.assertRaises(SoxError):
-            file_info.validate_output_file('data/output.xyz')
+            file_info.validate_output_file('output.xyz')
+
+        with self.assertRaises(SoxError):
+            file_info.validate_output_file('./output.xyz')
 
     def test_file_exists(self):
         actual = file_info.validate_output_file(INPUT_FILE)

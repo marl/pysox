@@ -8,10 +8,11 @@ This module requires that SoX is installed.
 from __future__ import print_function
 import logging
 
-from .core import sox
-from .core import SoxError
 from .core import is_number
 from .core import play
+from .core import sox
+from .core import SoxError
+
 from . import file_info
 
 logging.basicConfig(level=logging.DEBUG)

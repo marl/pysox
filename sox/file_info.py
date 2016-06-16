@@ -228,7 +228,12 @@ def validate_output_file(output_filepath):
         The output filepath.
 
     '''
-    if not os.access(os.path.dirname(output_filepath), os.W_OK):
+
+    nowrite_conditions = [
+        bool(os.path.dirname(output_filepath)),
+        not os.access(os.path.dirname(output_filepath), os.W_OK)]
+
+    if all(nowrite_conditions):
         raise IOError(
             "SoX cannot write to output_filepath {}".format(output_filepath)
         )
