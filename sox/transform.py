@@ -488,7 +488,7 @@ class Transformer(object):
 
         Parameters
         ----------
-        amount : floata
+        amount : float
             Amount of enhancement between 0 and 100.
 
         See Also
@@ -539,8 +539,26 @@ class Transformer(object):
                 raise ValueError("samplerate must be a positive number.")
             self.rate(samplerate)
 
-    def dcshift(self):
-        raise NotImplementedError
+    def dcshift(self, shift=0.0):
+        '''Apply a DC shift to the audio.
+
+        Parameters
+        ----------
+        amount : float
+            Amount of enhancement between 0 and 100.
+
+        See Also
+        --------
+        highpass
+
+        '''
+        if not is_number(shift) or shift < -2 or shift > 2:
+            raise ValueError('shift must be a number between -2 and 2.')
+
+        effect_args = ['dcshift', '{}'.format(shift)]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('dcshift')
 
     def deemph(self):
         raise NotImplementedError

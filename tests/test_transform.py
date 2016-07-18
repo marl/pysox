@@ -684,6 +684,40 @@ class TestTransformerConvert(unittest.TestCase):
             tfm.convert(bitdepth=17)
 
 
+class TestTransformerDcshift(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.dcshift()
+
+        actual_args = tfm.effects
+        expected_args = ['dcshift', '0.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['dcshift']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_shift_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.dcshift(shift='a')
+
+    def test_invalid_shift_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.dcshift(shift=-3)
+
+    def test_invalid_shift_big(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.dcshift(shift=5)
+
+
 class TestTransformerEqualizer(unittest.TestCase):
 
     def test_default(self):
