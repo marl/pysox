@@ -747,6 +747,27 @@ class TestTransformerDownsample(unittest.TestCase):
             tfm.downsample(factor=0)
 
 
+class TestTransformerEarwax(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+
+        tfm.channels(2)
+        tfm.earwax()
+
+        actual_args = tfm.effects
+        expected_args = ['channels', '2', 'earwax']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['channels', 'earwax']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+
 class TestTransformerEqualizer(unittest.TestCase):
 
     def test_default(self):
