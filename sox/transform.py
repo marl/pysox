@@ -482,8 +482,27 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('compand')
 
-    def contrast(self):
-        raise NotImplementedError
+    def contrast(self, amount=75):
+        '''Comparable with compression, this effect modifies an audio signal to
+        make it sound louder.
+
+        Parameters
+        ----------
+        amount : floata
+            Amount of enhancement between 0 and 100.
+
+        See Also
+        --------
+        compand, mcompand
+
+        '''
+        if not is_number(amount) or amount < 0 or amount > 100:
+            raise ValueError('amount must be a number between 0 and 100.')
+
+        effect_args = ['contrast', '{}'.format(amount)]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('contrast')
 
     def convert(self, samplerate=None, n_channels=None, bitdepth=None):
         '''Converts output audio to the specified format.

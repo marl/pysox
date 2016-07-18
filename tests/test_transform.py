@@ -417,6 +417,40 @@ class TestTransformerChannels(unittest.TestCase):
             tfm.channels(1.2)
 
 
+class TestTransformerContrast(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.contrast()
+
+        actual_args = tfm.effects
+        expected_args = ['contrast', '75']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['contrast']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_amount_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.contrast(amount='a')
+
+    def test_invalid_amount_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.contrast(amount=-1)
+
+    def test_invalid_amount_big(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.contrast(amount=101)
+
+
 class TestTransformerCompand(unittest.TestCase):
 
     def test_default(self):
