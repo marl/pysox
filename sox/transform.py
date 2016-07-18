@@ -372,8 +372,31 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('biquad')
 
-    def channels(self):
-        raise NotImplementedError
+    def channels(self, n_channels):
+        '''Change the number of channels in the audio signal. If decreasing the
+        number of channels it mixes channels together, if increasing the number
+        of channels it duplicates.
+
+        Note: This overrides arguments used in the convert effect!
+
+        Parameters
+        ----------
+        n_channels : int
+            Desired number of channels.
+
+        See Also
+        --------
+        convert
+
+        '''
+        if not isinstance(n_channels, int) or n_channels <= 0:
+            raise ValueError('n_channels must be a positive integer.')
+
+        effect_args = ['channels', '{}'.format(n_channels)]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('channels')
+
 
     def chorus(self):
         raise NotImplementedError
@@ -462,15 +485,15 @@ class Transformer(object):
     def contrast(self):
         raise NotImplementedError
 
-    def convert(self, samplerate=None, channels=None, bitdepth=None):
+    def convert(self, samplerate=None, n_channels=None, bitdepth=None):
         '''Converts output audio to the specified format.
 
         Parameters
         ----------
         samplerate : float, default=None
             Desired samplerate. If None, defaults to the same as input.
-        channels : int, default=None
-            Desired channels. If None, defaults to the same as input.
+        n_channels : int, default=None
+            Desired number of channels. If None, defaults to the same as input.
         bitdepth : int, default=None
             Desired bitdepth. If None, defaults to the same as input.
 
@@ -486,12 +509,12 @@ class Transformer(object):
                     "bitdepth must be one of {}.".format(str(bitdepths))
                 )
             self.output_format.extend(['-b', '{}'.format(bitdepth)])
-        if channels is not None:
-            if not isinstance(channels, int) or channels <= 0:
+        if n_channels is not None:
+            if not isinstance(n_channels, int) or n_channels <= 0:
                 raise ValueError(
-                    "channels must be a positive integer."
+                    "n_channels must be a positive integer."
                 )
-            self.output_format.extend(['-c', '{}'.format(channels)])
+            self.output_format.extend(['-c', '{}'.format(n_channels)])
         if samplerate is not None:
             if not is_number(samplerate) or samplerate <= 0:
                 raise ValueError("samplerate must be a positive number.")

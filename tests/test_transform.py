@@ -393,6 +393,30 @@ class TestTransformerBiquad(unittest.TestCase):
             tfm.biquad([0, 0, 0], [1, None, 0])
 
 
+class TestTransformerChannels(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.channels(3)
+
+        actual_args = tfm.effects
+        expected_args = ['channels', '3']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['channels']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_nchannels(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.channels(1.2)
+
+
 class TestTransformerCompand(unittest.TestCase):
 
     def test_default(self):
@@ -588,7 +612,7 @@ class TestTransformerConvert(unittest.TestCase):
 
     def test_channels_valid(self):
         tfm = new_transformer()
-        tfm.convert(channels=3)
+        tfm.convert(n_channels=3)
 
         actual_args = tfm.output_format
         expected_args = ['-c', '3']
@@ -601,12 +625,12 @@ class TestTransformerConvert(unittest.TestCase):
     def test_channels_invalid1(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.convert(channels=0)
+            tfm.convert(n_channels=0)
 
     def test_channels_invalid2(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.convert(channels=1.5)
+            tfm.convert(n_channels=1.5)
 
     def test_bitdepth_valid(self):
         tfm = new_transformer()
