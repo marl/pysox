@@ -10,7 +10,7 @@ python:
 addons:
   apt:
     packages:
-    - sox-14.3.2-3
+    - sox
 
 # command to install dependencies
 install:
