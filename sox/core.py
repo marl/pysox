@@ -43,6 +43,8 @@ def sox(args):
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         out, err = process_handle.communicate()
+        out = out.decode("utf-8")
+        err = err.decode("utf-8")
 
         status = process_handle.returncode
         return status, out, err

@@ -347,8 +347,6 @@ class TestParseStat(unittest.TestCase):
             'Mrs.   Pancakes': None
         }
         actual = file_info._parse_stat(stat_output)
-        print expected
-        print actual
         self.assertEqual(expected, actual)
 
     def test_real_output(self):
