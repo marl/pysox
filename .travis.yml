@@ -7,8 +7,13 @@ python:
   - "3.4"
   - "3.5"
 
-before_install:
-  - apt-get install sox=14.3.2-3
+addons:
+  apt:
+    packages:
+    - sox
+
+# before_install:
+#   - apt-get install sox=14.3.2-3
 
 # addons:
 #   apt:
