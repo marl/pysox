@@ -344,6 +344,55 @@ class TestTransformerBass(unittest.TestCase):
             tfm.bass(5.0, slope=0)
 
 
+class TestTransformerBiquad(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.biquad([0, 0, 0], [1, 0, 0])
+
+        actual_args = tfm.effects
+        expected_args = ['biquad', '0', '0', '0', '1', '0', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['biquad']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build()
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_b_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.biquad('a', [1, 0, 0])
+
+    def test_a_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.biquad([0, 0, 0], 1)
+
+    def test_b_wrong_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.biquad([0, 0, 0, 0], [1, 0, 0])
+
+    def test_a_wrong_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.biquad([0, 0, 0], [1, 0, 0, 0])
+
+    def test_b_non_num(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.biquad([0, 0, 'a'], [1, 0, 0])
+
+    def test_a_non_num(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.biquad([0, 0, 0], [1, None, 0])
+
+
 class TestTransformerCompand(unittest.TestCase):
 
     def test_default(self):
