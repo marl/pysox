@@ -5,7 +5,7 @@ if __name__ == "__main__":
     setup(
         name='sox',
 
-        version='1.1.4',
+        version='1.1.5',
 
         description='Python wrapper around SoX.',
 

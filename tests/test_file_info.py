@@ -15,6 +15,7 @@ INPUT_FILE2 = relpath('data/input.aiff')
 EMPTY_FILE = relpath('data/empty.wav')
 INPUT_FILE_INVALID = relpath('data/input.xyz')
 OUTPUT_FILE = relpath('data/output.wav')
+SILENT_FILE = relpath('data/silence.wav')
 
 
 class TestBitrate(unittest.TestCase):
@@ -166,6 +167,24 @@ class TestSampleRate(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+class TestSilent(unittest.TestCase):
+
+    def test_nonsilent(self):
+        actual = file_info.silent(INPUT_FILE)
+        expected = False
+        self.assertEqual(expected, actual)
+
+    def test_silent(self):
+        actual = file_info.silent(SILENT_FILE)
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_empty(self):
+        actual = file_info.silent(EMPTY_FILE)
+        expected = True
+        self.assertEqual(expected, actual)
+
+
 class TestFileExtension(unittest.TestCase):
 
     def test_ext1(self):
@@ -269,3 +288,97 @@ class TestValidateOutputFile(unittest.TestCase):
         actual = file_info.validate_output_file(INPUT_FILE)
         expected = None
         self.assertEqual(expected, actual)
+
+
+class TestStat(unittest.TestCase):
+
+    def test_silent_file(self):
+        expected = {
+            'Samples read': 627456,
+            'Length (seconds)': 14.228027,
+            'Scaled by': 2147483647.0,
+            'Maximum amplitude': 0.010895,
+            'Minimum amplitude': -0.004883,
+            'Midline amplitude': 0.003006,
+            'Mean    norm': 0.000137,
+            'Mean    amplitude': -0.000062,
+            'RMS     amplitude': 0.000200,
+            'Maximum delta': 0.015778,
+            'Minimum delta': 0.000000,
+            'Mean    delta': 0.000096,
+            'RMS     delta': 0.000124,
+            'Rough   frequency': 4349,
+            'Volume adjustment': 91.787
+        }
+        actual = file_info.stat(SILENT_FILE)
+        self.assertEqual(expected, actual)
+
+
+class TestStatCall(unittest.TestCase):
+
+    def test_stat_call(self):
+        expected = ('Samples read:            627456\nLength (seconds):'
+                    '     14.228027\nScaled by:         2147483647.0\nMax'
+                    'imum amplitude:     0.010895\nMinimum amplitude:    '
+                    '-0.004883\nMidline amplitude:     0.003006\nMean    '
+                    'norm:          0.000137\nMean    amplitude:    -0.000'
+                    '062\nRMS     amplitude:     0.000200\nMaximum delta:  '
+                    '       0.015778\nMinimum delta:         0.000000\nMean'
+                    '    delta:         0.000096\nRMS     delta:         '
+                    '0.000124\nRough   frequency:         4349\nVolume '
+                    'adjustment:       91.787\n')
+        actual = file_info._stat_call(SILENT_FILE)
+        self.assertEqual(expected, actual)
+
+
+class TestParseStat(unittest.TestCase):
+
+    def test_empty(self):
+        stat_output = ''
+        expected = {}
+        actual = file_info._parse_stat(stat_output)
+        self.assertEqual(expected, actual)
+
+    def test_simple(self):
+        stat_output = 'Blorg: 1.2345\nPlombus:   -0.0001\nMrs.   Pancakes: a'
+        expected = {
+            'Blorg': 1.2345,
+            'Plombus': -0.0001,
+            'Mrs.   Pancakes': None
+        }
+        actual = file_info._parse_stat(stat_output)
+        print expected
+        print actual
+        self.assertEqual(expected, actual)
+
+    def test_real_output(self):
+        stat_output = ('Samples read:            627456\nLength (seconds):'
+                       '     14.228027\nScaled by:         2147483647.0\nMax'
+                       'imum amplitude:     0.010895\nMinimum amplitude:    '
+                       '-0.004883\nMidline amplitude:     0.003006\nMean    '
+                       'norm:          0.000137\nMean    amplitude:    -0.000'
+                       '062\nRMS     amplitude:     0.000200\nMaximum delta:  '
+                       '       0.015778\nMinimum delta:         0.000000\nMean'
+                       '    delta:         0.000096\nRMS     delta:         '
+                       '0.000124\nRough   frequency:         4349\nVolume '
+                       'adjustment:       91.787\n')
+        expected = {
+            'Samples read': 627456,
+            'Length (seconds)': 14.228027,
+            'Scaled by': 2147483647.0,
+            'Maximum amplitude': 0.010895,
+            'Minimum amplitude': -0.004883,
+            'Midline amplitude': 0.003006,
+            'Mean    norm': 0.000137,
+            'Mean    amplitude': -0.000062,
+            'RMS     amplitude': 0.000200,
+            'Maximum delta': 0.015778,
+            'Minimum delta': 0.000000,
+            'Mean    delta': 0.000096,
+            'RMS     delta': 0.000124,
+            'Rough   frequency': 4349,
+            'Volume adjustment': 91.787
+        }
+        actual = file_info._parse_stat(stat_output)
+        self.assertEqual(expected, actual)
+

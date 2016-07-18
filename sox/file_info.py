@@ -5,6 +5,7 @@ import os
 
 from .core import VALID_FORMATS
 from .core import soxi
+from .core import sox
 from .core import SoxError
 
 
@@ -171,6 +172,34 @@ def sample_rate(input_filepath):
     return float(output)
 
 
+def silent(input_filepath, threshold=0.001):
+    '''
+    Determine if an input file is silent.
+
+    Parameters
+    ----------
+    input_filepath : str
+        The input filepath.
+    threshold : float
+        Threshold for determining silence
+
+    Returns
+    -------
+    is_silent : bool
+        True if file is determined silent.
+    '''
+    validate_input_file(input_filepath)
+    stat_dictionary = stat(input_filepath)
+    mean_norm = stat_dictionary['Mean    norm']
+    if mean_norm is not float('nan'):
+        if mean_norm >= threshold:
+            return False
+        else:
+            return True
+    else:
+        return True
+
+
 def validate_input_file(input_filepath):
     '''Input file validation function. Checks that file exists and can be
     processed by SoX.
@@ -262,3 +291,69 @@ def file_extension(filepath):
 
     '''
     return os.path.splitext(filepath)[1][1:]
+
+
+def stat(filepath):
+    '''Returns a dictionary of audio statistics.
+
+    Parameters
+    ----------
+    filepath : str
+        File path.
+
+    Returns
+    -------
+    stat_dictionary : dict
+        Dictionary of audio statistics.
+    '''
+    stat_output = _stat_call(filepath)
+    stat_dictionary = _parse_stat(stat_output)
+    return stat_dictionary
+
+
+def _stat_call(filepath):
+    '''Call sox's stat function.
+
+    Parameters
+    ----------
+    filepath : str
+        File path.
+
+    Returns
+    -------
+    stat_output : str
+        Sox output from stderr.
+    '''
+    validate_input_file(filepath)
+    args = ['sox', filepath, '-n', 'stat']
+    _, _, stat_output = sox(args)
+    return stat_output
+
+
+def _parse_stat(stat_output):
+    '''Parse the string output from sox's stat function
+
+    Parameters
+    ----------
+    stat_output : str
+        Sox output from stderr.
+
+    Returns
+    -------
+    stat_dictionary : dict
+        Dictionary of audio statistics.
+    '''
+    lines = stat_output.split('\n')
+    stat_dict = {}
+    for line in lines:
+        split_line = line.split(':')
+        if len(split_line) == 2:
+            key = split_line[0]
+            val = split_line[1].strip(' ')
+            try:
+                val = float(val)
+            except ValueError:
+                val = None
+            stat_dict[key] = val
+
+    return stat_dict
