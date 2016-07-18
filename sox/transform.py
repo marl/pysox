@@ -154,16 +154,20 @@ class Transformer(object):
         args.append(self.output_filepath)
         args.extend(self.effects)
 
-        status = sox(args)
+        status, out, err = sox(args)
 
-        if status is False:
-            raise SoxError
+        if status != 0:
+            raise SoxError(
+                "Stdout: {}\nStderr: {}".format(out, err)
+            )
         else:
             logging.info(
                 "Created %s with effects: %s",
                 self.output_filepath,
                 " ".join(self.effects_log)
             )
+            if out is not None:
+                logging.info("[SoX] {}".format(out))
             return True
 
     def preview(self):

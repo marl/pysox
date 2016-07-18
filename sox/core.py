@@ -43,21 +43,15 @@ def sox(args):
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         out, err = process_handle.communicate()
+
         status = process_handle.returncode
-        if out is not None:
-            logging.info(out)
-        if status == 0:
-            return True
-        else:
-            logging.info("SoX returned with error code %s", status)
-            logging.info(out)
-            logging.info(err)
-            return False
+        return status, out, err
+
     except OSError as error_msg:
         logging.error("OSError: SoX failed! %s", error_msg)
     except TypeError as error_msg:
         logging.error("TypeError: %s", error_msg)
-    return False
+    return 1, None, None
 
 
 class SoxError(Exception):

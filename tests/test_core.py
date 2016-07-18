@@ -20,39 +20,50 @@ class TestSox(unittest.TestCase):
 
     def test_base_case(self):
         args = ['sox', INPUT_FILE, OUTPUT_FILE]
-        expected = True
+        expected = (0, '', '')
         actual = core.sox(args)
         self.assertEqual(expected, actual)
 
     def test_base_case2(self):
         args = [INPUT_FILE, OUTPUT_FILE]
-        expected = True
+        expected = (0, '', '')
         actual = core.sox(args)
         self.assertEqual(expected, actual)
 
     def test_sox_fail_bad_args(self):
         args = ['-asdf']
-        expected = False
-        actual = core.sox(args)
-        self.assertEqual(expected, actual)
+        expected_status = 1
+        actual_status, actual_out, acutal_err = core.sox(args)
+        self.assertEqual(expected_status, actual_status)
+        self.assertNotEqual('', actual_out)
+        self.assertNotEqual('', acutal_err)
 
     def test_sox_fail_bad_files(self):
         args = ['asdf.wav', 'flululu.wav']
-        expected = False
-        actual = core.sox(args)
-        self.assertEqual(expected, actual)
+        expected_status = 2
+        expected_out = ''
+        actual_status, actual_out, acutal_err = core.sox(args)
+        self.assertEqual(expected_status, actual_status)
+        self.assertEqual(expected_out, actual_out)
+        self.assertNotEqual('', acutal_err)
 
     def test_sox_fail_bad_ext(self):
         args = ['input.wav', 'output.xyz']
-        expected = False
-        actual = core.sox(args)
-        self.assertEqual(expected, actual)
+        expected_status = 2
+        expected_out = ''
+        actual_status, actual_out, acutal_err = core.sox(args)
+        self.assertEqual(expected_status, actual_status)
+        self.assertEqual(expected_out, actual_out)
+        self.assertNotEqual('', acutal_err)
 
     def test_sox_fail_corrupt_file(self):
         args = [INPUT_FILE_CORRUPT, OUTPUT_FILE]
-        expected = False
-        actual = core.sox(args)
-        self.assertEqual(expected, actual)
+        expected_status = 2
+        expected_out = ''
+        actual_status, actual_out, acutal_err = core.sox(args)
+        self.assertEqual(expected_status, actual_status)
+        self.assertEqual(expected_out, actual_out)
+        self.assertNotEqual('', acutal_err)
 
 
 class TestGetValidFormats(unittest.TestCase):

@@ -182,18 +182,22 @@ class Combiner(Transformer):
         args.append(self.output_filepath)
         args.extend(self.effects)
 
-        status = sox(args)
+        status, out, err = sox(args)
 
-        if status is False:
-            raise SoxError
-
-        logging.info(
-            "Created %s with combiner %s and  effects: %s",
-            self.output_filepath,
-            self.combine,
-            " ".join(self.effects_log)
-        )
-        return True
+        if status != 0:
+            raise SoxError(
+                "Stdout: {}\nStderr: {}".format(out, err)
+            )
+        else:
+            logging.info(
+                "Created %s with combiner %s and  effects: %s",
+                self.output_filepath,
+                self.combine,
+                " ".join(self.effects_log)
+            )
+            if out is not None:
+                logging.info("[SoX] {}".format(out))
+            return True
 
 
 def _validate_combine_type(combine_type):
