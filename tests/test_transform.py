@@ -149,6 +149,117 @@ class TestTransformSetGlobals(unittest.TestCase):
             self.tfm.set_globals(verbosity='debug')
 
 
+class TestTransformSetInputFormat(unittest.TestCase):
+
+    def setUp(self):
+        self.tfm = new_transformer()
+
+    def test_defaults(self):
+        actual = self.tfm.input_format
+        expected = []
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_file_type(self):
+        self.tfm.set_input_format(file_type='wav')
+        actual = self.tfm.input_format
+        expected = ['-t', 'wav']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_file_type_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(file_type='blurg')
+
+    def test_rate(self):
+        self.tfm.set_input_format(rate=44100)
+        actual = self.tfm.input_format
+        expected = ['-r', '44100']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_rate_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(rate='a')
+
+    def test_rate_invalid2(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(rate=0)
+
+    def test_bits(self):
+        self.tfm.set_input_format(bits=32)
+        actual = self.tfm.input_format
+        expected = ['-b', '32']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_bits_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(bits='a')
+
+    def test_bits_invalid2(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(bits=-4)
+
+    def test_channels(self):
+        self.tfm.set_input_format(channels=2)
+        actual = self.tfm.input_format
+        expected = ['-c', '2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_channels_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(channels='a')
+
+    def test_channels_invalid2(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(channels=-2)
+
+    def test_encoding(self):
+        self.tfm.set_input_format(encoding='signed-integer')
+        actual = self.tfm.input_format
+        expected = ['-e', 'signed-integer']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_encoding_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(encoding='16-bit-signed-integer')
+
+    def test_ignore_length(self):
+        self.tfm.set_input_format(ignore_length=True)
+        actual = self.tfm.input_format
+        expected = ['--ignore-length']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_ignore_length_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(ignore_length=None)
+
+
 class TestTransformerBuild(unittest.TestCase):
     def setUp(self):
         self.transformer_valid = transform.Transformer(

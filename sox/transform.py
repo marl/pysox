@@ -12,12 +12,17 @@ from .core import is_number
 from .core import play
 from .core import sox
 from .core import SoxError
+from .core import VALID_FORMATS
 
 from . import file_info
 
 logging.basicConfig(level=logging.DEBUG)
 
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
+ENCODING_VALS = [
+    'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
+    'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
+]
 
 
 class Transformer(object):
@@ -142,6 +147,127 @@ class Transformer(object):
         global_args.append('-V{}'.format(verbosity))
 
         self.globals = global_args
+
+    def set_input_format(self, file_type=None, rate=None, bits=None,
+                         channels=None, encoding=None, ignore_length=False):
+        '''Sets input file format arguments. This is primarily useful when
+        dealing with audio files without a file extension. Overwrites any
+        previously set input file arguments.
+
+        If this function is not explicity called the input format is inferred
+        from the file extension or the file's header.
+
+        Parameters
+        ----------
+        file_type : str or None, default=None
+            The file type of the input audio file. Should be the same as what
+            the file extension would be, for ex. 'mp3' or 'wav'.
+        rate : float or None, default=None
+            The sample rate of the input audio file. If None the sample rate
+            is inferred.
+        bits : int or None, default=None
+            The number of bits per sample. If None, the number of bits per
+            sample is inferred.
+        channels : int or None, default=None
+            The number of channels in the audio file. If None the number of
+            channels is inferred.
+        encoding : str or None, default=None
+            The audio encoding type. Sometimes needed with file-types that
+            support more than one encoding type. One of:
+                * signed-integer : PCM data stored as signed (‘two’s
+                    complement’) integers. Commonly used with a 16 or 24−bit
+                    encoding size. A value of 0 represents minimum signal
+                    power.
+                * unsigned-integer : PCM data stored as unsigned integers.
+                    Commonly used with an 8-bit encoding size. A value of 0
+                    represents maximum signal power.
+                * floating-point : PCM data stored as IEEE 753 single precision
+                    (32-bit) or double precision (64-bit) floating-point
+                    (‘real’) numbers. A value of 0 represents minimum signal
+                    power.
+                * a-law : International telephony standard for logarithmic
+                    encoding to 8 bits per sample. It has a precision
+                    equivalent to roughly 13-bit PCM and is sometimes encoded
+                    with reversed bit-ordering.
+                * u-law : North American telephony standard for logarithmic
+                    encoding to 8 bits per sample. A.k.a. μ-law. It has a
+                    precision equivalent to roughly 14-bit PCM and is sometimes
+                    encoded with reversed bit-ordering.
+                * oki-adpcm : OKI (a.k.a. VOX, Dialogic, or Intel) 4-bit ADPCM;
+                    it has a precision equivalent to roughly 12-bit PCM. ADPCM
+                    is a form of audio compression that has a good compromise
+                    between audio quality and encoding/decoding speed.
+                * ima-adpcm : IMA (a.k.a. DVI) 4-bit ADPCM; it has a precision
+                    equivalent to roughly 13-bit PCM.
+                * ms-adpcm : Microsoft 4-bit ADPCM; it has a precision
+                    equivalent to roughly 14-bit PCM.
+                * gsm-full-rate : GSM is currently used for the vast majority
+                    of the world’s digital wireless telephone calls. It
+                    utilises several audio formats with different bit-rates and
+                    associated speech quality. SoX has support for GSM’s
+                    original 13kbps ‘Full Rate’ audio format. It is usually
+                    CPU-intensive to work with GSM audio.
+        ignore_length : bool, default=False
+            If True, overrides an (incorrect) audio length given in an audio
+            file’s header. If this option is given then SoX will keep reading
+            audio until it reaches the end of the input file.
+
+        '''
+        if file_type not in VALID_FORMATS + [None]:
+            raise ValueError(
+                'Invalid file_type. Must be one of {}'.format(VALID_FORMATS)
+            )
+
+        if not is_number(rate) and rate is not None:
+            raise ValueError('rate must be a float or None')
+
+        if rate is not None and rate <= 0:
+            raise ValueError('rate must be a positive number')
+
+        if not isinstance(bits, int) and bits is not None:
+            raise ValueError('bits must be an int or None')
+
+        if bits is not None and bits <= 0:
+            raise ValueError('bits must be a positive number')
+
+        if not isinstance(channels, int) and channels is not None:
+            raise ValueError('channels must be an int or None')
+
+        if channels is not None and channels <= 0:
+            raise ValueError('channels must be a positive number')
+
+        if encoding not in ENCODING_VALS + [None]:
+            raise ValueError(
+                'Invalid encoding. Must be one of {}'.format(ENCODING_VALS)
+            )
+
+        if not isinstance(ignore_length, bool):
+            raise ValueError('ignore_length must be a boolean')
+
+        input_format = []
+
+        if file_type is not None:
+            input_format.extend(['-t', '{}'.format(file_type)])
+
+        if rate is not None:
+            input_format.extend(['-r', '{}'.format(rate)])
+
+        if bits is not None:
+            input_format.extend(['-b', '{}'.format(bits)])
+
+        if channels is not None:
+            input_format.extend(['-c', '{}'.format(channels)])
+
+        if encoding is not None:
+            input_format.extend(['-e', '{}'.format(encoding)])
+
+        if ignore_length:
+            input_format.append('--ignore-length')
+
+        self.input_format = input_format
+
+    def set_output_format(self):
+        pass
 
     def build(self):
         '''Builds the output_file by executing the current set of commands.
