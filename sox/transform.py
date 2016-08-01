@@ -7,6 +7,7 @@ This module requires that SoX is installed.
 
 from __future__ import print_function
 import logging
+import os
 
 from .core import is_number
 from .core import play
@@ -266,8 +267,131 @@ class Transformer(object):
 
         self.input_format = input_format
 
-    def set_output_format(self):
-        pass
+    def set_output_format(self, file_type=None, rate=None, bits=None,
+                          channels=None, encoding=None, comments=None,
+                          append_comments=True):
+        '''Sets output file format arguments. These arguments will overwrite
+        any format related arguments supplied by other effects (e.g. rate).
+
+        If this function is not explicity called the output format is inferred
+        from the file extension or the file's header.
+
+        Parameters
+        ----------
+        file_type : str or None, default=None
+            The file type of the output audio file. Should be the same as what
+            the file extension would be, for ex. 'mp3' or 'wav'.
+        rate : float or None, default=None
+            The sample rate of the output audio file. If None the sample rate
+            is inferred.
+        bits : int or None, default=None
+            The number of bits per sample. If None, the number of bits per
+            sample is inferred.
+        channels : int or None, default=None
+            The number of channels in the audio file. If None the number of
+            channels is inferred.
+        encoding : str or None, default=None
+            The audio encoding type. Sometimes needed with file-types that
+            support more than one encoding type. One of:
+                * signed-integer : PCM data stored as signed (‘two’s
+                    complement’) integers. Commonly used with a 16 or 24−bit
+                    encoding size. A value of 0 represents minimum signal
+                    power.
+                * unsigned-integer : PCM data stored as unsigned integers.
+                    Commonly used with an 8-bit encoding size. A value of 0
+                    represents maximum signal power.
+                * floating-point : PCM data stored as IEEE 753 single precision
+                    (32-bit) or double precision (64-bit) floating-point
+                    (‘real’) numbers. A value of 0 represents minimum signal
+                    power.
+                * a-law : International telephony standard for logarithmic
+                    encoding to 8 bits per sample. It has a precision
+                    equivalent to roughly 13-bit PCM and is sometimes encoded
+                    with reversed bit-ordering.
+                * u-law : North American telephony standard for logarithmic
+                    encoding to 8 bits per sample. A.k.a. μ-law. It has a
+                    precision equivalent to roughly 14-bit PCM and is sometimes
+                    encoded with reversed bit-ordering.
+                * oki-adpcm : OKI (a.k.a. VOX, Dialogic, or Intel) 4-bit ADPCM;
+                    it has a precision equivalent to roughly 12-bit PCM. ADPCM
+                    is a form of audio compression that has a good compromise
+                    between audio quality and encoding/decoding speed.
+                * ima-adpcm : IMA (a.k.a. DVI) 4-bit ADPCM; it has a precision
+                    equivalent to roughly 13-bit PCM.
+                * ms-adpcm : Microsoft 4-bit ADPCM; it has a precision
+                    equivalent to roughly 14-bit PCM.
+                * gsm-full-rate : GSM is currently used for the vast majority
+                    of the world’s digital wireless telephone calls. It
+                    utilises several audio formats with different bit-rates and
+                    associated speech quality. SoX has support for GSM’s
+                    original 13kbps ‘Full Rate’ audio format. It is usually
+                    CPU-intensive to work with GSM audio.
+        comments : str or None, default=None
+            If not None, the string is added as a comment in the header of the
+            output audio file. If None, no comments are added.
+        append_comments : bool, default=True
+            If True, comment strings are appended to SoX's default comments. If
+            False, the supplied comment replaces the existing comment.
+
+        '''
+        if file_type not in VALID_FORMATS + [None]:
+            raise ValueError(
+                'Invalid file_type. Must be one of {}'.format(VALID_FORMATS)
+            )
+
+        if not is_number(rate) and rate is not None:
+            raise ValueError('rate must be a float or None')
+
+        if rate is not None and rate <= 0:
+            raise ValueError('rate must be a positive number')
+
+        if not isinstance(bits, int) and bits is not None:
+            raise ValueError('bits must be an int or None')
+
+        if bits is not None and bits <= 0:
+            raise ValueError('bits must be a positive number')
+
+        if not isinstance(channels, int) and channels is not None:
+            raise ValueError('channels must be an int or None')
+
+        if channels is not None and channels <= 0:
+            raise ValueError('channels must be a positive number')
+
+        if encoding not in ENCODING_VALS + [None]:
+            raise ValueError(
+                'Invalid encoding. Must be one of {}'.format(ENCODING_VALS)
+            )
+
+        if comments is not None and not isinstance(comments, str):
+            raise ValueError('comments must be a string or None')
+
+        if not isinstance(append_comments, bool):
+            raise ValueError('append_comments must be a boolean')
+
+        output_format = []
+
+        if file_type is not None:
+            output_format.extend(['-t', '{}'.format(file_type)])
+
+        if rate is not None:
+            output_format.extend(['-r', '{}'.format(rate)])
+
+        if bits is not None:
+            output_format.extend(['-b', '{}'.format(bits)])
+
+        if channels is not None:
+            output_format.extend(['-c', '{}'.format(channels)])
+
+        if encoding is not None:
+            output_format.extend(['-e', '{}'.format(encoding)])
+
+        if comments is not None:
+            if append_comments:
+                output_format.extend(['--add-comment', comments])
+            else:
+                output_format.extend(['--comment', comments])
+
+        self.output_format = output_format
 
     def build(self):
         '''Builds the output_file by executing the current set of commands.

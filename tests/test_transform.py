@@ -260,6 +260,131 @@ class TestTransformSetInputFormat(unittest.TestCase):
             self.tfm.set_input_format(ignore_length=None)
 
 
+class TestTransformSetOutputFormat(unittest.TestCase):
+
+    def setUp(self):
+        self.tfm = new_transformer()
+
+    def test_defaults(self):
+        actual = self.tfm.output_format
+        expected = []
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_file_type(self):
+        self.tfm.set_output_format(file_type='wav')
+        actual = self.tfm.output_format
+        expected = ['-t', 'wav']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_file_type_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(file_type='blurg')
+
+    def test_rate(self):
+        self.tfm.set_output_format(rate=44100)
+        actual = self.tfm.output_format
+        expected = ['-r', '44100']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_rate_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(rate='a')
+
+    def test_rate_invalid2(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(rate=0)
+
+    def test_bits(self):
+        self.tfm.set_output_format(bits=32)
+        actual = self.tfm.output_format
+        expected = ['-b', '32']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_bits_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(bits='a')
+
+    def test_bits_invalid2(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(bits=-4)
+
+    def test_channels(self):
+        self.tfm.set_output_format(channels=2)
+        actual = self.tfm.output_format
+        expected = ['-c', '2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_channels_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(channels='a')
+
+    def test_channels_invalid2(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(channels=-2)
+
+    def test_encoding(self):
+        self.tfm.set_output_format(encoding='signed-integer')
+        actual = self.tfm.output_format
+        expected = ['-e', 'signed-integer']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_encoding_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(encoding='16-bit-signed-integer')
+
+    def test_comments(self):
+        self.tfm.set_output_format(comments='asdf')
+        actual = self.tfm.output_format
+        expected = ['--add-comment', 'asdf']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_comments_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(comments=2)
+
+    def test_append_comments(self):
+        self.tfm.set_output_format(comments='asdf', append_comments=False)
+        actual = self.tfm.output_format
+        expected = ['--comment', 'asdf']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build()
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_append_comments_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_output_format(append_comments=None)
+
+
 class TestTransformerBuild(unittest.TestCase):
     def setUp(self):
         self.transformer_valid = transform.Transformer(
