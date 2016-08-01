@@ -24,7 +24,11 @@ or install [from source](https://sourceforge.net/projects/sox/files/sox/).
 
 
 
-To install this module:
+To install the most up to data release of this module via PyPi:
+
+```pip install sox```
+
+To install the master branch:
 
 ```pip install git+https://github.com/rabitt/pysox.git```
 
