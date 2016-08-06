@@ -28,6 +28,7 @@ if __name__ == "__main__":
         license='MIT',
 
         install_requires=[
+            'pyyaml'
         ],
 
         extras_require={
