@@ -111,7 +111,7 @@ class TestSoxi(unittest.TestCase):
 
     def test_invalid_argument(self):
         with self.assertRaises(ValueError):
-            core.soxi(INPUT_FILE, None)
+            core.soxi(INPUT_FILE, 'booger')
 
     def test_nonexistent_file(self):
         with self.assertRaises(SoxiError):
@@ -124,6 +124,20 @@ class TestSoxi(unittest.TestCase):
     def test_soxi_error(self):
         with self.assertRaises(SoxiError):
             core.soxi(INPUT_FILE_CORRUPT, 's')
+
+    def test_null_arg(self):
+        actual = core.soxi(INPUT_FILE, None)
+        expected = {
+            'Bit Rate': '706k',
+            'Channels': 1,
+            'Duration': '00:00:10.00 = 441000 samples = 750 CDDA sectors',
+            'File Size': '882k',
+            'Input File': INPUT_FILE,
+            'Precision': '16-bit',
+            'Sample Encoding': '16-bit Signed Integer PCM',
+            'Sample Rate': 44100}
+
+        self.assertEqual(expected, actual)
 
 
 @unittest.skip("Tests pass on local machine and fail on remote.")

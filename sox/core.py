@@ -2,6 +2,7 @@
 import logging
 import subprocess
 from subprocess import CalledProcessError
+import yaml
 
 from . import NO_SOX
 
@@ -92,28 +93,29 @@ def _get_valid_formats():
 VALID_FORMATS = _get_valid_formats()
 
 
-def soxi(filepath, argument):
+def soxi(filepath, argument=None):
     ''' Base call to Soxi.
 
     Parameters
     ----------
     filepath : str
         Path to audio file.
+
     argument : str
         Argument to pass to Soxi.
 
     Returns
     -------
-    shell_output : str
-        command line output of Soxi
-
+    shell_output : str, or dict if argument is None
+        Command line output of Soxi
     '''
 
-    if argument not in SOXI_ARGS:
+    if argument is not None and argument not in SOXI_ARGS:
         raise ValueError("Invalid argument '{}' to Soxi".format(argument))
 
     args = ['soxi']
-    args.append("-{}".format(argument))
+    if argument:
+        args.append("-{}".format(argument))
     args.append(enquote_filepath(filepath))
 
     try:
@@ -127,7 +129,11 @@ def soxi(filepath, argument):
 
     shell_output = shell_output.decode("utf-8")
 
-    return str(shell_output).strip('\n')
+    if argument is None:
+        result = yaml.load(str(shell_output))
+    else:
+        result = str(shell_output).strip('\n')
+    return result
 
 
 def play(args):
@@ -175,6 +181,7 @@ def play(args):
 class SoxiError(Exception):
     '''Exception to be raised when SoXi exits with non-zero status.
     '''
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
