@@ -213,6 +213,22 @@ class TestFileExtension(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+class TestInfo(unittest.TestCase):
+
+    def test_dictionary(self):
+        actual = file_info.info(INPUT_FILE)
+        expected = {
+            'channels': 1,
+            'sample_rate': 44100.0,
+            'bitrate': 16,
+            'duration': 10.0,
+            'num_samples': 441000,
+            'encoding': 'Signed Integer PCM',
+            'silent': False            
+        }
+        self.assertEqual(expected, actual)
+
+
 class TestValidateInputFile(unittest.TestCase):
 
     def test_valid(self):
