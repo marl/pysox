@@ -25,9 +25,6 @@ Transformer Example
 Combiner Example
 ================
 
-The previous example operates on monophonic signals, but resampy also supports stereo
-resampling, as demonstrated below.
-
 .. code-block:: python
     :linenos:
 
