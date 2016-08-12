@@ -58,128 +58,32 @@ class Combiner(Transformer):
         If None, input files will be combined at their original volumes.
 
     '''
-    def __init__(self, input_filepath_list, output_filepath,
-                 combine_type, input_volumes=None):
+    def __init__(self):
+        super(Combiner, self).__init__()
+
+    def build(self, input_filepath_list, output_filepath, combine_type,
+              input_volumes=None):
+        ''' Executes SoX. '''
         file_info.validate_input_file_list(input_filepath_list)
         file_info.validate_output_file(output_filepath)
         _validate_combine_type(combine_type)
         _validate_volumes(input_volumes)
 
-        super(Combiner, self).__init__(input_filepath_list[0], output_filepath)
+        input_format_list = _build_input_format_list(
+            input_filepath_list, input_volumes
+        )
 
-        self.combine = ['--combine', combine_type]
-        self.input_filepath_list = input_filepath_list
+        _validate_file_formats(input_filepath_list, combine_type)
 
-        self._validate_file_formats()
-
-        self.input_format_list = []
-        self._set_input_format_list(input_volumes)
-
-        self.input_args = []
-
-    def _validate_file_formats(self):
-        '''Validate that combine method can be performed with given files.
-        Raises IOError if input file formats are incompatible.
-        '''
-        self._validate_sample_rates()
-
-        if self.combine == ['--combine', 'concatenate']:
-            self._validate_num_channels()
-
-    def _validate_sample_rates(self):
-        ''' Check if files in input file list have the same sample rate
-        '''
-        sample_rates = [
-            file_info.sample_rate(f) for f in self.input_filepath_list
-        ]
-        if not core.all_equal(sample_rates):
-            raise IOError(
-                "Input files do not have the same sample rate. The {} combine "
-                "type requires that all files have the same sample rate"
-                .format(self.combine)
-            )
-
-    def _validate_num_channels(self):
-        ''' Check if files in input file list have the same number of channels
-        '''
-        channels = [
-            file_info.channels(f) for f in self.input_filepath_list
-        ]
-        if not core.all_equal(channels):
-            raise IOError(
-                "Input files do not have the same number of channels. The "
-                "{} combine type requires that all files have the same "
-                "number of channels"
-                .format(self.combine)
-            )
-
-    def _set_input_format_list(self, input_volumes):
-        '''Set input formats given input_volumes.
-
-        Parameters
-        ----------
-        input_volumes : list of float, default=None
-            List of volumes to be applied upon combining input files. Volumes
-            are applied to the input files in order.
-            If None, input files will be combined at their original volumes.
-
-        '''
-        n_inputs = len(self.input_filepath_list)
-        input_format_list = []
-        if input_volumes is None:
-            vols = [1] * n_inputs
-        else:
-            n_volumes = len(input_volumes)
-            if n_volumes < n_inputs:
-                logging.warning(
-                    'Volumes were only specified for %s out of %s files.'
-                    'The last %s files will remain at their original volumes.',
-                    n_volumes, n_inputs, n_inputs - n_volumes
-                )
-                vols = input_volumes + [1] * (n_inputs - n_volumes)
-            elif n_volumes > n_inputs:
-                logging.warning(
-                    '%s volumes were specified but only %s input files exist.'
-                    'The last %s volumes will be ignored.',
-                    n_volumes, n_inputs, n_volumes - n_inputs
-                )
-                vols = input_volumes[:n_inputs]
-            else:
-                vols = [v for v in input_volumes]
-
-        for vol in vols:
-            input_format_list.append(['-v', '{}'.format(vol)])
-
-        self.input_format_list = input_format_list
-
-    def _build_input_args(self):
-        ''' Builds input arguments by stitching input filepaths and input
-        formats together.
-        '''
-        if len(self.input_format_list) != len(self.input_filepath_list):
-            raise ValueError(
-                "input_format_list & input_filepath_list are not the same size"
-            )
-
-        input_args = []
-        zipped = zip(self.input_filepath_list, self.input_format_list)
-        for input_file, input_fmt in zipped:
-            input_args.extend(input_fmt)
-            input_args.append(input_file)
-
-        self.input_args = input_args
-
-    def build(self):
-        ''' Executes SoX. '''
         args = []
         args.extend(self.globals)
-        args.extend(self.combine)
+        args.extend(['--combine', combine_type])
 
-        self._build_input_args()
-        args.extend(self.input_args)
+        input_args = _build_input_args(input_filepath_list, input_format_list)
+        args.extend(input_args)
 
         args.extend(self.output_format)
-        args.append(self.output_filepath)
+        args.append(output_filepath)
         args.extend(self.effects)
 
         status, out, err = sox(args)
@@ -191,13 +95,110 @@ class Combiner(Transformer):
         else:
             logging.info(
                 "Created %s with combiner %s and  effects: %s",
-                self.output_filepath,
-                self.combine,
+                output_filepath,
+                combine_type,
                 " ".join(self.effects_log)
             )
             if out is not None:
                 logging.info("[SoX] {}".format(out))
             return True
+
+
+def _validate_file_formats(input_filepath_list, combine_type):
+    '''Validate that combine method can be performed with given files.
+    Raises IOError if input file formats are incompatible.
+    '''
+    _validate_sample_rates(input_filepath_list, combine_type)
+
+    if combine_type == 'concatenate':
+        _validate_num_channels(input_filepath_list, combine_type)
+
+
+def _validate_sample_rates(input_filepath_list, combine_type):
+    ''' Check if files in input file list have the same sample rate
+    '''
+    sample_rates = [
+        file_info.sample_rate(f) for f in input_filepath_list
+    ]
+    if not core.all_equal(sample_rates):
+        raise IOError(
+            "Input files do not have the same sample rate. The {} combine "
+            "type requires that all files have the same sample rate"
+            .format(combine_type)
+        )
+
+
+def _validate_num_channels(input_filepath_list, combine_type):
+    ''' Check if files in input file list have the same number of channels
+    '''
+    channels = [
+        file_info.channels(f) for f in input_filepath_list
+    ]
+    if not core.all_equal(channels):
+        raise IOError(
+            "Input files do not have the same number of channels. The "
+            "{} combine type requires that all files have the same "
+            "number of channels"
+            .format(combine_type)
+        )
+
+
+def _build_input_format_list(input_filepath_list, input_volumes):
+    '''Set input formats given input_volumes.
+
+    Parameters
+    ----------
+    input_volumes : list of float, default=None
+        List of volumes to be applied upon combining input files. Volumes
+        are applied to the input files in order.
+        If None, input files will be combined at their original volumes.
+
+    '''
+    n_inputs = len(input_filepath_list)
+    input_format_list = []
+    if input_volumes is None:
+        vols = [1] * n_inputs
+    else:
+        n_volumes = len(input_volumes)
+        if n_volumes < n_inputs:
+            logging.warning(
+                'Volumes were only specified for %s out of %s files.'
+                'The last %s files will remain at their original volumes.',
+                n_volumes, n_inputs, n_inputs - n_volumes
+            )
+            vols = input_volumes + [1] * (n_inputs - n_volumes)
+        elif n_volumes > n_inputs:
+            logging.warning(
+                '%s volumes were specified but only %s input files exist.'
+                'The last %s volumes will be ignored.',
+                n_volumes, n_inputs, n_volumes - n_inputs
+            )
+            vols = input_volumes[:n_inputs]
+        else:
+            vols = [v for v in input_volumes]
+
+    for vol in vols:
+        input_format_list.append(['-v', '{}'.format(vol)])
+
+    return input_format_list
+
+
+def _build_input_args(input_filepath_list, input_format_list):
+    ''' Builds input arguments by stitching input filepaths and input
+    formats together.
+    '''
+    if len(input_format_list) != len(input_filepath_list):
+        raise ValueError(
+            "input_format_list & input_filepath_list are not the same size"
+        )
+
+    input_args = []
+    zipped = zip(input_filepath_list, input_format_list)
+    for input_file, input_fmt in zipped:
+        input_args.extend(input_fmt)
+        input_args.append(input_file)
+
+    return input_args
 
 
 def _validate_combine_type(combine_type):

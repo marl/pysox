@@ -7,7 +7,6 @@ This module requires that SoX is installed.
 
 from __future__ import print_function
 import logging
-import os
 
 from .core import is_number
 from .core import play
@@ -65,12 +64,7 @@ class Transformer(object):
 
     '''
 
-    def __init__(self, input_filepath, output_filepath):
-        file_info.validate_input_file(input_filepath)
-        file_info.validate_output_file(output_filepath)
-
-        self.input_filepath = input_filepath
-        self.output_filepath = output_filepath
+    def __init__(self):
 
         self.input_format = []
         self.output_format = []
@@ -393,15 +387,18 @@ class Transformer(object):
 
         self.output_format = output_format
 
-    def build(self):
+    def build(self, input_filepath, output_filepath):
         '''Builds the output_file by executing the current set of commands.
         '''
+        file_info.validate_input_file(input_filepath)
+        file_info.validate_output_file(output_filepath)
+
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
-        args.append(self.input_filepath)
+        args.append(input_filepath)
         args.extend(self.output_format)
-        args.append(self.output_filepath)
+        args.append(output_filepath)
         args.extend(self.effects)
 
         status, out, err = sox(args)
@@ -413,20 +410,20 @@ class Transformer(object):
         else:
             logging.info(
                 "Created %s with effects: %s",
-                self.output_filepath,
+                output_filepath,
                 " ".join(self.effects_log)
             )
             if out is not None:
                 logging.info("[SoX] {}".format(out))
             return True
 
-    def preview(self):
+    def preview(self, input_filepath):
         '''Play a preview of the output with the current set of effects
         '''
         args = ["play", "--no-show-progress"]
         args.extend(self.globals)
         args.extend(self.input_format)
-        args.append(self.input_filepath)
+        args.append(input_filepath)
         args.extend(self.effects)
 
         play(args)

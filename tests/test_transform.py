@@ -15,32 +15,16 @@ OUTPUT_FILE = relpath('data/output.wav')
 
 
 def new_transformer():
-    return transform.Transformer(
-        INPUT_FILE, OUTPUT_FILE
-    )
+    return transform.Transformer()
 
 
 class TestTransformDefault(unittest.TestCase):
     def setUp(self):
-        self.input_filepath = INPUT_FILE
-        self.output_filepath = OUTPUT_FILE
-        self.transformer = transform.Transformer(
-            self.input_filepath, self.output_filepath
-        )
+        self.transformer = transform.Transformer()
 
     def test_globals(self):
         expected = ['-D', '-V2']
         actual = self.transformer.globals
-        self.assertEqual(expected, actual)
-
-    def test_input_filepath(self):
-        expected = INPUT_FILE
-        actual = self.transformer.input_filepath
-        self.assertEqual(expected, actual)
-
-    def test_output_filepath(self):
-        expected = OUTPUT_FILE
-        actual = self.transformer.output_filepath
         self.assertEqual(expected, actual)
 
     def test_input_format(self):
@@ -74,7 +58,7 @@ class TestTransformSetGlobals(unittest.TestCase):
         expected = ['-D', '-V2']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -84,7 +68,7 @@ class TestTransformSetGlobals(unittest.TestCase):
         expected = ['-V2']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -98,7 +82,7 @@ class TestTransformSetGlobals(unittest.TestCase):
         expected = ['-D', '-G', '-V2']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -112,7 +96,7 @@ class TestTransformSetGlobals(unittest.TestCase):
         expected = ['-D', '--multi-threaded', '-V2']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -126,7 +110,7 @@ class TestTransformSetGlobals(unittest.TestCase):
         expected = ['-D', '--replay-gain', 'track', '-V2']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -140,7 +124,7 @@ class TestTransformSetGlobals(unittest.TestCase):
         expected = ['-D', '-V0']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -159,7 +143,7 @@ class TestTransformSetInputFormat(unittest.TestCase):
         expected = []
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -169,7 +153,7 @@ class TestTransformSetInputFormat(unittest.TestCase):
         expected = ['-t', 'wav']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -183,7 +167,7 @@ class TestTransformSetInputFormat(unittest.TestCase):
         expected = ['-r', '44100']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -201,7 +185,7 @@ class TestTransformSetInputFormat(unittest.TestCase):
         expected = ['-b', '32']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -219,7 +203,7 @@ class TestTransformSetInputFormat(unittest.TestCase):
         expected = ['-c', '2']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -237,7 +221,7 @@ class TestTransformSetInputFormat(unittest.TestCase):
         expected = ['-e', 'signed-integer']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -251,7 +235,7 @@ class TestTransformSetInputFormat(unittest.TestCase):
         expected = ['--ignore-length']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -270,7 +254,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = []
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -280,7 +264,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = ['-t', 'wav']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -294,7 +278,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = ['-r', '44100']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -312,7 +296,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = ['-b', '32']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -330,7 +314,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = ['-c', '2']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -348,7 +332,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = ['-e', 'signed-integer']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -362,7 +346,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = ['--add-comment', 'asdf']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -376,7 +360,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected = ['--comment', 'asdf']
         self.assertEqual(expected, actual)
 
-        actual_result = self.tfm.build()
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -387,54 +371,29 @@ class TestTransformSetOutputFormat(unittest.TestCase):
 
 class TestTransformerBuild(unittest.TestCase):
     def setUp(self):
-        self.transformer_valid = transform.Transformer(
-            INPUT_FILE, OUTPUT_FILE
-        )
-
-        self.transformer_invalid = transform.Transformer(
-            INPUT_FILE, OUTPUT_FILE
-        )
-        self.transformer_invalid.input_filepath = 'blah/asdf.wav'
+        self.tfm = new_transformer()
 
     def test_valid(self):
-        status = self.transformer_valid.build()
+        status = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        self.assertTrue(status)
+
+    def test_valid_spacey(self):
+        status = self.tfm.build(SPACEY_FILE, OUTPUT_FILE)
         self.assertTrue(status)
 
     def test_invalid(self):
-        with self.assertRaises(SoxError):
-            self.transformer_invalid.build()
-
-
-class TestTransformerBuildSpacey(unittest.TestCase):
-    def setUp(self):
-        self.transformer_valid = transform.Transformer(
-            SPACEY_FILE, OUTPUT_FILE
-        )
-
-        self.transformer_invalid = transform.Transformer(
-            SPACEY_FILE, OUTPUT_FILE
-        )
-        self.transformer_invalid.input_filepath = 'blah/asdf.wav'
-
-    def test_valid(self):
-        status = self.transformer_valid.build()
-        self.assertTrue(status)
-
-    def test_invalid(self):
-        with self.assertRaises(SoxError):
-            self.transformer_invalid.build()
+        with self.assertRaises(IOError):
+            self.tfm.build('blah/asdf.wav', OUTPUT_FILE)
 
 
 class TestTransformerPreview(unittest.TestCase):
     def setUp(self):
-        self.transformer_valid = transform.Transformer(
-            INPUT_FILE, OUTPUT_FILE
-        )
-        self.transformer_valid.trim(0, 0.1)
+        self.tfm = new_transformer()
+        self.tfm.trim(0, 0.1)
 
     def test_valid(self):
         expected = None
-        actual = self.transformer_valid.preview()
+        actual = self.tfm.preview(INPUT_FILE)
         self.assertEqual(expected, actual)
 
 
@@ -452,7 +411,7 @@ class TestTransformerAllpass(unittest.TestCase):
         expected_log = ['allpass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -481,7 +440,7 @@ class TestTransformerBandpass(unittest.TestCase):
         expected_log = ['bandpass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -497,7 +456,7 @@ class TestTransformerBandpass(unittest.TestCase):
         expected_log = ['bandpass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -531,7 +490,7 @@ class TestTransformerBandreject(unittest.TestCase):
         expected_log = ['bandreject']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -560,7 +519,7 @@ class TestTransformerBass(unittest.TestCase):
         expected_log = ['bass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -594,7 +553,7 @@ class TestTransformerBiquad(unittest.TestCase):
         expected_log = ['biquad']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -643,7 +602,7 @@ class TestTransformerChannels(unittest.TestCase):
         expected_log = ['channels']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -667,7 +626,7 @@ class TestTransformerContrast(unittest.TestCase):
         expected_log = ['contrast']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -701,7 +660,7 @@ class TestTransformerCompand(unittest.TestCase):
         expected_log = ['compand']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -713,7 +672,7 @@ class TestTransformerCompand(unittest.TestCase):
         expected_args = ['compand', '0.5,0.8', '6.0:-70,-70,-60,-20,0,0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -735,7 +694,7 @@ class TestTransformerCompand(unittest.TestCase):
         expected_args = ['compand', '0.3,0.5', '6.0:-70,-70,-60,-20,0,0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -757,7 +716,7 @@ class TestTransformerCompand(unittest.TestCase):
         expected_args = ['compand', '1.0,0.5', '6.0:-70,-70,-60,-20,0,0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -769,7 +728,7 @@ class TestTransformerCompand(unittest.TestCase):
         expected_args = ['compand', '0.3,0.8', '-2:-70,-70,-60,-20,0,0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -781,7 +740,7 @@ class TestTransformerCompand(unittest.TestCase):
         expected_args = ['compand', '0.3,0.8', '-70,-70,-60,-20,0,0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -800,7 +759,7 @@ class TestTransformerCompand(unittest.TestCase):
         ]
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -855,7 +814,7 @@ class TestTransformerConvert(unittest.TestCase):
         expected_args = []
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -871,7 +830,7 @@ class TestTransformerConvert(unittest.TestCase):
         expected_log = ['rate']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -888,7 +847,7 @@ class TestTransformerConvert(unittest.TestCase):
         expected_args = ['-c', '3']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -910,7 +869,7 @@ class TestTransformerConvert(unittest.TestCase):
         expected_args = ['-b', '8']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -934,7 +893,7 @@ class TestTransformerDcshift(unittest.TestCase):
         expected_log = ['dcshift']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -969,7 +928,7 @@ class TestTransformerDownsample(unittest.TestCase):
         expected_log = ['downsample']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1000,7 +959,7 @@ class TestTransformerEarwax(unittest.TestCase):
         expected_log = ['channels', 'earwax']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1019,7 +978,7 @@ class TestTransformerEqualizer(unittest.TestCase):
         expected_log = ['equalizer']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1053,7 +1012,7 @@ class TestTransformerFade(unittest.TestCase):
         expected_log = ['fade']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1065,7 +1024,7 @@ class TestTransformerFade(unittest.TestCase):
         expected_args = ['fade', 'q', '1.2']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1082,7 +1041,7 @@ class TestTransformerFade(unittest.TestCase):
         expected_args = ['reverse', 'fade', 'q', '3', 'reverse']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1099,7 +1058,7 @@ class TestTransformerFade(unittest.TestCase):
         expected_args = ['fade', 'p', '1.5']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1123,7 +1082,7 @@ class TestTransformerGain(unittest.TestCase):
         expected_log = ['gain']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1135,7 +1094,7 @@ class TestTransformerGain(unittest.TestCase):
         expected_args = ['gain', '-n', '6']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1152,7 +1111,7 @@ class TestTransformerGain(unittest.TestCase):
         expected_args = ['gain', '0.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1169,7 +1128,7 @@ class TestTransformerGain(unittest.TestCase):
         expected_args = ['gain', '-n', '-l', '0.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1186,7 +1145,7 @@ class TestTransformerGain(unittest.TestCase):
         expected_args = ['gain', '-B', '-n', '0.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1210,7 +1169,7 @@ class TestTransformerHighpass(unittest.TestCase):
         expected_log = ['highpass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1226,7 +1185,7 @@ class TestTransformerHighpass(unittest.TestCase):
         expected_log = ['highpass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1260,7 +1219,7 @@ class TestTransformerLowpass(unittest.TestCase):
         expected_log = ['lowpass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1276,7 +1235,7 @@ class TestTransformerLowpass(unittest.TestCase):
         expected_log = ['lowpass']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1310,7 +1269,7 @@ class TestTransformerLoudness(unittest.TestCase):
         expected_log = ['loudness']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1322,7 +1281,7 @@ class TestTransformerLoudness(unittest.TestCase):
         expected_args = ['loudness', '0', '65.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1339,7 +1298,7 @@ class TestTransformerLoudness(unittest.TestCase):
         expected_args = ['loudness', '-10.0', '50']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1368,7 +1327,7 @@ class TestTransformerNorm(unittest.TestCase):
         expected_log = ['norm']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1380,7 +1339,7 @@ class TestTransformerNorm(unittest.TestCase):
         expected_args = ['norm', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1404,7 +1363,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         expected_log = ['overdrive']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1416,7 +1375,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         expected_args = ['overdrive', '2', '20.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1433,7 +1392,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         expected_args = ['overdrive', '20.0', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1457,7 +1416,7 @@ class TestTransformerPad(unittest.TestCase):
         expected_log = ['pad']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1469,7 +1428,7 @@ class TestTransformerPad(unittest.TestCase):
         expected_args = ['pad', '3', '0.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1486,7 +1445,7 @@ class TestTransformerPad(unittest.TestCase):
         expected_args = ['pad', '0.0', '0.2']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1510,7 +1469,7 @@ class TestTransformerPitch(unittest.TestCase):
         expected_log = ['pitch']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1522,7 +1481,7 @@ class TestTransformerPitch(unittest.TestCase):
         expected_args = ['pitch', '-300.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1534,7 +1493,7 @@ class TestTransformerPitch(unittest.TestCase):
         expected_args = ['pitch', '1300.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1551,7 +1510,7 @@ class TestTransformerPitch(unittest.TestCase):
         expected_args = ['pitch', '-q', '100.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1575,7 +1534,7 @@ class TestTransformerRate(unittest.TestCase):
         expected_log = ['rate']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1587,7 +1546,7 @@ class TestTransformerRate(unittest.TestCase):
         expected_args = ['rate', '-h', '1000.5']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1604,7 +1563,7 @@ class TestTransformerRate(unittest.TestCase):
         expected_args = ['rate', '-q', '44100.0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1628,7 +1587,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_log = ['reverb']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1640,7 +1599,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_args = ['reverb', '90', '50', '100', '100', '0', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1657,7 +1616,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_args = ['reverb', '50', '10', '100', '100', '0', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1674,7 +1633,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_args = ['reverb', '50', '50', '10', '100', '0', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1691,7 +1650,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_args = ['reverb', '50', '50', '100', '50', '0', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1708,7 +1667,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_args = ['reverb', '50', '50', '100', '100', '10', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1725,7 +1684,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_args = ['reverb', '50', '50', '100', '100', '0', '5']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1742,7 +1701,7 @@ class TestTransformerReverb(unittest.TestCase):
         expected_args = ['reverb', '-w', '50', '50', '100', '100', '0', '0']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1766,7 +1725,7 @@ class TestTransformerReverse(unittest.TestCase):
         expected_log = ['reverse']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1785,7 +1744,7 @@ class TestTransformerSilence(unittest.TestCase):
         expected_log = ['silence']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1797,7 +1756,7 @@ class TestTransformerSilence(unittest.TestCase):
         expected_args = ['silence', '1', '0.1', '0.1%']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1809,7 +1768,7 @@ class TestTransformerSilence(unittest.TestCase):
         expected_args = ['reverse', 'silence', '1', '0.1', '0.1%', 'reverse']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1826,7 +1785,7 @@ class TestTransformerSilence(unittest.TestCase):
         expected_args = ['silence', '1', '0.1', '10.5%', '-1', '0.1', '10.5%']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1848,7 +1807,7 @@ class TestTransformerSilence(unittest.TestCase):
         expected_args = ['silence', '1', '2', '0.1%', '-1', '2', '0.1%']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1867,7 +1826,7 @@ class TestTransformerSilence(unittest.TestCase):
         ]
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1891,7 +1850,7 @@ class TestTransformerTempo(unittest.TestCase):
         expected_log = ['tempo']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1903,7 +1862,7 @@ class TestTransformerTempo(unittest.TestCase):
         expected_args = ['tempo', '0.9']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1915,7 +1874,7 @@ class TestTransformerTempo(unittest.TestCase):
         expected_args = ['tempo', '0.1']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1932,7 +1891,7 @@ class TestTransformerTempo(unittest.TestCase):
         expected_args = ['tempo', '-m', '1.5']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1949,7 +1908,7 @@ class TestTransformerTempo(unittest.TestCase):
         expected_args = ['tempo', '-q', '1.5']
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -1973,7 +1932,7 @@ class TestTransformerTreble(unittest.TestCase):
         expected_log = ['treble']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -2007,7 +1966,7 @@ class TestTransformerTrim(unittest.TestCase):
         expected_log = ['trim']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build()
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
