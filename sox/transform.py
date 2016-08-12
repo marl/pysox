@@ -30,30 +30,7 @@ class Transformer(object):
     Class which allows multiple effects to be chained to create an output
     file, saved to output_filepath.
 
-    Parameters
-    ----------
-    input_filepath : str
-        Path to input audio file.
-    output_filepath : str
-        Path to desired output file. If a file already exists at the given
-        path, the file will be overwritten.
 
-    Attributes
-    ----------
-    input_filepath : str
-        Path to input audio file.
-    output_filepath : str
-        Path where the output file will be written.
-    input_format : list of str
-        Input file format arguments that will be passed to SoX.
-    output_format : list of str
-        Output file format arguments that will be bassed to SoX.
-    effects : list of str
-        Effects arguments that will be passed to SoX.
-    effects_log : list of str
-        Ordered sequence of effects applied.
-    globals : list of str
-        Global arguments that will be passed to SoX.
 
     Methods
     -------
@@ -389,6 +366,32 @@ class Transformer(object):
 
     def build(self, input_filepath, output_filepath):
         '''Builds the output_file by executing the current set of commands.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input audio file.
+        output_filepath : str
+            Path to desired output file. If a file already exists at the given
+            path, the file will be overwritten.
+
+        Attributes
+        ----------
+        input_filepath : str
+            Path to input audio file.
+        output_filepath : str
+            Path where the output file will be written.
+        input_format : list of str
+            Input file format arguments that will be passed to SoX.
+        output_format : list of str
+            Output file format arguments that will be bassed to SoX.
+        effects : list of str
+            Effects arguments that will be passed to SoX.
+        effects_log : list of str
+            Ordered sequence of effects applied.
+        globals : list of str
+            Global arguments that will be passed to SoX.
+
         '''
         file_info.validate_input_file(input_filepath)
         file_info.validate_output_file(output_filepath)
