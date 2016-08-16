@@ -2363,7 +2363,7 @@ class TestTransformerSwap(unittest.TestCase):
         expected_log = ['swap']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
