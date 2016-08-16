@@ -779,7 +779,6 @@ class Transformer(object):
         self.effects_log.append('chorus')
         return self
 
-
     def compand(self, attack_time=0.3, decay_time=0.8, soft_knee_db=6.0,
                 tf_points=[(-70, -70), (-60, -20), (0, 0)]):
         '''Compand (compress or expand) the dynamic range of the audio.
@@ -944,7 +943,29 @@ class Transformer(object):
         return self
 
     def deemph(self):
-        raise NotImplementedError
+        '''Apply Compact Disc (IEC 60908) de-emphasis (a treble attenuation
+        shelving filter). Pre-emphasis was applied in the mastering of some
+        CDs issued in the early 1980s. These included many classical music
+        albums, as well as now sought-after issues of albums by The Beatles,
+        Pink Floyd and others. Pre-emphasis should be removed at playback time
+        by a de-emphasis filter in the playback device. However, not all modern
+        CD players have this filter, and very few PC CD drives have it; playing
+        pre-emphasised audio without the correct de-emphasis filter results in
+        audio that sounds harsh and is far from what its creators intended.
+
+        The de-emphasis filter is implemented as a biquad and requires the
+        input audio sample rate to be either 44.1kHz or 48kHz. Maximum
+        deviation from the ideal response is only 0.06dB (up to 20kHz).
+
+        See Also
+        --------
+        bass, treble
+        '''
+        effect_args = ['deemph']
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('deemph')
+        return self
 
     def delay(self):
         raise NotImplementedError

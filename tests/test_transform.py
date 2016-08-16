@@ -1055,6 +1055,25 @@ class TestTransformerDcshift(unittest.TestCase):
             tfm.dcshift(shift=5)
 
 
+class TestTransformerDeemph(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.deemph()
+
+        actual_args = tfm.effects
+        expected_args = ['deemph']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['deemph']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+
 @unittest.skip("Tests pass on local machine and fail on remote.")
 class TestTransformerDownsample(unittest.TestCase):
 
