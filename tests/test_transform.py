@@ -1306,6 +1306,179 @@ class TestTransformerFir(unittest.TestCase):
             tfm.fir(['a', 'b', 'c'])
 
 
+class TestTransformerFlanger(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.flanger()
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '2', '0', '71', '0.5', 'sine', '25', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['flanger']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_delay_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(delay=10)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '10', '2', '0', '71', '0.5', 'sine', '25', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_delay_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(delay=31)
+
+    def test_flanger_depth_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(depth=0)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '0', '0', '71', '0.5', 'sine', '25', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_depth_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(depth=None)
+
+    def test_flanger_regen_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(regen=-95)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '2', '-95', '71', '0.5', 'sine', '25', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_regen_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(regen=100)
+
+    def test_flanger_width_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(width=0)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '2', '0', '0', '0.5', 'sine', '25', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_width_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(width='z')
+
+    def test_flanger_speed_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(speed=10)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '2', '0', '71', '10', 'sine', '25', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_speed_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(speed=0.0)
+
+    def test_flanger_shape_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(shape='triangle')
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '2', '0', '71', '0.5', 'triangle', '25', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_shape_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(shape='square')
+
+    def test_flanger_phase_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(phase=95)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '2', '0', '71', '0.5', 'sine', '95', 'linear'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_phase_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(phase=-1)
+
+    def test_flanger_interp_valid(self):
+        tfm = new_transformer()
+        tfm.flanger(interp='quadratic')
+
+        actual_args = tfm.effects
+        expected_args = [
+            'flanger', '0', '2', '0', '71', '0.5', 'sine', '25', 'quadratic'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_flanger_interp_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.flanger(interp='cubic')
+
+
 class TestTransformerGain(unittest.TestCase):
 
     def test_default(self):
