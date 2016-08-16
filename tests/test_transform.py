@@ -1836,6 +1836,25 @@ class TestTransformerSilence(unittest.TestCase):
             tfm.silence(buffer_around_silence=0)
 
 
+class TestTransformerSwap(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.swap()
+
+        actual_args = tfm.effects
+        expected_args = ['swap']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['swap']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+
 class TestTransformerTempo(unittest.TestCase):
 
     def test_default(self):
@@ -1952,6 +1971,35 @@ class TestTransformerTreble(unittest.TestCase):
             tfm.treble(-20, slope=0)
 
 
+class TestTransformerTremolo(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.tremolo()
+
+        actual_args = tfm.effects
+        expected_args = ['tremolo', '6.0', '40.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['tremolo']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_speed_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.tremolo(speed=0)
+
+    def test_depth_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.tremolo(depth=101)
+
+
 class TestTransformerTrim(unittest.TestCase):
 
     def test_default(self):
@@ -1985,3 +2033,146 @@ class TestTransformerTrim(unittest.TestCase):
         with self.assertRaises(ValueError):
             tfm.trim(8, 2)
 
+
+class TestTransformerUpsample(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.upsample()
+
+        actual_args = tfm.effects
+        expected_args = ['upsample', '2']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['upsample']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_factor_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.upsample(factor='a')
+
+    def test_invalid_factor_decimal(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.upsample(factor=1.5)
+
+    def test_invalid_factor_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.upsample(factor=0)
+
+
+class TestTransformerVad(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.vad()
+
+        actual_args = tfm.effects
+        expected_args = [
+            'norm', 'vad',
+            '-t', '7.0',
+            '-T', '0.25',
+            '-s', '1.0',
+            '-g', '0.25',
+            '-p', '0.0'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vad']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_end_location(self):
+        tfm = new_transformer()
+        tfm.vad(location=-1)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'norm',
+            'reverse',
+            'vad',
+            '-t', '7.0',
+            '-T', '0.25',
+            '-s', '1.0',
+            '-g', '0.25',
+            '-p', '0.0',
+            'reverse'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vad']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_no_normalize(self):
+        tfm = new_transformer()
+        tfm.vad(normalize=False)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'vad',
+            '-t', '7.0',
+            '-T', '0.25',
+            '-s', '1.0',
+            '-g', '0.25',
+            '-p', '0.0'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vad']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_location(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vad(location=0)
+
+    def test_invalid_normalize(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vad(normalize=0)
+
+    def test_invalid_activity_threshold(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vad(activity_threshold='a')
+
+    def test_invalid_min_activity_duration(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vad(min_activity_duration=-2)
+
+    def test_invalid_initial_search_buffer(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vad(initial_search_buffer=-1)
+
+    def test_invalid_max_gap(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vad(max_gap=-1)
+
+    def test_invalid_initial_pad(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vad(initial_pad=-1)

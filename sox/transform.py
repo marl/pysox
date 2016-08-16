@@ -42,7 +42,21 @@ class Transformer(object):
     '''
 
     def __init__(self):
+        '''
+        Attributes
+        ----------
+        input_format : list of str
+            Input file format arguments that will be passed to SoX.
+        output_format : list of str
+            Output file format arguments that will be bassed to SoX.
+        effects : list of str
+            Effects arguments that will be passed to SoX.
+        effects_log : list of str
+            Ordered sequence of effects applied.
+        globals : list of str
+            Global arguments that will be passed to SoX.
 
+        '''
         self.input_format = []
         self.output_format = []
 
@@ -119,6 +133,7 @@ class Transformer(object):
         global_args.append('-V{}'.format(verbosity))
 
         self.globals = global_args
+        return self
 
     def set_input_format(self, file_type=None, rate=None, bits=None,
                          channels=None, encoding=None, ignore_length=False):
@@ -237,6 +252,7 @@ class Transformer(object):
             input_format.append('--ignore-length')
 
         self.input_format = input_format
+        return self
 
     def set_output_format(self, file_type=None, rate=None, bits=None,
                           channels=None, encoding=None, comments=None,
@@ -363,6 +379,7 @@ class Transformer(object):
                 output_format.extend(['--comment', comments])
 
         self.output_format = output_format
+        return self
 
     def build(self, input_filepath, output_filepath):
         '''Builds the output_file by executing the current set of commands.
@@ -374,23 +391,6 @@ class Transformer(object):
         output_filepath : str
             Path to desired output file. If a file already exists at the given
             path, the file will be overwritten.
-
-        Attributes
-        ----------
-        input_filepath : str
-            Path to input audio file.
-        output_filepath : str
-            Path where the output file will be written.
-        input_format : list of str
-            Input file format arguments that will be passed to SoX.
-        output_format : list of str
-            Output file format arguments that will be bassed to SoX.
-        effects : list of str
-            Effects arguments that will be passed to SoX.
-        effects_log : list of str
-            Ordered sequence of effects applied.
-        globals : list of str
-            Global arguments that will be passed to SoX.
 
         '''
         file_info.validate_input_file(input_filepath)
@@ -461,6 +461,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('allpass')
+        return self
 
     def bandpass(self, frequency, width_q=2.0, constant_skirt=False):
         '''Apply a two-pole Butterworth band-pass filter with the given central
@@ -501,6 +502,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('bandpass')
+        return self
 
     def bandreject(self, frequency, width_q=2.0):
         '''Apply a two-pole Butterworth band-reject filter with the given
@@ -535,6 +537,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('bandreject')
+        return self
 
     def bass(self, gain_db, frequency=100.0, slope=0.5):
         '''Boost or cut the bass (lower) frequencies of the audio using a
@@ -576,6 +579,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('bass')
+        return self
 
     def bend(self):
         raise NotImplementedError
@@ -621,6 +625,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('biquad')
+        return self
 
     def channels(self, n_channels):
         '''Change the number of channels in the audio signal. If decreasing the
@@ -646,7 +651,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('channels')
-
+        return self
 
     def chorus(self):
         raise NotImplementedError
@@ -731,6 +736,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('compand')
+        return self
 
     def contrast(self, amount=75):
         '''Comparable with compression, this effect modifies an audio signal to
@@ -753,6 +759,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('contrast')
+        return self
 
     def convert(self, samplerate=None, n_channels=None, bitdepth=None):
         '''Converts output audio to the specified format.
@@ -788,6 +795,7 @@ class Transformer(object):
             if not is_number(samplerate) or samplerate <= 0:
                 raise ValueError("samplerate must be a positive number.")
             self.rate(samplerate)
+        return self
 
     def dcshift(self, shift=0.0):
         '''Apply a DC shift to the audio.
@@ -809,6 +817,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('dcshift')
+        return self
 
     def deemph(self):
         raise NotImplementedError
@@ -824,7 +833,7 @@ class Transformer(object):
         each factor samples is retained, the others are discarded.
 
         No decimation filter is applied. If the input is not a properly
-        bandlimited baseband signal, aliasing will occur. This may be desirable,
+        bandlimited baseband signal, aliasing will occur. This may be desirable
         e.g., for frequency translation.
 
         For a general resampling effect with anti-aliasing, see rate.
@@ -846,6 +855,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('downsample')
+        return self
 
     def earwax(self):
         '''Makes audio easier to listen to on headphones. Adds ‘cues’ to 44.1kHz
@@ -860,6 +870,7 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('earwax')
+        return self
 
     def echo(self):
         raise NotImplementedError
@@ -903,6 +914,7 @@ class Transformer(object):
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('equalizer')
+        return self
 
     def fade(self, fade_in_len=0.0, fade_out_len=0.0, fade_shape='q'):
         '''Add a fade in and/or fade out to an audio file.
@@ -955,6 +967,8 @@ class Transformer(object):
         if len(effect_args) > 0:
             self.effects.extend(effect_args)
             self.effects_log.append('fade')
+
+        return self
 
     def fir(self):
         raise NotImplementedError
@@ -1020,6 +1034,8 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('gain')
 
+        return self
+
     def highpass(self, frequency, width_q=0.707, n_poles=2):
         '''Apply a high-pass filter with 3dB point frequency. The filter can be
         either single-pole or double-pole. The filters roll off at 6dB per pole
@@ -1059,6 +1075,8 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('highpass')
 
+        return self
+
     def lowpass(self, frequency, width_q=0.707, n_poles=2):
         '''Apply a low-pass filter with 3dB point frequency. The filter can be
         either single-pole or double-pole. The filters roll off at 6dB per pole
@@ -1097,6 +1115,8 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('lowpass')
+
+        return self
 
     def hilbert(self):
         raise NotImplementedError
@@ -1138,6 +1158,8 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('loudness')
 
+        return self
+
     def mcompand(self):
         raise NotImplementedError
 
@@ -1168,6 +1190,8 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('norm')
 
+        return self
+
     def oops(self):
         raise NotImplementedError
 
@@ -1195,6 +1219,8 @@ class Transformer(object):
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('overdrive')
+
+        return self
 
     def pad(self, start_duration=0.0, end_duration=0.0):
         '''Add silence to the beginning or end of a file.
@@ -1225,6 +1251,8 @@ class Transformer(object):
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('pad')
+
+        return self
 
     def phaser(self):
         raise NotImplementedError
@@ -1271,6 +1299,8 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('pitch')
 
+        return self
+
     def rate(self, samplerate, quality='h'):
         '''Change the audio sampling rate (i.e. resample the audio) to any
         given `samplerate`. Better the resampling quality = slower runtime.
@@ -1316,6 +1346,8 @@ class Transformer(object):
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('rate')
+
+        return self
 
     def remix(self):
         raise NotImplementedError
@@ -1396,12 +1428,16 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('reverb')
 
+        return self
+
     def reverse(self):
         '''Reverse the audio completely
         '''
         effect_args = ['reverse']
         self.effects.extend(effect_args)
         self.effects_log.append('reverse')
+
+        return self
 
     def silence(self, location=0, silence_threshold=0.1,
                 min_silence_duration=0.1, buffer_around_silence=False):
@@ -1478,6 +1514,8 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('silence')
 
+        return self
+
     def sinc(self):
         raise NotImplementedError
 
@@ -1488,7 +1526,21 @@ class Transformer(object):
         raise NotImplementedError
 
     def swap(self):
-        raise NotImplementedError
+        '''Swap stereo channels. If the input is not stereo, pairs of channels
+        are swapped, and a possible odd last channel passed through.
+
+        E.g., for seven channels, the output order will be 2, 1, 4, 3, 6, 5, 7.
+
+        See Also
+        ----------
+        remix
+
+        '''
+        effect_args = ['swap']
+        self.effects.extend(effect_args)
+        self.effects_log.append('swap')
+
+        return self
 
     def stretch(self):
         raise NotImplementedError
@@ -1549,6 +1601,8 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('tempo')
 
+        return self
+
     def treble(self, gain_db, frequency=3000.0, slope=0.5):
         '''Boost or cut the treble (lower) frequencies of the audio using a
         two-pole shelving filter with a response similar to that of a standard
@@ -1590,8 +1644,43 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('treble')
 
-    def tremolo(self):
-        raise NotImplementedError
+        return self
+
+    def tremolo(self, speed=6.0, depth=40.0):
+        '''Apply a tremolo (low frequency amplitude modulation) effect to the
+        audio. The tremolo frequency in Hz is giv en by speed, and the depth
+        as a percentage by depth (default 40).
+
+        Parameters
+        ----------
+        speed : float
+            Tremolo speed in Hz.
+        depth : float
+            Tremolo depth as a percentage of the total amplitude.
+
+        Examples
+        --------
+        >>> tfm = sox.Transformer()
+
+        For a growl-type effect
+
+        >>> tfm.tremolo(speed=100.0)
+        '''
+        if not is_number(speed) or speed <= 0:
+            raise ValueError("speed must be a positive number.")
+        if not is_number(depth) or depth <= 0 or depth > 100:
+            raise ValueError("depth must be a positive number less than 100.")
+
+        effect_args = [
+            'tremolo',
+            '{}'.format(speed),
+            '{}'.format(depth)
+        ]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('tremolo')
+
+        return self
 
     def trim(self, start_time, end_time):
         '''Excerpt a clip from an audio file, given a start and end time.
@@ -1620,8 +1709,123 @@ class Transformer(object):
         self.effects.extend(effect_args)
         self.effects_log.append('trim')
 
-    def upsample(self):
-        raise NotImplementedError
+        return self
 
-    def vad(self):
-        raise NotImplementedError
+    def upsample(self, factor=2):
+        '''Upsample the signal by an integer factor: zero-value samples are
+        inserted between each pair of input samples. As a result, the original
+        spectrum is replicated into the new frequency space (imaging) and
+        attenuated. The upsample effect is typically used in combination with
+        filtering effects.
+
+        Parameters
+        ----------
+        factor : int, default=2
+            Integer upsampling factor.
+
+        See Also
+        --------
+        rate, downsample
+
+        '''
+        if not isinstance(factor, int) or factor < 1:
+            raise ValueError('factor must be a positive integer.')
+
+        effect_args = ['upsample', '{}'.format(factor)]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('upsample')
+
+        return self
+
+    def vad(self, location=1, normalize=True, activity_threshold=7.0,
+            min_activity_duration=0.25, initial_search_buffer=1.0,
+            max_gap=0.25, initial_pad=0.0):
+        '''Voice Activity Detector. Attempts to trim silence and quiet
+        background sounds from the ends of recordings of speech. The algorithm
+        currently uses a simple cepstral power measurement to detect voice, so
+        may be fooled by other things, especially music.
+
+        The effect can trim only from the front of the audio, so in order to
+        trim from the back, the reverse effect must also be used.
+
+        Parameters
+        ----------
+        location : 1 or -1, default=1
+            If 1, trims silence from the beginning
+            If -1, trims silence from the end
+        normalize : bool, default=True
+            If true, normalizes audio before processing.
+        activity_threshold : float, default=7.0
+            The measurement level used to trigger activity detection. This may
+            need to be cahnged depending on the noise level, signal level, and
+            other characteristics of the input audio.
+        min_activity_duration : float, default=0.25
+            The time constant (in seconds) used to help ignore short bursts of
+            sound.
+        initial_search_buffer : float, default=1.0
+            The amount of audio (in seconds) to search for quieter/shorter
+            bursts of audio to include prior to the detected trigger point.
+        max_gap : float, default=0.25
+            The allowed gap (in seconds) between quiteter/shorter bursts of
+            audio to include prior to the detected trigger point
+        initial_pad : float, default=0.0
+            The amount of audio (in seconds) to preserve before the trigger
+            point and any found quieter/shorter bursts.
+
+        See Also
+        --------
+        silence
+
+        Examples
+        --------
+        >>> tfm = sox.Transformer()
+
+        Remove silence from the beginning of speech
+
+        >>> tfm.vad(initial_pad=0.3)
+
+        Remove silence from the end of speech
+
+        >>> tfm.vad(location=-1, initial_pad=0.2)
+
+        '''
+        if location not in [-1, 1]:
+            raise ValueError("location must be -1 or 1.")
+        if not isinstance(normalize, bool):
+            raise ValueError("normalize muse be a boolean.")
+        if not is_number(activity_threshold):
+            raise ValueError("activity_threshold must be a number.")
+        if not is_number(min_activity_duration) or min_activity_duration < 0:
+            raise ValueError("min_activity_duration must be a positive number")
+        if not is_number(initial_search_buffer) or initial_search_buffer < 0:
+            raise ValueError("initial_search_buffer must be a positive number")
+        if not is_number(max_gap) or max_gap < 0:
+            raise ValueError("max_gap must be a positive number.")
+        if not is_number(initial_pad) or initial_pad < 0:
+            raise ValueError("initial_pad must be a positive number.")
+
+        effect_args = []
+
+        if normalize:
+            effect_args.append('norm')
+
+        if location == -1:
+            effect_args.append('reverse')
+
+        effect_args.extend([
+            'vad',
+            '-t', '{}'.format(activity_threshold),
+            '-T', '{}'.format(min_activity_duration),
+            '-s', '{}'.format(initial_search_buffer),
+            '-g', '{}'.format(max_gap),
+            '-p', '{}'.format(initial_pad)
+        ])
+
+        if location == -1:
+            effect_args.append('reverse')
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('vad')
+
+        return self
