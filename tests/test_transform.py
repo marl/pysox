@@ -1616,6 +1616,47 @@ class TestTransformerHighpass(unittest.TestCase):
             tfm.highpass(1000.0, n_poles=3)
 
 
+class TestTransformerHilbert(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.hilbert()
+
+        actual_args = tfm.effects
+        expected_args = ['hilbert']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['hilbert']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_num_taps_valid(self):
+        tfm = new_transformer()
+        tfm.hilbert(num_taps=17)
+
+        actual_args = tfm.effects
+        expected_args = ['hilbert', '-n', '17']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_num_taps_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.hilbert(num_taps=2.2)
+
+    def test_num_taps_invalid_even(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.hilbert(num_taps=2)
+
+
 class TestTransformerLowpass(unittest.TestCase):
 
     def test_default(self):
