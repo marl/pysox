@@ -1801,6 +1801,25 @@ class TestTransformerNorm(unittest.TestCase):
             tfm.norm(db_level='-2dB')
 
 
+class TestTransformerOops(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.oops()
+
+        actual_args = tfm.effects
+        expected_args = ['oops']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['oops']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE3, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+
 class TestTransformerOverdrive(unittest.TestCase):
 
     def test_default(self):

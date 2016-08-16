@@ -1435,9 +1435,6 @@ class Transformer(object):
     def mcompand(self):
         raise NotImplementedError
 
-    def noisered(self):
-        raise NotImplementedError
-
     def norm(self, db_level=-3.0):
         '''Normalize an audio file to a particular db level.
         This behaves identically to the gain effect with normalize=True.
@@ -1465,7 +1462,17 @@ class Transformer(object):
         return self
 
     def oops(self):
-        raise NotImplementedError
+        '''Out Of Phase Stereo effect. Mixes stereo to twin-mono where each
+        mono channel contains the difference between the left and right stereo
+        channels. This is sometimes known as the 'karaoke' effect as it often
+        has the effect of removing most or all of the vocals from a recording.
+
+        '''
+        effect_args = ['oops']
+        self.effects.extend(effect_args)
+        self.effects_log.append('oops')
+
+        return self
 
     def overdrive(self, gain_db=20.0, colour=20.0):
         '''Apply non-linear distortion.
