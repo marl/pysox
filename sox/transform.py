@@ -586,7 +586,6 @@ class Transformer(object):
         raise NotImplementedError
 
     def biquad(self, b, a):
-        """biquad b0 b1 b2 a0 a1 a2"""
         '''Apply a biquad IIR filter with the given coefficients.
 
         Parameters
