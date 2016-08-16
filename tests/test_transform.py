@@ -2044,6 +2044,47 @@ class TestTransformerRate(unittest.TestCase):
             tfm.rate(44100.0, quality='foo')
 
 
+class TestTransformerRepeat(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.repeat()
+
+        actual_args = tfm.effects
+        expected_args = ['repeat', '1']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['repeat']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_count_valid(self):
+        tfm = new_transformer()
+        tfm.repeat(count=2)
+
+        actual_args = tfm.effects
+        expected_args = ['repeat', '2']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_count_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.repeat(count=0)
+
+    def test_count_invalid_fmt(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.repeat(count=None)
+
+
 class TestTransformerReverb(unittest.TestCase):
 
     def test_default(self):
