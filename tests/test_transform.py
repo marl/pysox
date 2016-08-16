@@ -11,6 +11,7 @@ def relpath(f):
 
 SPACEY_FILE = relpath("data/annoying filename (derp).wav")
 INPUT_FILE = relpath('data/input.wav')
+INPUT_FILE3 = relpath('data/input3.wav')
 OUTPUT_FILE = relpath('data/output.wav')
 
 
@@ -1072,6 +1073,51 @@ class TestTransformerDeemph(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+
+class TestTransformerDelay(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.delay([1.0])
+
+        actual_args = tfm.effects
+        expected_args = ['delay', '1.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['delay']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_default_three_channel(self):
+        tfm = new_transformer()
+        tfm.delay([0.0, 1.0, 2.0])
+
+        actual_args = tfm.effects
+        expected_args = ['delay', '0.0', '1.0', '2.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['delay']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE3, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_position_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.delay(1.0)
+
+    def test_invalid_position_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.delay([-1.0, 1.0])
 
 
 @unittest.skip("Tests pass on local machine and fail on remote.")
