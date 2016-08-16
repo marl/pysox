@@ -1275,6 +1275,37 @@ class TestTransformerFade(unittest.TestCase):
             tfm.fade(fade_shape='x')
 
 
+class TestTransformerFir(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.fir([0.0195, -0.082, 0.234, 0.891, -0.145, 0.043])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'fir', '0.0195', '-0.082', '0.234', '0.891', '-0.145', '0.043'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['fir']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_coeffs_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.fir(0.0195)
+
+    def test_invalid_coeffs_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.fir(['a', 'b', 'c'])
+
+
 class TestTransformerGain(unittest.TestCase):
 
     def test_default(self):
