@@ -217,7 +217,7 @@ def validate_input_file(input_filepath):
     ext = file_extension(input_filepath)
     if ext not in VALID_FORMATS:
         logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
-        raise SoxError(
+        logging.warning(
             "This install of SoX cannot process .{} files.".format(ext)
         )
 
@@ -270,7 +270,7 @@ def validate_output_file(output_filepath):
     ext = file_extension(output_filepath)
     if ext not in VALID_FORMATS:
         logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
-        raise SoxError(
+        logging.warning(
             "This install of SoX cannot process .{} files.".format(ext)
         )
 
