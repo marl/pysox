@@ -386,6 +386,11 @@ class TestTransformerBuild(unittest.TestCase):
         with self.assertRaises(IOError):
             self.tfm.build('blah/asdf.wav', OUTPUT_FILE)
 
+    def test_failed_sox(self):
+        self.tfm.effects = ['channels', '-1']
+        with self.assertRaises(SoxError):
+            self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+
 
 class TestTransformerPreview(unittest.TestCase):
     def setUp(self):

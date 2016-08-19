@@ -13,6 +13,7 @@ from . import file_info
 from . import core
 from .core import sox
 from .core import SoxError
+from .core import SoxiError
 
 from .transform import Transformer
 
@@ -74,7 +75,10 @@ class Combiner(Transformer):
             input_filepath_list, input_volumes
         )
 
-        _validate_file_formats(input_filepath_list, combine_type)
+        try:
+            _validate_file_formats(input_filepath_list, combine_type)
+        except SoxiError:
+            logging.warning("unable to validate file formats.")
 
         args = []
         args.extend(self.globals)

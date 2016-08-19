@@ -1217,7 +1217,6 @@ class Transformer(object):
         self.effects_log.append('flanger')
 
         return self
-        raise NotImplementedError
 
     def gain(self, gain_db=0.0, normalize=True, limiter=False, balance=None):
         '''Apply amplification or attenuation to the audio signal.
