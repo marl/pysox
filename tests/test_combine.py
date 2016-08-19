@@ -52,6 +52,14 @@ class TestCombineDefault(unittest.TestCase):
         )
         self.assertEqual(expected_result, actual_result)
 
+    def test_build_with_vols(self):
+        expected_result = True
+        actual_result = self.cbn.build(
+            [INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix',
+            input_volumes=[0.5, 2]
+        )
+        self.assertEqual(expected_result, actual_result)
+
     def test_failed_build(self):
         cbn = new_combiner()
         with self.assertRaises(SoxError):
@@ -97,6 +105,187 @@ class TestCombineTypes(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+class TestSetInputFormat(unittest.TestCase):
+
+    def test_none(self):
+        cbn = new_combiner()
+        cbn.set_input_format()
+        expected = []
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_file_type(self):
+        cbn = new_combiner()
+        cbn.set_input_format(file_type=['wav', 'aiff'])
+        expected = [['-t', 'wav'], ['-t', 'aiff']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_invalid_file_type(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(file_type='wav')
+
+    def test_invalid_file_type_val(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(file_type=['xyz', 'wav'])
+
+    def test_rate(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[2000, 44100, 22050])
+        expected = [['-r', '2000'], ['-r', '44100'], ['-r', '22050']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_invalid_rate(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(rate=2000)
+
+    def test_invalid_rate_val(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(rate=[-2, 'a'])
+
+    def test_bits(self):
+        cbn = new_combiner()
+        cbn.set_input_format(bits=[16])
+        expected = [['-b', '16']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_invalid_bits(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(bits=32)
+
+    def test_invalid_bits_val(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(bits=[0])
+
+    def test_channels(self):
+        cbn = new_combiner()
+        cbn.set_input_format(channels=[1, 2, 3])
+        expected = [['-c', '1'], ['-c', '2'], ['-c', '3']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_invalid_channels(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(channels='x')
+
+    def test_invalid_channels_val(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(channels=[1.5, 2, 3])
+
+    def test_encoding(self):
+        cbn = new_combiner()
+        cbn.set_input_format(encoding=['floating-point', 'oki-adpcm'])
+        expected = [['-e', 'floating-point'], ['-e', 'oki-adpcm']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_invalid_encoding(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(encoding='wav')
+
+    def test_invalid_encoding_val(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(encoding=['xyz', 'wav'])
+
+    def test_ignore_length(self):
+        cbn = new_combiner()
+        cbn.set_input_format(ignore_length=[True, False, True])
+        expected = [['--ignore-length'], [], ['--ignore-length']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_invalid_ignore_length(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(ignore_length=1)
+
+    def test_invalid_ignore_length_val(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(ignore_length=[False, True, 3])
+
+    def test_multiple_same_len(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 2000], bits=[32, 8])
+        expected = [['-r', '44100', '-b', '32'], ['-r', '2000', '-b', '8']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_multiple_different_len(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 2000], bits=[32, 8, 16])
+        expected = [
+            ['-r', '44100', '-b', '32'],
+            ['-r', '2000', '-b', '8'],
+            ['-b', '16']
+        ]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_build_same_len(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 44100], channels=[1, 1])
+        actual = cbn.build([INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix')
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_build_same_len_vol(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 44100], channels=[1, 1])
+        actual = cbn.build(
+            [INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix', input_volumes=[1, 2]
+        )
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_build_greater_len(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 44100, 44100], channels=[1, 1])
+        actual = cbn.build([INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix')
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_build_greater_len_vol(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 44100, 44100], channels=[1, 1])
+        actual = cbn.build(
+            [INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix', input_volumes=[1, 2]
+        )
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_build_lesser_len(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 44100], channels=[1, 1])
+        actual = cbn.build(
+            [INPUT_WAV, INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix'
+        )
+        expected = True
+        self.assertEqual(expected, actual)
+
+    def test_build_lesser_len_vol(self):
+        cbn = new_combiner()
+        cbn.set_input_format(rate=[44100, 44100], channels=[1, 1])
+        actual = cbn.build(
+            [INPUT_WAV, INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'mix',
+            input_volumes=[1, 2]
+        )
+        expected = True
+        self.assertEqual(expected, actual)
+
+
 class TestValidateFileFormats(unittest.TestCase):
 
     def test_different_samplerates(self):
@@ -139,29 +328,54 @@ class TestBuildInputFormatList(unittest.TestCase):
     def test_none(self):
         expected = [['-v', '1'], ['-v', '1']]
         actual = combine._build_input_format_list(
-            [INPUT_WAV, INPUT_WAV], None
+            [INPUT_WAV, INPUT_WAV], None, None
         )
         self.assertEqual(expected, actual)
 
-    def test_equal_num(self):
+    def test_equal_num_vol(self):
         expected = [['-v', '0.5'], ['-v', '1.1']]
         actual = combine._build_input_format_list(
-            [INPUT_WAV, INPUT_WAV], [0.5, 1.1]
+            [INPUT_WAV, INPUT_WAV], [0.5, 1.1], None
         )
         self.assertEqual(expected, actual)
 
-    def test_greater_num(self):
+    def test_greater_num_vol(self):
         actual = combine._build_input_format_list(
-            [INPUT_WAV, INPUT_WAV], [0.5, 1.1, 3]
+            [INPUT_WAV, INPUT_WAV], [0.5, 1.1, 3], None
         )
         expected = [['-v', '0.5'], ['-v', '1.1']]
         self.assertEqual(expected, actual)
 
-    def test_lesser_num(self):
+    def test_lesser_num_vol(self):
         actual = combine._build_input_format_list(
-            [INPUT_WAV, INPUT_WAV, INPUT_WAV], [0.5, 1.1]
+            [INPUT_WAV, INPUT_WAV, INPUT_WAV], [0.5, 1.1], None
         )
         expected = [['-v', '0.5'], ['-v', '1.1'], ['-v', '1']]
+        self.assertEqual(expected, actual)
+
+    def test_equal_num_fmt(self):
+        expected = [['-v', '1', '-t', 'wav'], ['-v', '1', '-t', 'aiff']]
+        actual = combine._build_input_format_list(
+            [INPUT_WAV, INPUT_WAV], None, [['-t', 'wav'], ['-t', 'aiff']]
+        )
+        self.assertEqual(expected, actual)
+
+    def test_greater_num_fmt(self):
+        actual = combine._build_input_format_list(
+            [INPUT_WAV, INPUT_WAV], None,
+            [['-t', 'wav'], ['-t', 'aiff'], ['-t', 'wav']]
+        )
+        expected = [['-v', '1', '-t', 'wav'], ['-v', '1', '-t', 'aiff']]
+        self.assertEqual(expected, actual)
+
+    def test_lesser_num_fmt(self):
+        actual = combine._build_input_format_list(
+            [INPUT_WAV, INPUT_WAV, INPUT_WAV], None,
+            [['-t', 'wav'], ['-t', 'aiff']]
+        )
+        expected = [
+            ['-v', '1', '-t', 'wav'], ['-v', '1', '-t', 'aiff'], ['-v', '1']
+        ]
         self.assertEqual(expected, actual)
 
 
