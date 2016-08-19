@@ -7,6 +7,11 @@ from . import NO_SOX
 
 SOXI_ARGS = ['b', 'c', 'a', 'D', 'e', 't', 's', 'r']
 
+ENCODING_VALS = [
+    'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
+    'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
+]
+
 
 def enquote_filepath(fpath):
     """Wrap a filepath in double-quotes to protect difficult characters.

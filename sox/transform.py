@@ -9,6 +9,7 @@ from __future__ import print_function
 import logging
 import random
 
+from .core import ENCODING_VALS
 from .core import is_number
 from .core import play
 from .core import sox
@@ -20,10 +21,6 @@ from . import file_info
 logging.basicConfig(level=logging.DEBUG)
 
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
-ENCODING_VALS = [
-    'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
-    'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
-]
 
 
 class Transformer(object):
