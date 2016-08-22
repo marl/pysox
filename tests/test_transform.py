@@ -2373,6 +2373,59 @@ class TestTransformerSwap(unittest.TestCase):
         self.assertEqual(expected_res, actual_res)
 
 
+class TestTransformerStretch(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.stretch(1.1)
+
+        actual_args = tfm.effects
+        expected_args = ['stretch', '1.1', '20']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['stretch']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_valid(self):
+        tfm = new_transformer()
+        tfm.stretch(0.7)
+
+        actual_args = tfm.effects
+        expected_args = ['stretch', '0.9', '20']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.stretch(-1)
+
+    def test_window_valid(self):
+        tfm = new_transformer()
+        tfm.stretch(0.99, window=10)
+
+        actual_args = tfm.effects
+        expected_args = ['stretch', '0.99', '10']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_window_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.stretch(0.99, window=0)
+
+
 class TestTransformerTempo(unittest.TestCase):
 
     def test_default(self):
