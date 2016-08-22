@@ -2354,6 +2354,42 @@ class TestTransformerSilence(unittest.TestCase):
             tfm.silence(buffer_around_silence=0)
 
 
+class TestTransformerSpeed(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.speed(1.5)
+
+        actual_args = tfm.effects
+        expected_args = ['speed', '1.5']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['speed']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_valid(self):
+        tfm = new_transformer()
+        tfm.speed(0.7)
+
+        actual_args = tfm.effects
+        expected_args = ['speed', '0.7']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.speed(-1)
+
+
 class TestTransformerSwap(unittest.TestCase):
 
     def test_default(self):
@@ -2396,7 +2432,7 @@ class TestTransformerStretch(unittest.TestCase):
         tfm.stretch(0.7)
 
         actual_args = tfm.effects
-        expected_args = ['stretch', '0.9', '20']
+        expected_args = ['stretch', '0.7', '20']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
