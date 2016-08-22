@@ -1,6 +1,8 @@
 # pysox
 Python wrapper around sox. [Read the Docs here](http://pysox.readthedocs.org).
 
+[![PyPI version](https://badge.fury.io/py/sox.svg)](https://badge.fury.io/py/sox)
+
 [![Build Status](https://travis-ci.org/rabitt/pysox.svg?branch=master)](https://travis-ci.org/rabitt/pysox)
 [![Coverage Status](https://coveralls.io/repos/github/rabitt/pysox/badge.svg?branch=master)](https://coveralls.io/github/rabitt/pysox?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/resampy/badge/?version=latest)](http://pysox.readthedocs.io/en/latest/?badge=latest)
