@@ -1932,6 +1932,127 @@ class TestTransformerPad(unittest.TestCase):
             tfm.pad(end_duration='foo')
 
 
+class TestTransformerPhaser(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.phaser()
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['phaser']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(gain_in=0.5)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.5', '0.74', '3', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(gain_in=0)
+
+    def test_gain_out_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(gain_out=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '1.0', '3', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_out_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(gain_out=1.1)
+
+    def test_delay_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(delay=5)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '5', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_delay_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(delay=None)
+
+    def test_decay_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(decay=0.1)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.1', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decay_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(decay=0.0)
+
+    def test_speed_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(speed=2)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '2', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_speed_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(speed=-1)
+
+    def test_modulation_shape_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(modulation_shape='triangular')
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '0.5', '-t']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_modulation_shape_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(modulation_shape='square')
+
+
 class TestTransformerPitch(unittest.TestCase):
 
     def test_default(self):
@@ -2686,6 +2807,18 @@ class TestTransformerSpeed(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = ['speed', '0.7']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_valid_extreme(self):
+        tfm = new_transformer()
+        tfm.speed(2.5)
+
+        actual_args = tfm.effects
+        expected_args = ['speed', '2.5']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
