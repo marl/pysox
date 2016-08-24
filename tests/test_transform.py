@@ -2354,6 +2354,308 @@ class TestTransformerSilence(unittest.TestCase):
             tfm.silence(buffer_around_silence=0)
 
 
+class TestTransformerSinc(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.sinc()
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_valid_low(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='low')
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_valid_pass(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='pass', cutoff_freq=[3000, 4000])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '3000-4000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_valid_reject(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='reject', cutoff_freq=[3000, 4000])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '4000-3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='stop')
+
+    def test_cutoff_freq_valid_float(self):
+        tfm = new_transformer()
+        tfm.sinc(cutoff_freq=300.4)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '300.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_cutoff_freq_valid_list(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='pass', cutoff_freq=[300.4, 1000])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '300.4-1000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_cutoff_freq_valid_unordered(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='pass', cutoff_freq=[1000, 300.4])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '300.4-1000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_cutoff_freq_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=None)
+
+    def test_cutoff_freq_invalid_high(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=[1000, 300.4])
+
+    def test_cutoff_freq_invalid_reject(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='reject', cutoff_freq=1000.0)
+
+    def test_cutoff_freq_invalid_number(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=-1000)
+
+    def test_cutoff_freq_invalid_list_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=[1000, 2000, 3000])
+
+    def test_cutoff_freq_invalid_list(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=['a', 'b'])
+
+    def test_stop_band_attenuation_valid(self):
+        tfm = new_transformer()
+        tfm.sinc(stop_band_attenuation=60)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '60', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_stop_band_attenuation_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(stop_band_attenuation=-3)
+
+    def test_transition_bw_valid_high(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='high', transition_bw=100)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-t', '100', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_valid_low(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='low', transition_bw=100)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-3000', '-t', '100']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_valid_pass_float(self):
+        tfm = new_transformer()
+        tfm.sinc(
+            filter_type='pass', cutoff_freq=[3000, 4000], transition_bw=100
+        )
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-t', '100', '3000-4000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_valid_pass_list(self):
+        tfm = new_transformer()
+        tfm.sinc(
+            filter_type='pass', cutoff_freq=[3000, 4000],
+            transition_bw=[100, 200]
+        )
+
+        actual_args = tfm.effects
+        expected_args = [
+            'sinc', '-a', '120', '-t', '100', '3000-4000', '-t', '200'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(transition_bw='a')
+
+    def test_transition_bw_invalid_low(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='low', transition_bw=[100, 200])
+
+    def test_transition_bw_invalid_float(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(transition_bw=-100)
+
+    def test_transition_bw_invalid_list_elt(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='pass', transition_bw=[100, 'z'])
+
+    def test_transition_bw_linvalid_list_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='reject', transition_bw=[100, 200, 300])
+
+    def test_phase_response_valid_low(self):
+        tfm = new_transformer()
+        tfm.sinc(phase_response=0)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-p', '0', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_phase_response_valid_mid(self):
+        tfm = new_transformer()
+        tfm.sinc(phase_response=25)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-p', '25', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_phase_response_valid_high(self):
+        tfm = new_transformer()
+        tfm.sinc(phase_response=100)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-p', '100', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_phase_response_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(phase_response='z')
+
+    def test_phase_response_invalid_large(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(phase_response=101)
+
+    def test_phase_response_invalid_small(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(phase_response=-1)
+
+
 class TestTransformerSpeed(unittest.TestCase):
 
     def test_default(self):
