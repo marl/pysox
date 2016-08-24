@@ -2472,12 +2472,12 @@ class TestTransformerSinc(unittest.TestCase):
     def test_cutoff_freq_invalid_list_len(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.sinc(cutoff_freq=[1000, 2000, 3000])
+            tfm.sinc(filter_type='pass', cutoff_freq=[1000, 2000, 3000])
 
     def test_cutoff_freq_invalid_list(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.sinc(cutoff_freq=['a', 'b'])
+            tfm.sinc(filter_type='pass', cutoff_freq=['a', 'b'])
 
     def test_stop_band_attenuation_valid(self):
         tfm = new_transformer()
@@ -2585,12 +2585,18 @@ class TestTransformerSinc(unittest.TestCase):
     def test_transition_bw_invalid_list_elt(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.sinc(filter_type='pass', transition_bw=[100, 'z'])
+            tfm.sinc(
+                filter_type='pass', cutoff_freq=[3000, 4000],
+                transition_bw=[100, 'z']
+            )
 
     def test_transition_bw_linvalid_list_len(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.sinc(filter_type='reject', transition_bw=[100, 200, 300])
+            tfm.sinc(
+                filter_type='reject', cutoff_freq=[3000, 4000],
+                transition_bw=[100, 200, 300]
+            )
 
     def test_phase_response_valid_low(self):
         tfm = new_transformer()
