@@ -662,8 +662,8 @@ class Transformer(object):
 
         last = 0
         for i in range(n_bends):
-            t_start = start_times[i] - last
-            t_end = end_times[i] - start_times[i]
+            t_start = round(start_times[i] - last, 2)
+            t_end = round(end_times[i] - start_times[i], 2)
             effect_args.append(
                 '{},{},{}'.format(t_start, cents[i], t_end)
             )
