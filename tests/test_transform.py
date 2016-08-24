@@ -545,6 +545,173 @@ class TestTransformerBass(unittest.TestCase):
             tfm.bass(5.0, slope=0)
 
 
+class TestTransformerBend(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                 end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'bend',
+            '-f', '25',
+            '-o', '16',
+            '0.35,180,0.25',
+            '0.15,740,0.53',
+            '0.0,-540,0.3'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['bend']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_bends_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=1.5, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=1.2,
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[-1.2, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_order(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[2.5, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_end_times_invalid_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28], end_times=None,
+                     cents=[180, 740, -540])
+
+    def test_end_times_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28], end_times=[],
+                     cents=[180, 740, -540])
+
+    def test_end_times_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 'x'], cents=[180, 740, -540])
+
+    def test_end_times_invalid_order(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[1.58, 1.28, 0.6], cents=[180, 740, -540])
+
+    def test_start_greater_end(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.68],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_overlapping_intervals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.2],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_cents_invalid_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=180)
+
+    def test_cents_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180])
+
+    def test_cents_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[None, None, None])
+
+    def test_frame_rate_valid(self):
+        tfm = new_transformer()
+        tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                 end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                 frame_rate=50)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'bend',
+            '-f', '50',
+            '-o', '16',
+            '0.35,180,0.25',
+            '0.15,740,0.53',
+            '0.0,-540,0.3'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frame_rate_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                     frame_rate=0)
+
+    def test_oversample_rate_valid(self):
+        tfm = new_transformer()
+        tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                 end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                 oversample_rate=31)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'bend',
+            '-f', '25',
+            '-o', '31',
+            '0.35,180,0.25',
+            '0.15,740,0.53',
+            '0.0,-540,0.3'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_oversample_rate_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                     oversample_rate=5.5)
+
+
 class TestTransformerBiquad(unittest.TestCase):
 
     def test_default(self):
