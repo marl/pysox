@@ -1176,6 +1176,130 @@ class TestTransformerEarwax(unittest.TestCase):
         self.assertEqual(expected_res, actual_res)
 
 
+class TestTransformerEcho(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.echo()
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['echo']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_valid(self):
+        tfm = new_transformer()
+        tfm.echo(gain_in=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '1.0', '0.9', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(gain_in=0)
+
+    def test_gain_out_valid(self):
+        tfm = new_transformer()
+        tfm.echo(gain_out=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '1.0', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_out_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(gain_out=None)
+
+    def test_n_echos_valid(self):
+        tfm = new_transformer()
+        tfm.echo(n_echos=2, delays=[60, 60], decays=[0.4, 0.4])
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '60', '0.4', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_echos_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(n_echos=1.2)
+
+    def test_delays_valid(self):
+        tfm = new_transformer()
+        tfm.echo(n_echos=2, delays=[1, 600], decays=[0.4, 0.4])
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '1', '0.4', '600', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_delays_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(delays=0)
+
+    def test_delays_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(delays=[6, 60])
+
+    def test_delays_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(delays=[0])
+
+    def test_decays_valid(self):
+        tfm = new_transformer()
+        tfm.echo(n_echos=2, delays=[60, 60], decays=[0.1, 1.0])
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '60', '0.1', '60', '1.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decays_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(decays=None)
+
+    def test_decays_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(decays=[0.1, 0.6])
+
+    def test_decays_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(decays=[2])
+
+
 class TestTransformerEqualizer(unittest.TestCase):
 
     def test_default(self):
