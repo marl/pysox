@@ -2035,9 +2035,8 @@ class TestTransformerHighpass(unittest.TestCase):
             tfm.highpass(1000.0, n_poles=3)
 
 
-
 class TestTransformerHilbert(unittest.TestCase):
-    @unittest.skip("Tests pass on local machine and fail on remote.")
+
     def test_default(self):
         tfm = new_transformer()
         tfm.hilbert()
@@ -2050,11 +2049,14 @@ class TestTransformerHilbert(unittest.TestCase):
         expected_log = ['hilbert']
         self.assertEqual(expected_log, actual_log)
 
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_default_build(self):
+        tfm = new_transformer()
+        tfm.hilbert()
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
-    @unittest.skip("Tests pass on local machine and fail on remote.")
     def test_num_taps_valid(self):
         tfm = new_transformer()
         tfm.hilbert(num_taps=17)
@@ -2063,6 +2065,10 @@ class TestTransformerHilbert(unittest.TestCase):
         expected_args = ['hilbert', '-n', '17']
         self.assertEqual(expected_args, actual_args)
 
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_num_taps_valid_build(self):
+        tfm = new_transformer()
+        tfm.hilbert(num_taps=17)
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
@@ -2259,7 +2265,7 @@ class TestTransformerMcompand(unittest.TestCase):
     def test_crossover_frequencies_invalid_vals(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.mcompand(crossover_frequencies=[100, -200])
+            tfm.mcompand(crossover_frequencies=[-200])
 
     def test_attack_time_valid(self):
         tfm = new_transformer()
@@ -3779,9 +3785,8 @@ class TestTransformerTrim(unittest.TestCase):
             tfm.trim(8, 2)
 
 
-
 class TestTransformerUpsample(unittest.TestCase):
-    @unittest.skip("Tests pass on local machine and fail on remote.")
+
     def test_default(self):
         tfm = new_transformer()
         tfm.upsample()
@@ -3794,6 +3799,10 @@ class TestTransformerUpsample(unittest.TestCase):
         expected_log = ['upsample']
         self.assertEqual(expected_log, actual_log)
 
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_default_build(self):
+        tfm = new_transformer()
+        tfm.upsample()
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
