@@ -1293,7 +1293,7 @@ class TestTransformerDelay(unittest.TestCase):
 
 
 class TestTransformerDownsample(unittest.TestCase):
-    @unittest.skip("Tests pass on local machine and fail on remote.")
+
     def test_default(self):
         tfm = new_transformer()
         tfm.downsample()
@@ -1305,6 +1305,11 @@ class TestTransformerDownsample(unittest.TestCase):
         actual_log = tfm.effects_log
         expected_log = ['downsample']
         self.assertEqual(expected_log, actual_log)
+
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_default_build(self):
+        tfm = new_transformer()
+        tfm.downsample()
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
