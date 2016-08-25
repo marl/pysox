@@ -224,7 +224,7 @@ class TestInfo(unittest.TestCase):
             'duration': 10.0,
             'num_samples': 441000,
             'encoding': 'Signed Integer PCM',
-            'silent': False            
+            'silent': False
         }
         self.assertEqual(expected, actual)
 
@@ -246,8 +246,9 @@ class TestValidateInputFile(unittest.TestCase):
             file_info.validate_input_file('data/asdfasdfasdf.wav')
 
     def test_invalid_format(self):
-        with self.assertRaises(SoxError):
-            file_info.validate_input_file(INPUT_FILE_INVALID)
+        actual = file_info.validate_input_file(INPUT_FILE_INVALID)
+        expected = None
+        self.assertEqual(expected, actual)
 
 
 class TestValidateInputFileList(unittest.TestCase):
@@ -276,10 +277,11 @@ class TestValidateInputFileList(unittest.TestCase):
             )
 
     def test_invalid_format(self):
-        with self.assertRaises(SoxError):
-            file_info.validate_input_file_list(
-                [INPUT_FILE_INVALID, INPUT_FILE]
-            )
+        actual = file_info.validate_input_file_list(
+            [INPUT_FILE_INVALID, INPUT_FILE]
+        )
+        expected = None
+        self.assertEqual(expected, actual)
 
 
 class TestValidateOutputFile(unittest.TestCase):
@@ -294,11 +296,9 @@ class TestValidateOutputFile(unittest.TestCase):
             file_info.validate_output_file('notafolder/output.wav')
 
     def test_invalid_format(self):
-        with self.assertRaises(SoxError):
-            file_info.validate_output_file('output.xyz')
-
-        with self.assertRaises(SoxError):
-            file_info.validate_output_file('./output.xyz')
+        actual = file_info.validate_output_file('output.xyz')
+        expected = None
+        self.assertEqual(expected, actual)
 
     def test_file_exists(self):
         actual = file_info.validate_output_file(INPUT_FILE)

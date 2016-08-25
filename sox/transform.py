@@ -9,6 +9,8 @@ from __future__ import print_function
 import logging
 import random
 
+from .core import ENCODING_VALS
+from .core import enquote_filepath
 from .core import is_number
 from .core import play
 from .core import sox
@@ -20,10 +22,6 @@ from . import file_info
 logging.basicConfig(level=logging.DEBUG)
 
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
-ENCODING_VALS = [
-    'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
-    'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
-]
 
 
 class Transformer(object):
@@ -400,9 +398,9 @@ class Transformer(object):
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
-        args.append(input_filepath)
+        args.append(enquote_filepath(input_filepath))
         args.extend(self.output_format)
-        args.append(output_filepath)
+        args.append(enquote_filepath(output_filepath))
         args.extend(self.effects)
 
         status, out, err = sox(args)
@@ -582,8 +580,100 @@ class Transformer(object):
         self.effects_log.append('bass')
         return self
 
-    def bend(self):
-        raise NotImplementedError
+    def bend(self, n_bends, start_times, end_times, cents, frame_rate=25,
+             oversample_rate=16):
+        '''Changes pitch by specified amounts at specified times.
+        The pitch-bending algorithm utilises the Discrete Fourier Transform
+        (DFT) at a particular frame rate and over-sampling rate.
+
+        Parameters
+        ----------
+        n_bends : int
+            The number of intervals to pitch shift
+        start_times : list of floats
+            A list of absolute start times (in seconds), in order
+        end_times : list of floats
+            A list of absolute end times (in seconds) in order.
+            [start_time, end_time] intervals may not overlap!
+        cents : list of floats
+            A list of pitch shifts in cents. A positive value shifts the pitch
+            up, a negative value shifts the pitch down.
+        frame_rate : int, default=25
+            The number of DFT frames to process per second, between 10 and 80
+        oversample_rate: int, default=16
+            The number of frames to over sample per second, between 4 and 32
+
+        See Also
+        --------
+        pitch
+
+        '''
+        if not isinstance(n_bends, int) or n_bends < 1:
+            raise ValueError("n_bends must be a positive integer.")
+
+        if not isinstance(start_times, list) or len(start_times) != n_bends:
+            raise ValueError("start_times must be a list of length n_bends.")
+
+        if any([(not is_number(p) or p <= 0) for p in start_times]):
+            raise ValueError("start_times must be positive floats.")
+
+        if sorted(start_times) != start_times:
+            raise ValueError("start_times must be in increasing order.")
+
+        if not isinstance(end_times, list) or len(end_times) != n_bends:
+            raise ValueError("end_times must be a list of length n_bends.")
+
+        if any([(not is_number(p) or p <= 0) for p in end_times]):
+            raise ValueError("end_times must be positive floats.")
+
+        if sorted(end_times) != end_times:
+            raise ValueError("end_times must be in increasing order.")
+
+        if any([e <= s for s, e in zip(start_times, end_times)]):
+            raise ValueError(
+                "end_times must be element-wise greater than start_times."
+            )
+
+        if any([e > s for s, e in zip(start_times[1:], end_times[:-1])]):
+            raise ValueError(
+                "[start_time, end_time] intervals must be non-overlapping."
+            )
+
+        if not isinstance(cents, list) or len(cents) != n_bends:
+            raise ValueError("cents must be a list of length n_bends.")
+
+        if any([not is_number(p) for p in cents]):
+            raise ValueError("elements of cents must be floats.")
+
+        if (not isinstance(frame_rate, int) or
+                frame_rate < 10 or frame_rate > 80):
+            raise ValueError("frame_rate must be an integer between 10 and 80")
+
+        if (not isinstance(oversample_rate, int) or
+                oversample_rate < 4 or oversample_rate > 32):
+            raise ValueError(
+                "oversample_rate must be an integer between 4 and 32."
+            )
+
+        effect_args = [
+            'bend',
+            '-f', '{}'.format(frame_rate),
+            '-o', '{}'.format(oversample_rate)
+        ]
+
+        last = 0
+        for i in range(n_bends):
+            t_start = round(start_times[i] - last, 2)
+            t_end = round(end_times[i] - start_times[i], 2)
+            effect_args.append(
+                '{},{},{}'.format(t_start, cents[i], t_end)
+            )
+            last = end_times[i]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('bend')
+        return self
+
 
     def biquad(self, b, a):
         '''Apply a biquad IIR filter with the given coefficients.
@@ -1035,11 +1125,145 @@ class Transformer(object):
         self.effects_log.append('earwax')
         return self
 
-    def echo(self):
-        raise NotImplementedError
+    def echo(self, gain_in=0.8, gain_out=0.9, n_echos=1, delays=[60],
+             decays=[0.4]):
+        '''Add echoing to the audio.
 
-    def echos(self):
-        raise NotImplementedError
+        Echoes are reflected sound and can occur naturally amongst mountains
+        (and sometimes large buildings) when talking or shouting; digital echo
+        effects emulate this behav- iour and are often used to help fill out
+        the sound of a single instrument or vocal. The time differ- ence
+        between the original signal and the reflection is the 'delay' (time),
+        and the loudness of the reflected signal is the 'decay'. Multiple
+        echoes can have different delays and decays.
+
+        Parameters
+        ----------
+        gain_in : float, default=0.8
+            Input volume, between 0 and 1
+        gain_out : float, default=0.9
+            Output volume, between 0 and 1
+        n_echos : int, default=1
+            Number of reflections
+        delays : list, default=[60]
+            List of delays in miliseconds
+        decays : list, default=[0.4]
+            List of decays, relative to gain in between 0 and 1
+
+        See Also
+        --------
+        echos, reverb, chorus
+        '''
+        if not is_number(gain_in) or gain_in <= 0 or gain_in > 1:
+            raise ValueError("gain_in must be a number between 0 and 1.")
+
+        if not is_number(gain_out) or gain_out <= 0 or gain_out > 1:
+            raise ValueError("gain_out must be a number between 0 and 1.")
+
+        if not isinstance(n_echos, int) or n_echos <= 0:
+            raise ValueError("n_echos must be a positive integer.")
+
+        # validate delays
+        if not isinstance(delays, list):
+            raise ValueError("delays must be a list")
+
+        if len(delays) != n_echos:
+            raise ValueError("the length of delays must equal n_echos")
+
+        if any((not is_number(p) or p <= 0) for p in delays):
+            raise ValueError("the elements of delays must be numbers > 0")
+
+        # validate decays
+        if not isinstance(decays, list):
+            raise ValueError("decays must be a list")
+
+        if len(decays) != n_echos:
+            raise ValueError("the length of decays must equal n_echos")
+        if any((not is_number(p) or p <= 0 or p > 1) for p in decays):
+            raise ValueError(
+                "the elements of decays must be between 0 and 1"
+            )
+
+        effect_args = ['echo', '{}'.format(gain_in), '{}'.format(gain_out)]
+
+        for i in range(n_echos):
+            effect_args.extend([
+                '{}'.format(delays[i]),
+                '{}'.format(decays[i])
+            ])
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('echo')
+        return self
+
+    def echos(self, gain_in=0.8, gain_out=0.9, n_echos=1, delays=[60],
+              decays=[0.4]):
+        '''Add a sequence of echoes to the audio.
+
+        Like the echo effect, echos stand for ‘ECHO in Sequel’, that is the
+        first echos takes the input, the second the input and the first echos,
+        the third the input and the first and the second echos, ... and so on.
+        Care should be taken using many echos; a single echos has the same
+        effect as a single echo.
+
+        Parameters
+        ----------
+        gain_in : float, default=0.8
+            Input volume, between 0 and 1
+        gain_out : float, default=0.9
+            Output volume, between 0 and 1
+        n_echos : int, default=1
+            Number of reflections
+        delays : list, default=[60]
+            List of delays in miliseconds
+        decays : list, default=[0.4]
+            List of decays, relative to gain in between 0 and 1
+
+        See Also
+        --------
+        echo, reverb, chorus
+        '''
+        if not is_number(gain_in) or gain_in <= 0 or gain_in > 1:
+            raise ValueError("gain_in must be a number between 0 and 1.")
+
+        if not is_number(gain_out) or gain_out <= 0 or gain_out > 1:
+            raise ValueError("gain_out must be a number between 0 and 1.")
+
+        if not isinstance(n_echos, int) or n_echos <= 0:
+            raise ValueError("n_echos must be a positive integer.")
+
+        # validate delays
+        if not isinstance(delays, list):
+            raise ValueError("delays must be a list")
+
+        if len(delays) != n_echos:
+            raise ValueError("the length of delays must equal n_echos")
+
+        if any((not is_number(p) or p <= 0) for p in delays):
+            raise ValueError("the elements of delays must be numbers > 0")
+
+        # validate decays
+        if not isinstance(decays, list):
+            raise ValueError("decays must be a list")
+
+        if len(decays) != n_echos:
+            raise ValueError("the length of decays must equal n_echos")
+        if any((not is_number(p) or p <= 0 or p > 1) for p in decays):
+            raise ValueError(
+                "the elements of decays must be between 0 and 1"
+            )
+
+        effect_args = ['echos', '{}'.format(gain_in), '{}'.format(gain_out)]
+
+        for i in range(n_echos):
+            effect_args.extend([
+                '{}'.format(delays[i]),
+                '{}'.format(decays[i])
+            ])
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('echos')
+        return self
 
     def equalizer(self, frequency, width_q, gain_db):
         '''Apply a two-pole peaking equalisation (EQ) filter to boost or
@@ -1217,7 +1441,6 @@ class Transformer(object):
         self.effects_log.append('flanger')
 
         return self
-        raise NotImplementedError
 
     def gain(self, gain_db=0.0, normalize=True, limiter=False, balance=None):
         '''Apply amplification or attenuation to the audio signal.
@@ -1431,8 +1654,153 @@ class Transformer(object):
 
         return self
 
-    def mcompand(self):
-        raise NotImplementedError
+    def mcompand(self, n_bands=2, crossover_frequencies=[1600],
+                 attack_time=[0.005, 0.000625], decay_time=[0.1, 0.0125],
+                 soft_knee_db=[6.0, None],
+                 tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)],
+                 [(-47, -40), (-34, -34), (-15, -33), (0, 0)]]):
+
+        '''The multi-band compander is similar to the single-band compander but
+        the audio is first divided into bands using Linkwitz-Riley cross-over
+        filters and a separately specifiable compander run on each band.
+
+        When used with n_bands=1, this effect is identical to compand.
+        When using n_bands > 1, the first set of arguments applies a single
+        band compander, and each subsequent set of arugments is applied on
+        each of the crossover frequencies.
+
+        Parameters
+        ----------
+        n_bands : int, default=2
+            The number of bands.
+        crossover_frequencies : list of float, default=[1600]
+            A list of crossover frequencies in Hz of length n_bands-1.
+            The first band is always the full spectrum, followed by the bands
+            specified by crossover_frequencies.
+        attack_time : list of float, default=[0.005, 0.000625]
+            A list of length n_bands, where each element is the time in seconds
+            over which the instantaneous level of the input signal is averaged
+            to determine increases in volume over the current band.
+        decay_time : list of float, default=[0.1, 0.0125]
+            A list of length n_bands, where each element is the time in seconds
+            over which the instantaneous level of the input signal is averaged
+            to determine decreases in volume over the current band.
+        soft_knee_db : list of float or None, default=[6.0, None]
+            A list of length n_bands, where each element is the ammount (in dB)
+            for which the points at where adjacent line segments on the
+            transfer function meet will be rounded over the current band.
+            If None, no soft_knee is applied.
+        tf_points : list of list of tuples, default=[
+                [(-47, -40), (-34, -34), (-17, -33), (0, 0)],
+                [(-47, -40), (-34, -34), (-15, -33), (0, 0)]]
+            A list of length n_bands, where each element is the transfer
+            function points as a list of tuples corresponding to points in
+            (dB, dB) defining the compander's transfer function over the
+            current band.
+
+        See Also
+        --------
+        compand, contrast
+
+        '''
+        if not isinstance(n_bands, int) or n_bands < 1:
+            raise ValueError("n_bands must be a positive integer.")
+
+        if (not isinstance(crossover_frequencies, list) or
+                len(crossover_frequencies) != n_bands - 1):
+            raise ValueError(
+                "crossover_frequences must be a list of length n_bands - 1"
+            )
+
+        if any([not is_number(f) or f < 0 for f in crossover_frequencies]):
+            raise ValueError(
+                "crossover_frequencies elements must be positive floats."
+            )
+
+        if not isinstance(attack_time, list) or len(attack_time) != n_bands:
+            raise ValueError("attack_time must be a list of length n_bands")
+
+        if any([not is_number(a) or a <= 0 for a in attack_time]):
+            raise ValueError("attack_time elements must be positive numbers.")
+
+        if not isinstance(decay_time, list) or len(decay_time) != n_bands:
+            raise ValueError("decay_time must be a list of length n_bands")
+
+        if any([not is_number(d) or d <= 0 for d in decay_time]):
+            raise ValueError("decay_time elements must be positive numbers.")
+
+        if any([a > d for a, d in zip(attack_time, decay_time)]):
+            logging.warning(
+                "Elements of attack_time are larger than decay_time.\n"
+                "For most situations, attack_time should be shorter than "
+                "decay time because the human ear is more sensitive to sudden "
+                "loud music than sudden soft music."
+            )
+
+        if not isinstance(soft_knee_db, list) or len(soft_knee_db) != n_bands:
+            raise ValueError("soft_knee_db must be a list of length n_bands.")
+
+        if any([(not is_number(d) and d is not None) for d in soft_knee_db]):
+            raise ValueError(
+                "elements of soft_knee_db must be a number or None."
+            )
+
+        if not isinstance(tf_points, list) or len(tf_points) != n_bands:
+            raise ValueError("tf_points must be a list of length n_bands.")
+
+        if any([not isinstance(t, list) or len(t) == 0 for t in tf_points]):
+            raise ValueError(
+                "tf_points must be a list with at least one point."
+            )
+
+        for tfp in tf_points:
+            if any(not isinstance(pair, tuple) for pair in tfp):
+                raise ValueError("elements of tf_points lists must be pairs")
+            if any(len(pair) != 2 for pair in tfp):
+                raise ValueError("Tuples in tf_points lists must be length 2")
+            if any(not (is_number(p[0]) and is_number(p[1])) for p in tfp):
+                raise ValueError(
+                    "Tuples in tf_points lists must be pairs of numbers."
+                )
+            if any((p[0] > 0 or p[1] > 0) for p in tfp):
+                raise ValueError(
+                    "Tuple values in tf_points lists must be <= 0 (dB)."
+                )
+            if len(tf_points) > len(set([p[0] for p in tfp])):
+                raise ValueError("Found duplicate x-value in tf_points list.")
+
+        effect_args = ['mcompand']
+
+        for i in range(n_bands):
+
+            if i > 0:
+                effect_args.append('{}'.format(crossover_frequencies[i - 1]))
+
+            intermed_args = ["{},{}".format(attack_time[i], decay_time[i])]
+
+            tf_points_band = tf_points[i]
+            tf_points_band = sorted(
+                tf_points_band,
+                key=lambda tf_points_band: tf_points_band[0]
+            )
+            transfer_list = []
+            for point in tf_points_band:
+                transfer_list.extend([
+                    "{}".format(point[0]), "{}".format(point[1])
+                ])
+
+            if soft_knee_db[i] is not None:
+                intermed_args.append(
+                    "{}:{}".format(soft_knee_db[i], ",".join(transfer_list))
+                )
+            else:
+                intermed_args.append(",".join(transfer_list))
+
+            effect_args.append('"{}"'.format(' '.join(intermed_args)))
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('mcompand')
+        return self
 
     def norm(self, db_level=-3.0):
         '''Normalize an audio file to a particular db level.
@@ -1532,8 +1900,67 @@ class Transformer(object):
 
         return self
 
-    def phaser(self):
-        raise NotImplementedError
+    def phaser(self, gain_in=0.8, gain_out=0.74, delay=3, decay=0.4, speed=0.5,
+               modulation_shape='sinusoidal'):
+        '''Apply a phasing effect to the audio.
+
+        Parameters
+        ----------
+        gain_in : float, default=0.8
+            Input volume between 0 and 1
+        gain_out: float, default=0.74
+            Output volume between 0 and 1
+        delay : float, default=3
+            Delay in miliseconds between 0 and 5
+        decay : float, default=0.4
+            Decay relative to gain_in, between 0.1 and 0.5.
+        speed : float, default=0.5
+            Modulation speed in Hz, between 0.1 and 2
+        modulation_shape : str, defaul='sinusoidal'
+            Modulation shpae. One of 'sinusoidal' or 'triangular'
+
+        See Also
+        --------
+        flanger, tremolo
+        '''
+        if not is_number(gain_in) or gain_in <= 0 or gain_in > 1:
+            raise ValueError("gain_in must be a number between 0 and 1.")
+
+        if not is_number(gain_out) or gain_out <= 0 or gain_out > 1:
+            raise ValueError("gain_out must be a number between 0 and 1.")
+
+        if not is_number(delay) or delay <= 0 or delay > 5:
+            raise ValueError("delay must be a positive number.")
+
+        if not is_number(decay) or decay < 0.1 or decay > 0.5:
+            raise ValueError("decay must be a number between 0.1 and 0.5.")
+
+        if not is_number(speed) or speed < 0.1 or speed > 2:
+            raise ValueError("speed must be a positive number.")
+
+        if modulation_shape not in ['sinusoidal', 'triangular']:
+            raise ValueError(
+                "modulation_shape must be one of 'sinusoidal', 'triangular'."
+            )
+
+        effect_args = [
+            'phaser',
+            '{}'.format(gain_in),
+            '{}'.format(gain_out),
+            '{}'.format(delay),
+            '{}'.format(decay),
+            '{}'.format(speed)
+        ]
+
+        if modulation_shape == 'sinusoidal':
+            effect_args.append('-s')
+        elif modulation_shape == 'triangular':
+            effect_args.append('-t')
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('phaser')
+
+        return self
 
     def pitch(self, n_semitones, quick=False):
         '''Pitch shift the audio without changing the tempo.
@@ -1807,14 +2234,181 @@ class Transformer(object):
 
         return self
 
-    def sinc(self):
-        raise NotImplementedError
+    def sinc(self, filter_type='high', cutoff_freq=3000,
+             stop_band_attenuation=120, transition_bw=None,
+             phase_response=None):
+        '''Apply a sinc kaiser-windowed low-pass, high-pass, band-pass, or
+        band-reject filter to the signal.
 
-    def speed(self):
-        raise NotImplementedError
+        Parameters
+        ----------
+        filter_type : str, default='high'
+            Type of filter. One of:
+                - 'high' for a high-pass filter
+                - 'low' for a low-pass filter
+                - 'pass' for a band-pass filter
+                - 'reject' for a band-reject filter
+        cutoff_freq : float or list, default=3000
+            A scalar or length 2 list indicating the filter's critical
+            frequencies. The critical frequencies are given in Hz and must be
+            positive. For a high-pass or low-pass filter, cutoff_freq
+            must be a scalar. For a band-pass or band-reject filter, it must be
+            a length 2 list.
+        stop_band_attenuation : float, default=120
+            The stop band attenuation in dB
+        transition_bw : float, list or None, default=None
+            The transition band-width in Hz.
+            If None, sox's default of 5% of the total bandwith is used.
+            If a float, the given transition bandwith is used for both the
+            upper and lower bands (if applicable).
+            If a list, the first argument is used for the lower band and the
+            second for the upper band.
+        phase_response : float or None
+            The filter's phase response between 0 (minimum) and 100 (maximum).
+            If None, sox's default phase repsonse is used.
 
-    def splice(self):
-        raise NotImplementedError
+        See Also
+        --------
+        band, bandpass, bandreject, highpass, lowpass
+        '''
+        filter_types = ['high', 'low', 'pass', 'reject']
+        if filter_type not in filter_types:
+            raise ValueError(
+                "filter_type must be one of {}".format(', '.join(filter_types))
+            )
+
+        if not (is_number(cutoff_freq) or isinstance(cutoff_freq, list)):
+            raise ValueError("cutoff_freq must be a number or a list")
+
+        if filter_type in ['high', 'low'] and isinstance(cutoff_freq, list):
+            raise ValueError(
+                "For filter types 'high' and 'low', "
+                "cutoff_freq must be a float, not a list"
+            )
+
+        if filter_type in ['pass', 'reject'] and is_number(cutoff_freq):
+            raise ValueError(
+                "For filter types 'pass' and 'reject', "
+                "cutoff_freq must be a list, not a float"
+            )
+
+        if is_number(cutoff_freq) and cutoff_freq <= 0:
+            raise ValueError("cutoff_freq must be a postive number")
+
+        if isinstance(cutoff_freq, list):
+            if len(cutoff_freq) != 2:
+                raise ValueError(
+                    "If cutoff_freq is a list it may only have 2 elements."
+                )
+
+            if any([not is_number(f) or f <= 0 for f in cutoff_freq]):
+                raise ValueError(
+                    "elements of cutoff_freq must be positive numbers"
+                )
+
+            cutoff_freq = sorted(cutoff_freq)
+
+        if not is_number(stop_band_attenuation) or stop_band_attenuation < 0:
+            raise ValueError("stop_band_attenuation must be a positive number")
+
+        if not (is_number(transition_bw) or
+                isinstance(transition_bw, list) or transition_bw is None):
+            raise ValueError("transition_bw must be a number, a list or None.")
+
+        if filter_type in ['high', 'low'] and isinstance(transition_bw, list):
+            raise ValueError(
+                "For filter types 'high' and 'low', "
+                "transition_bw must be a float, not a list"
+            )
+
+        if is_number(transition_bw) and transition_bw <= 0:
+            raise ValueError("transition_bw must be a postive number")
+
+        if isinstance(transition_bw, list):
+            if any([not is_number(f) or f <= 0 for f in transition_bw]):
+                raise ValueError(
+                    "elements of transition_bw must be positive numbers"
+                )
+            if len(transition_bw) != 2:
+                raise ValueError(
+                    "If transition_bw is a list it may only have 2 elements."
+                )
+
+        if phase_response is not None and not is_number(phase_response):
+            raise ValueError("phase_response must be a number or None.")
+
+        if (is_number(phase_response) and
+                (phase_response < 0 or phase_response > 100)):
+            raise ValueError("phase response must be between 0 and 100")
+
+        effect_args = ['sinc']
+        effect_args.extend(['-a', '{}'.format(stop_band_attenuation)])
+
+        if phase_response is not None:
+            effect_args.extend(['-p', '{}'.format(phase_response)])
+
+        if filter_type == 'high':
+            if transition_bw is not None:
+                effect_args.extend(['-t', '{}'.format(transition_bw)])
+            effect_args.append('{}'.format(cutoff_freq))
+        elif filter_type == 'low':
+            effect_args.append('-{}'.format(cutoff_freq))
+            if transition_bw is not None:
+                effect_args.extend(['-t', '{}'.format(transition_bw)])
+        else:
+            if is_number(transition_bw):
+                effect_args.extend(['-t', '{}'.format(transition_bw)])
+            elif isinstance(transition_bw, list):
+                effect_args.extend(['-t', '{}'.format(transition_bw[0])])
+
+        if filter_type == 'pass':
+            effect_args.append('{}-{}'.format(cutoff_freq[0], cutoff_freq[1]))
+        elif filter_type == 'reject':
+            effect_args.append('{}-{}'.format(cutoff_freq[1], cutoff_freq[0]))
+
+        if isinstance(transition_bw, list):
+            effect_args.extend(['-t', '{}'.format(transition_bw[1])])
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('sinc')
+        return self
+
+    def speed(self, factor):
+        '''Adjust the audio speed (pitch and tempo together).
+
+        Technically, the speed effect only changes the sample rate information,
+        leaving the samples themselves untouched. The rate effect is invoked
+        automatically to resample to the output sample rate, using its default
+        quality/speed. For higher quality or higher speed resampling, in
+        addition to the speed effect, specify the rate effect with the desired
+        quality option.
+
+        Parameters
+        ----------
+        factor : float
+            The ratio of the new speed to the old speed.
+            For ex. 1.1 speeds up the audio by 10%; 0.9 slows it down by 10%.
+            Note - this argument is the inverse of what is passed to the sox
+            stretch effect for consistency with speed.
+
+        See Also
+        --------
+        rate, tempo, pitch
+        '''
+        if not is_number(factor) or factor <= 0:
+            raise ValueError("factor must be a positive number")
+
+        if factor < 0.5 or factor > 2:
+            logging.warning(
+                "Using an extreme factor. Quality of results will be poor"
+            )
+
+        effect_args = ['speed', '{}'.format(factor)]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('speed')
+
+        return self
 
     def swap(self):
         '''Swap stereo channels. If the input is not stereo, pairs of channels
@@ -1833,8 +2427,55 @@ class Transformer(object):
 
         return self
 
-    def stretch(self):
-        raise NotImplementedError
+    def stretch(self, factor, window=20):
+        '''Change the audio duration (but not its pitch).
+        **Unless factor is close to 1, use the tempo effect instead.**
+
+        This effect is broadly equivalent to the tempo effect with search set
+        to zero, so in general, its results are comparatively poor; it is
+        retained as it can sometimes out-perform tempo for small factors.
+
+        Parameters
+        ----------
+        factor : float
+            The ratio of the new tempo to the old tempo.
+            For ex. 1.1 speeds up the tempo by 10%; 0.9 slows it down by 10%.
+            Note - this argument is the inverse of what is passed to the sox
+            stretch effect for consistency with tempo.
+        window : float, default=20
+            Window size in miliseconds
+
+        See Also
+        --------
+        tempo, speed, pitch
+
+        '''
+        if not is_number(factor) or factor <= 0:
+            raise ValueError("factor must be a positive number")
+
+        if factor < 0.5 or factor > 2:
+            logging.warning(
+                "Using an extreme time stretching factor. "
+                "Quality of results will be poor"
+            )
+
+        if abs(factor - 1.0) > 0.1:
+            logging.warning(
+                "For this stretch factor, "
+                "the tempo effect has better performance."
+            )
+
+        if not is_number(window) or window <= 0:
+            raise ValueError(
+                "window must be a positive number."
+            )
+
+        effect_args = ['stretch', '{}'.format(factor), '{}'.format(window)]
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('stretch')
+
+        return self
 
     def tempo(self, factor, audio_type=None, quick=False):
         '''Time stretch audio without changing pitch.
@@ -1869,6 +2510,12 @@ class Transformer(object):
             logging.warning(
                 "Using an extreme time stretching factor. "
                 "Quality of results will be poor"
+            )
+
+        if abs(factor - 1.0) <= 0.1:
+            logging.warning(
+                "For this stretch factor, "
+                "the stretch effect has better performance."
             )
 
         if audio_type not in [None, 'm', 's', 'l']:

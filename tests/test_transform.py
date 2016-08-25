@@ -386,6 +386,11 @@ class TestTransformerBuild(unittest.TestCase):
         with self.assertRaises(IOError):
             self.tfm.build('blah/asdf.wav', OUTPUT_FILE)
 
+    def test_failed_sox(self):
+        self.tfm.effects = ['channels', '-1']
+        with self.assertRaises(SoxError):
+            self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+
 
 class TestTransformerPreview(unittest.TestCase):
     def setUp(self):
@@ -538,6 +543,173 @@ class TestTransformerBass(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.bass(5.0, slope=0)
+
+
+class TestTransformerBend(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                 end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'bend',
+            '-f', '25',
+            '-o', '16',
+            '0.35,180,0.25',
+            '0.15,740,0.53',
+            '0.0,-540,0.3'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['bend']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_bends_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=1.5, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=1.2,
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[-1.2, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_start_times_invalid_order(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[2.5, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_end_times_invalid_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28], end_times=None,
+                     cents=[180, 740, -540])
+
+    def test_end_times_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28], end_times=[],
+                     cents=[180, 740, -540])
+
+    def test_end_times_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 'x'], cents=[180, 740, -540])
+
+    def test_end_times_invalid_order(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[1.58, 1.28, 0.6], cents=[180, 740, -540])
+
+    def test_start_greater_end(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.68],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_overlapping_intervals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.2],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540])
+
+    def test_cents_invalid_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=180)
+
+    def test_cents_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180])
+
+    def test_cents_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[None, None, None])
+
+    def test_frame_rate_valid(self):
+        tfm = new_transformer()
+        tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                 end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                 frame_rate=50)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'bend',
+            '-f', '50',
+            '-o', '16',
+            '0.35,180,0.25',
+            '0.15,740,0.53',
+            '0.0,-540,0.3'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_frame_rate_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                     frame_rate=0)
+
+    def test_oversample_rate_valid(self):
+        tfm = new_transformer()
+        tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                 end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                 oversample_rate=31)
+
+        actual_args = tfm.effects
+        expected_args = [
+            'bend',
+            '-f', '25',
+            '-o', '31',
+            '0.35,180,0.25',
+            '0.15,740,0.53',
+            '0.0,-540,0.3'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_oversample_rate_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.bend(n_bends=3, start_times=[0.35, 0.75, 1.28],
+                     end_times=[0.6, 1.28, 1.58], cents=[180, 740, -540],
+                     oversample_rate=5.5)
 
 
 class TestTransformerBiquad(unittest.TestCase):
@@ -1120,7 +1292,6 @@ class TestTransformerDelay(unittest.TestCase):
             tfm.delay([-1.0, 1.0])
 
 
-@unittest.skip("Tests pass on local machine and fail on remote.")
 class TestTransformerDownsample(unittest.TestCase):
 
     def test_default(self):
@@ -1134,6 +1305,11 @@ class TestTransformerDownsample(unittest.TestCase):
         actual_log = tfm.effects_log
         expected_log = ['downsample']
         self.assertEqual(expected_log, actual_log)
+
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_default_build(self):
+        tfm = new_transformer()
+        tfm.downsample()
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
@@ -1169,6 +1345,254 @@ class TestTransformerEarwax(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+
+class TestTransformerEcho(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.echo()
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['echo']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_valid(self):
+        tfm = new_transformer()
+        tfm.echo(gain_in=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '1.0', '0.9', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(gain_in=0)
+
+    def test_gain_out_valid(self):
+        tfm = new_transformer()
+        tfm.echo(gain_out=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '1.0', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_out_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(gain_out=None)
+
+    def test_n_echos_valid(self):
+        tfm = new_transformer()
+        tfm.echo(n_echos=2, delays=[60, 60], decays=[0.4, 0.4])
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '60', '0.4', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_echos_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(n_echos=1.2)
+
+    def test_delays_valid(self):
+        tfm = new_transformer()
+        tfm.echo(n_echos=2, delays=[1, 600], decays=[0.4, 0.4])
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '1', '0.4', '600', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_delays_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(delays=0)
+
+    def test_delays_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(delays=[6, 60])
+
+    def test_delays_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(delays=[0])
+
+    def test_decays_valid(self):
+        tfm = new_transformer()
+        tfm.echo(n_echos=2, delays=[60, 60], decays=[0.1, 1.0])
+
+        actual_args = tfm.effects
+        expected_args = ['echo', '0.8', '0.9', '60', '0.1', '60', '1.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decays_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(decays=None)
+
+    def test_decays_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(decays=[0.1, 0.6])
+
+    def test_decays_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echo(decays=[2])
+
+
+class TestTransformerEchos(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.echos()
+
+        actual_args = tfm.effects
+        expected_args = ['echos', '0.8', '0.9', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['echos']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_valid(self):
+        tfm = new_transformer()
+        tfm.echos(gain_in=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['echos', '1.0', '0.9', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(gain_in=0)
+
+    def test_gain_out_valid(self):
+        tfm = new_transformer()
+        tfm.echos(gain_out=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['echos', '0.8', '1.0', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_out_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(gain_out=None)
+
+    def test_n_echos_valid(self):
+        tfm = new_transformer()
+        tfm.echos(n_echos=2, delays=[60, 60], decays=[0.4, 0.4])
+
+        actual_args = tfm.effects
+        expected_args = ['echos', '0.8', '0.9', '60', '0.4', '60', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_echos_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(n_echos=1.2)
+
+    def test_delays_valid(self):
+        tfm = new_transformer()
+        tfm.echos(n_echos=2, delays=[1, 600], decays=[0.4, 0.4])
+
+        actual_args = tfm.effects
+        expected_args = ['echos', '0.8', '0.9', '1', '0.4', '600', '0.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_delays_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(delays=0)
+
+    def test_delays_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(delays=[6, 60])
+
+    def test_delays_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(delays=[0])
+
+    def test_decays_valid(self):
+        tfm = new_transformer()
+        tfm.echos(n_echos=2, delays=[60, 60], decays=[0.1, 1.0])
+
+        actual_args = tfm.effects
+        expected_args = ['echos', '0.8', '0.9', '60', '0.1', '60', '1.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decays_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(decays=None)
+
+    def test_decays_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(decays=[0.1, 0.6])
+
+    def test_decays_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.echos(decays=[2])
 
 
 class TestTransformerEqualizer(unittest.TestCase):
@@ -1616,7 +2040,6 @@ class TestTransformerHighpass(unittest.TestCase):
             tfm.highpass(1000.0, n_poles=3)
 
 
-@unittest.skip("Tests pass on local machine and fail on remote.")
 class TestTransformerHilbert(unittest.TestCase):
 
     def test_default(self):
@@ -1631,6 +2054,10 @@ class TestTransformerHilbert(unittest.TestCase):
         expected_log = ['hilbert']
         self.assertEqual(expected_log, actual_log)
 
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_default_build(self):
+        tfm = new_transformer()
+        tfm.hilbert()
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
@@ -1643,6 +2070,10 @@ class TestTransformerHilbert(unittest.TestCase):
         expected_args = ['hilbert', '-n', '17']
         self.assertEqual(expected_args, actual_args)
 
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_num_taps_valid_build(self):
+        tfm = new_transformer()
+        tfm.hilbert(num_taps=17)
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
@@ -1764,6 +2195,276 @@ class TestTransformerLoudness(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.loudness(reference_level=15.0)
+
+
+class TestTransformerMcompand(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.mcompand()
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['mcompand']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_bands_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(
+            n_bands=1, crossover_frequencies=[],
+            attack_time=[0.005], decay_time=[0.1],
+            soft_knee_db=[6.0],
+            tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)]]
+        )
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_bands_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(n_bands=0)
+
+    def test_crossover_frequencies_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(crossover_frequencies=[100])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '100',
+            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_crossover_frequencies_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(crossover_frequencies=[100, 200])
+
+    def test_crossover_frequencies_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(crossover_frequencies=[-200])
+
+    def test_attack_time_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(attack_time=[0.5, 0.0625])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.5,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.0625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_attack_time_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=0.5)
+
+    def test_attack_time_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=[0.5])
+
+    def test_attack_time_invalid_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=[-1, 0.5])
+
+    def test_attack_time_invalid_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=[None, 'a'])
+
+    def test_decay_time_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(decay_time=[0.001, 0.5])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.001 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.5 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decay_time_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=0.5)
+
+    def test_decay_time_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=[0.5])
+
+    def test_decay_time_invalid_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=[0.5, 0.0])
+
+    def test_decay_time_invalid_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=['a', 'b'])
+
+    def test_soft_knee_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(soft_knee_db=[-2, -5])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 -2:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.0125 -5:-47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_soft_knee_none(self):
+        tfm = new_transformer()
+        tfm.mcompand(soft_knee_db=[None, None])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 -47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_soft_knee_db_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(soft_knee_db=0.5)
+
+    def test_soft_knee_db_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(soft_knee_db=[6])
+
+    def test_soft_knee_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(soft_knee_db=['s', -5])
+
+    def test_tf_points_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(
+            tf_points=[
+                [(0, -4), (-70, -60), (-60, -20), (-40, -40)],
+                [(0, -4), (-70, -60)]
+            ]
+        )
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-70,-60,-60,-20,-40,-40,0,-4"',
+            '1600',
+            '"0.000625,0.0125 -70,-60,0,-4"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_tf_points_wrong_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, 0)]])
+
+    def test_tf_points_elt_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[(0, 0), [(-30, -40)]])
+
+    def test_tf_points_elt_empty(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[], []])
+
+    def test_tf_points_elt_nontuples(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(
+                tf_points=[[[-70, -70], [-60, -20]], [(0, -4), (-70, -60)]]
+            )
+
+    def test_tf_points_elt_tup_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(
+                tf_points=[[(0, -2), (-60, -20), (-70, -70, 0)], [(0, 0)]]
+            )
+
+    def test_tf_points_elt_tup_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, -2), ('a', -20)], [(0, 0)]])
+
+    def test_tf_points_tup_nonnum2(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[('a', 'b'), ('c', 'd')], [(0, 0)]])
+
+    def test_tf_points_tup_positive(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, 2), (40, -20)], [(0, 0)]])
+
+    def test_tf_points_tup_dups(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, -2), (0, -20)], [(0, 0)]])
 
 
 class TestTransformerNorm(unittest.TestCase):
@@ -1925,6 +2626,127 @@ class TestTransformerPad(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.pad(end_duration='foo')
+
+
+class TestTransformerPhaser(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.phaser()
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['phaser']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(gain_in=0.5)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.5', '0.74', '3', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_in_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(gain_in=0)
+
+    def test_gain_out_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(gain_out=1.0)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '1.0', '3', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_out_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(gain_out=1.1)
+
+    def test_delay_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(delay=5)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '5', '0.4', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_delay_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(delay=None)
+
+    def test_decay_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(decay=0.1)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.1', '0.5', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decay_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(decay=0.0)
+
+    def test_speed_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(speed=2)
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '2', '-s']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_speed_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(speed=-1)
+
+    def test_modulation_shape_valid(self):
+        tfm = new_transformer()
+        tfm.phaser(modulation_shape='triangular')
+
+        actual_args = tfm.effects
+        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '0.5', '-t']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_modulation_shape_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.phaser(modulation_shape='square')
 
 
 class TestTransformerPitch(unittest.TestCase):
@@ -2349,6 +3171,362 @@ class TestTransformerSilence(unittest.TestCase):
             tfm.silence(buffer_around_silence=0)
 
 
+class TestTransformerSinc(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.sinc()
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_valid_low(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='low')
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_valid_pass(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='pass', cutoff_freq=[3000, 4000])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '3000-4000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_valid_reject(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='reject', cutoff_freq=[3000, 4000])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '4000-3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_filter_type_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='stop')
+
+    def test_cutoff_freq_valid_float(self):
+        tfm = new_transformer()
+        tfm.sinc(cutoff_freq=300.4)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '300.4']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_cutoff_freq_valid_list(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='pass', cutoff_freq=[300.4, 1000])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '300.4-1000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_cutoff_freq_valid_unordered(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='pass', cutoff_freq=[1000, 300.4])
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '300.4-1000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_cutoff_freq_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=None)
+
+    def test_cutoff_freq_invalid_high(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=[1000, 300.4])
+
+    def test_cutoff_freq_invalid_reject(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='reject', cutoff_freq=1000.0)
+
+    def test_cutoff_freq_invalid_number(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(cutoff_freq=-1000)
+
+    def test_cutoff_freq_invalid_list_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='pass', cutoff_freq=[1000, 2000, 3000])
+
+    def test_cutoff_freq_invalid_list(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='pass', cutoff_freq=['a', 'b'])
+
+    def test_stop_band_attenuation_valid(self):
+        tfm = new_transformer()
+        tfm.sinc(stop_band_attenuation=60)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '60', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_stop_band_attenuation_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(stop_band_attenuation=-3)
+
+    def test_transition_bw_valid_high(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='high', transition_bw=100)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-t', '100', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_valid_low(self):
+        tfm = new_transformer()
+        tfm.sinc(filter_type='low', transition_bw=100)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-3000', '-t', '100']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_valid_pass_float(self):
+        tfm = new_transformer()
+        tfm.sinc(
+            filter_type='pass', cutoff_freq=[3000, 4000], transition_bw=100
+        )
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-t', '100', '3000-4000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_valid_pass_list(self):
+        tfm = new_transformer()
+        tfm.sinc(
+            filter_type='pass', cutoff_freq=[3000, 4000],
+            transition_bw=[100, 200]
+        )
+
+        actual_args = tfm.effects
+        expected_args = [
+            'sinc', '-a', '120', '-t', '100', '3000-4000', '-t', '200'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_transition_bw_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(transition_bw='a')
+
+    def test_transition_bw_invalid_low(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(filter_type='low', transition_bw=[100, 200])
+
+    def test_transition_bw_invalid_float(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(transition_bw=-100)
+
+    def test_transition_bw_invalid_list_elt(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(
+                filter_type='pass', cutoff_freq=[3000, 4000],
+                transition_bw=[100, 'z']
+            )
+
+    def test_transition_bw_linvalid_list_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(
+                filter_type='reject', cutoff_freq=[3000, 4000],
+                transition_bw=[100, 200, 300]
+            )
+
+    def test_phase_response_valid_low(self):
+        tfm = new_transformer()
+        tfm.sinc(phase_response=0)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-p', '0', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_phase_response_valid_mid(self):
+        tfm = new_transformer()
+        tfm.sinc(phase_response=25)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-p', '25', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_phase_response_valid_high(self):
+        tfm = new_transformer()
+        tfm.sinc(phase_response=100)
+
+        actual_args = tfm.effects
+        expected_args = ['sinc', '-a', '120', '-p', '100', '3000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['sinc']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_phase_response_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(phase_response='z')
+
+    def test_phase_response_invalid_large(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(phase_response=101)
+
+    def test_phase_response_invalid_small(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.sinc(phase_response=-1)
+
+
+class TestTransformerSpeed(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.speed(1.5)
+
+        actual_args = tfm.effects
+        expected_args = ['speed', '1.5']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['speed']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_valid(self):
+        tfm = new_transformer()
+        tfm.speed(0.7)
+
+        actual_args = tfm.effects
+        expected_args = ['speed', '0.7']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_valid_extreme(self):
+        tfm = new_transformer()
+        tfm.speed(2.5)
+
+        actual_args = tfm.effects
+        expected_args = ['speed', '2.5']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.speed(-1)
+
+
 class TestTransformerSwap(unittest.TestCase):
 
     def test_default(self):
@@ -2366,6 +3544,71 @@ class TestTransformerSwap(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+
+class TestTransformerStretch(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.stretch(1.1)
+
+        actual_args = tfm.effects
+        expected_args = ['stretch', '1.1', '20']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['stretch']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_valid(self):
+        tfm = new_transformer()
+        tfm.stretch(0.7)
+
+        actual_args = tfm.effects
+        expected_args = ['stretch', '0.7', '20']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_extreme(self):
+        tfm = new_transformer()
+        tfm.stretch(0.2)
+
+        actual_args = tfm.effects
+        expected_args = ['stretch', '0.2', '20']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_factor_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.stretch(-1)
+
+    def test_window_valid(self):
+        tfm = new_transformer()
+        tfm.stretch(0.99, window=10)
+
+        actual_args = tfm.effects
+        expected_args = ['stretch', '0.99', '10']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_window_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.stretch(0.99, window=0)
 
 
 class TestTransformerTempo(unittest.TestCase):
@@ -2547,7 +3790,6 @@ class TestTransformerTrim(unittest.TestCase):
             tfm.trim(8, 2)
 
 
-@unittest.skip("Tests pass on local machine and fail on remote.")
 class TestTransformerUpsample(unittest.TestCase):
 
     def test_default(self):
@@ -2562,6 +3804,10 @@ class TestTransformerUpsample(unittest.TestCase):
         expected_log = ['upsample']
         self.assertEqual(expected_log, actual_log)
 
+    @unittest.skip("Tests pass on local machine and fail on remote.")
+    def test_default_build(self):
+        tfm = new_transformer()
+        tfm.upsample()
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
