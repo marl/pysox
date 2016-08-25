@@ -12,6 +12,7 @@ import logging
 from . import file_info
 from . import core
 from .core import ENCODING_VALS
+from .core import enquote_filepath
 from .core import is_number
 from .core import sox
 from .core import SoxError
@@ -91,7 +92,7 @@ class Combiner(Transformer):
         args.extend(input_args)
 
         args.extend(self.output_format)
-        args.append(output_filepath)
+        args.append(enquote_filepath(output_filepath))
         args.extend(self.effects)
 
         status, out, err = sox(args)
@@ -398,7 +399,7 @@ def _build_input_args(input_filepath_list, input_format_list):
     zipped = zip(input_filepath_list, input_format_list)
     for input_file, input_fmt in zipped:
         input_args.extend(input_fmt)
-        input_args.append(input_file)
+        input_args.append(enquote_filepath(input_file))
 
     return input_args
 

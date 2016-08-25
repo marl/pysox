@@ -42,11 +42,14 @@ def sox(args):
         args[0] = "sox"
 
     try:
-        logging.info("Executing: %s", " ".join(args))
+        command = ' '.join(args)
+        logging.info("Executing: %s", command)
 
         process_handle = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            shell=True
         )
+
         out, err = process_handle.communicate()
         out = out.decode("utf-8")
         err = err.decode("utf-8")

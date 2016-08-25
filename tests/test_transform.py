@@ -1292,9 +1292,8 @@ class TestTransformerDelay(unittest.TestCase):
             tfm.delay([-1.0, 1.0])
 
 
-@unittest.skip("Tests pass on local machine and fail on remote.")
 class TestTransformerDownsample(unittest.TestCase):
-
+    @unittest.skip("Tests pass on local machine and fail on remote.")
     def test_default(self):
         tfm = new_transformer()
         tfm.downsample()
@@ -2036,9 +2035,9 @@ class TestTransformerHighpass(unittest.TestCase):
             tfm.highpass(1000.0, n_poles=3)
 
 
-@unittest.skip("Tests pass on local machine and fail on remote.")
-class TestTransformerHilbert(unittest.TestCase):
 
+class TestTransformerHilbert(unittest.TestCase):
+    @unittest.skip("Tests pass on local machine and fail on remote.")
     def test_default(self):
         tfm = new_transformer()
         tfm.hilbert()
@@ -2184,6 +2183,276 @@ class TestTransformerLoudness(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.loudness(reference_level=15.0)
+
+
+class TestTransformerMcompand(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.mcompand()
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['mcompand']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_bands_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(
+            n_bands=1, crossover_frequencies=[],
+            attack_time=[0.005], decay_time=[0.1],
+            soft_knee_db=[6.0],
+            tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)]]
+        )
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_n_bands_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(n_bands=0)
+
+    def test_crossover_frequencies_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(crossover_frequencies=[100])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '100',
+            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_crossover_frequencies_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(crossover_frequencies=[100, 200])
+
+    def test_crossover_frequencies_invalid_vals(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(crossover_frequencies=[100, -200])
+
+    def test_attack_time_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(attack_time=[0.5, 0.0625])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.5,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.0625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_attack_time_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=0.5)
+
+    def test_attack_time_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=[0.5])
+
+    def test_attack_time_invalid_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=[-1, 0.5])
+
+    def test_attack_time_invalid_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(attack_time=[None, 'a'])
+
+    def test_decay_time_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(decay_time=[0.001, 0.5])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.001 6.0:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.5 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_decay_time_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=0.5)
+
+    def test_decay_time_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=[0.5])
+
+    def test_decay_time_invalid_neg(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=[0.5, 0.0])
+
+    def test_decay_time_invalid_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(decay_time=['a', 'b'])
+
+    def test_soft_knee_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(soft_knee_db=[-2, -5])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 -2:-47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.0125 -5:-47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_soft_knee_none(self):
+        tfm = new_transformer()
+        tfm.mcompand(soft_knee_db=[None, None])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 -47,-40,-34,-34,-17,-33,0,0"',
+            '1600',
+            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_soft_knee_db_invalid_type(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(soft_knee_db=0.5)
+
+    def test_soft_knee_db_invalid_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(soft_knee_db=[6])
+
+    def test_soft_knee_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(soft_knee_db=['s', -5])
+
+    def test_tf_points_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(
+            tf_points=[
+                [(0, -4), (-70, -60), (-60, -20), (-40, -40)],
+                [(0, -4), (-70, -60)]
+            ]
+        )
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-70,-60,-60,-20,-40,-40,0,-4"',
+            '1600',
+            '"0.000625,0.0125 -70,-60,0,-4"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_tf_points_wrong_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, 0)]])
+
+    def test_tf_points_elt_nonlist(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[(0, 0), [(-30, -40)]])
+
+    def test_tf_points_elt_empty(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[], []])
+
+    def test_tf_points_elt_nontuples(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(
+                tf_points=[[[-70, -70], [-60, -20]], [(0, -4), (-70, -60)]]
+            )
+
+    def test_tf_points_elt_tup_len(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(
+                tf_points=[[(0, -2), (-60, -20), (-70, -70, 0)], [(0, 0)]]
+            )
+
+    def test_tf_points_elt_tup_nonnum(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, -2), ('a', -20)], [(0, 0)]])
+
+    def test_tf_points_tup_nonnum2(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[('a', 'b'), ('c', 'd')], [(0, 0)]])
+
+    def test_tf_points_tup_positive(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, 2), (40, -20)], [(0, 0)]])
+
+    def test_tf_points_tup_dups(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(tf_points=[[(0, -2), (0, -20)], [(0, 0)]])
 
 
 class TestTransformerNorm(unittest.TestCase):
@@ -3509,9 +3778,9 @@ class TestTransformerTrim(unittest.TestCase):
             tfm.trim(8, 2)
 
 
-@unittest.skip("Tests pass on local machine and fail on remote.")
-class TestTransformerUpsample(unittest.TestCase):
 
+class TestTransformerUpsample(unittest.TestCase):
+    @unittest.skip("Tests pass on local machine and fail on remote.")
     def test_default(self):
         tfm = new_transformer()
         tfm.upsample()
