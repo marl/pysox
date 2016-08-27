@@ -2,13 +2,14 @@
 Python wrapper around sox. [Read the Docs here](http://pysox.readthedocs.org).
 
 [![PyPI version](https://badge.fury.io/py/sox.svg)](https://badge.fury.io/py/sox)
+[![Documentation Status](https://readthedocs.org/projects/resampy/badge/?version=latest)](http://pysox.readthedocs.io/en/latest/?badge=latest)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/rabitt/pysox/master/LICENSE.md)
+[![PyPI](https://img.shields.io/pypi/pyversions/Django.svg?maxAge=2592000)]()
 
 [![Build Status](https://travis-ci.org/rabitt/pysox.svg?branch=master)](https://travis-ci.org/rabitt/pysox)
 [![Coverage Status](https://coveralls.io/repos/github/rabitt/pysox/badge.svg?branch=master)](https://coveralls.io/github/rabitt/pysox?branch=master)
-[![Documentation Status](https://readthedocs.org/projects/resampy/badge/?version=latest)](http://pysox.readthedocs.io/en/latest/?badge=latest)
 
 ![PySocks](https://s-media-cache-ak0.pinimg.com/736x/62/6f/bc/626fbcae9618eccee1c4c7c947bf9d94.jpg)
-
 
 # Install
 
@@ -26,7 +27,7 @@ or install [from source](https://sourceforge.net/projects/sox/files/sox/).
 
 
 
-To install the most up to data release of this module via PyPi:
+To install the most up to date release of this module via PyPi:
 
 ```pip install sox```
 
