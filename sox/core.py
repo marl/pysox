@@ -86,7 +86,7 @@ def _get_valid_formats():
         return []
 
     shell_output = subprocess.check_output(
-        "sox -h | grep 'AUDIO FILE FORMATS'",
+        'sox -h | grep "AUDIO FILE FORMATS"',
         shell=True
     )
     formats = str(shell_output).strip('\n').split(' ')[3:]
