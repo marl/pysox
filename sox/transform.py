@@ -1448,7 +1448,7 @@ class Transformer(object):
         Parameters
         ----------
         gain_db : float, default=0.0
-            Target gain in decibels (dB).
+            Gain adjustment in decibels (dB).
         normalize : bool, default=True
             If True, audio is normalized to gain_db relative to full scale.
             If False, simply adjusts the audio power level by gain_db.
@@ -1470,7 +1470,7 @@ class Transformer(object):
 
         See Also
         --------
-        norm, loudness
+        loudness
 
         '''
         if not is_number(gain_db):
@@ -1619,20 +1619,20 @@ class Transformer(object):
         '''Loudness control. Similar to the gain effect, but provides
         equalisation for the human auditory system.
 
-        The gain is adjusted by gain_db and the signal equalised according to
-        ISO 226 w.r.t. reference_level.
+        The gain is adjusted by gain_db and the signal is equalised according
+        to ISO 226 w.r.t. reference_level.
 
         Parameters
         ----------
         gain_db : float, default=-10.0
-            Output loudness (in dB)
+            Loudness adjustment amount (in dB)
         reference_level : float, default=65.0
             Reference level (in dB) according to which the signal is equalized.
             Must be between 50 and 75 (dB)
 
         See Also
         --------
-        gain, loudness
+        gain
 
         '''
         if not is_number(gain_db):
