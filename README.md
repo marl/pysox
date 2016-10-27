@@ -11,6 +11,11 @@ Python wrapper around sox. [Read the Docs here](http://pysox.readthedocs.org).
 
 ![PySocks](https://s-media-cache-ak0.pinimg.com/736x/62/6f/bc/626fbcae9618eccee1c4c7c947bf9d94.jpg)
 
+This library was presented in the following paper:
+
+[R. M. Bittner](https://github.com/rabitt), [E. J. Humphrey](https://github.com/ejhumphrey) and J. P. Bello, "[pysox: Leveraging the Audio Signal Processing Power of SoX in Python](https://wp.nyu.edu/ismir2016/wp-content/uploads/sites/2294/2016/08/bittner-pysox.pdf)", in Proceedings of the 17th International Society for Music Information Retrieval Conference Late Breaking and Demo Papers, New York City, USA, Aug. 2016.
+
+
 # Install
 
 This requires that [SoX](http://sox.sourceforge.net/) version 14.4.2 or higher is installed.
