@@ -67,7 +67,6 @@ def sox(args):
 class SoxError(Exception):
     '''Exception to be raised when SoX exits with non-zero status.
     '''
-
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
