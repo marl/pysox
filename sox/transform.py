@@ -395,6 +395,11 @@ class Transformer(object):
         file_info.validate_input_file(input_filepath)
         file_info.validate_output_file(output_filepath)
 
+        if input_filepath == output_filepath:
+            raise ValueError(
+                "input_filepath must be different from output_filepath."
+            )
+
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
