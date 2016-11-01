@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ init method for sox module """
 import logging
 import os
@@ -21,3 +22,4 @@ from .combine import Combiner
 from .transform import Transformer
 from .core import SoxError
 from .core import SoxiError
+from .version import version as __version__
