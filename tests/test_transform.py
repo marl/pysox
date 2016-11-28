@@ -2871,6 +2871,81 @@ class TestTransformerRate(unittest.TestCase):
             tfm.rate(44100.0, quality='foo')
 
 
+class TestTransformerRemix(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.remix()
+
+        actual_args = tfm.effects
+        expected_args = ['remix', '-']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_remix_dictionary_valid(self):
+        tfm = new_transformer()
+        tfm.remix(remix_dictionary={1: [1, 2], 3: [1]})
+
+        actual_args = tfm.effects
+        expected_args = ['remix', '1,2', '0', '1']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_num_channels_valid(self):
+        tfm = new_transformer()
+        tfm.remix(remix_dictionary={1: [1, 2], 3: [1]}, num_output_channels=4)
+
+        actual_args = tfm.effects
+        expected_args = ['remix', '1,2', '0', '1', '0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_remix_dictionary_none(self):
+        tfm = new_transformer()
+        tfm.remix(remix_dictionary=None, num_output_channels=7)
+
+        actual_args = tfm.effects
+        expected_args = ['remix', '-']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_remix_dict_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.remix(remix_dictionary=3)
+
+    def test_remix_dict_invalid2(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.remix(remix_dictionary={1: [1], 2.5: [2, 4]})
+
+    def test_remix_dict_invalid3(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.remix(remix_dictionary={1: 1, 2: [2]})
+
+    def test_remix_dict_invalid4(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.remix(remix_dictionary={1: [1], 3: [0, 1]})
+
+    def test_num_output_channels_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.remix(num_output_channels=0)
+
 class TestTransformerRepeat(unittest.TestCase):
 
     def test_default(self):
