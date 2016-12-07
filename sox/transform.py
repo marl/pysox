@@ -874,7 +874,8 @@ class Transformer(object):
         return self
 
     def compand(self, attack_time=0.3, decay_time=0.8, soft_knee_db=6.0,
-                tf_points=[(-70, -70), (-60, -20), (0, 0)]):
+                tf_points=[(-70, -70), (-60, -20), (0, 0)],
+                ):
         '''Compand (compress or expand) the dynamic range of the audio.
 
         Parameters
@@ -1663,7 +1664,8 @@ class Transformer(object):
                  attack_time=[0.005, 0.000625], decay_time=[0.1, 0.0125],
                  soft_knee_db=[6.0, None],
                  tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)],
-                 [(-47, -40), (-34, -34), (-15, -33), (0, 0)]]):
+                 [(-47, -40), (-34, -34), (-15, -33), (0, 0)]],
+                 gain=[None, None]):
 
         '''The multi-band compander is similar to the single-band compander but
         the audio is first divided into bands using Linkwitz-Riley cross-over
@@ -1702,6 +1704,9 @@ class Transformer(object):
             function points as a list of tuples corresponding to points in
             (dB, dB) defining the compander's transfer function over the
             current band.
+        gain : list of floats or None
+            A list of gain values for each frequency band.
+            If None, no gain is applied.
 
         See Also
         --------
@@ -1774,6 +1779,13 @@ class Transformer(object):
             if len(tf_points) > len(set([p[0] for p in tfp])):
                 raise ValueError("Found duplicate x-value in tf_points list.")
 
+        if not isinstance(gain, list) or len(gain) != n_bands:
+            raise ValueError("gain must be a list of length n_bands")
+
+        if any([not (is_number(g) or g is None) for g in gain]):
+            print(gain)
+            raise ValueError("gain elements must be numbers or None.")
+
         effect_args = ['mcompand']
 
         for i in range(n_bands):
@@ -1800,6 +1812,9 @@ class Transformer(object):
                 )
             else:
                 intermed_args.append(",".join(transfer_list))
+
+            if gain[i] is not None:
+                intermed_args.append("{}".format(gain[i]))
 
             effect_args.append('"{}"'.format(' '.join(intermed_args)))
 

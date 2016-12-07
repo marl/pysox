@@ -2230,7 +2230,8 @@ class TestTransformerMcompand(unittest.TestCase):
             n_bands=1, crossover_frequencies=[],
             attack_time=[0.005], decay_time=[0.1],
             soft_knee_db=[6.0],
-            tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)]]
+            tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)]],
+            gain=[None]
         )
 
         actual_args = tfm.effects
@@ -2469,6 +2470,37 @@ class TestTransformerMcompand(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.mcompand(tf_points=[[(0, -2), (0, -20)], [(0, 0)]])
+
+    def test_gain_valid(self):
+        tfm = new_transformer()
+        tfm.mcompand(gain=[3.0, -1.0])
+
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0 3.0"',
+            '1600',
+            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0 -1.0"'
+        ]
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['mcompand']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_gain_len_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(gain=[-2])
+
+    def test_gain_values_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.mcompand(gain=['a', None])
 
 
 class TestTransformerNorm(unittest.TestCase):
