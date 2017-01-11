@@ -6,7 +6,6 @@ import os
 from .core import VALID_FORMATS
 from .core import soxi
 from .core import sox
-from .core import SoxError
 
 
 def bitrate(input_filepath):

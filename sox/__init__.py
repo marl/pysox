@@ -2,7 +2,6 @@
 """ init method for sox module """
 import logging
 import os
-logging.basicConfig(level=logging.DEBUG)
 
 # Check that SoX is installed and callable
 NO_SOX = False

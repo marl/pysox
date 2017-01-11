@@ -19,8 +19,6 @@ from .core import VALID_FORMATS
 
 from . import file_info
 
-logging.basicConfig(level=logging.DEBUG)
-
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
 
 
