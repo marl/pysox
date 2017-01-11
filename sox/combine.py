@@ -22,8 +22,6 @@ from .core import VALID_FORMATS
 from .transform import Transformer
 
 
-logging.basicConfig(level=logging.DEBUG)
-
 COMBINE_VALS = [
     'concatenate', 'merge', 'mix', 'mix-power', 'multiply'
 ]
