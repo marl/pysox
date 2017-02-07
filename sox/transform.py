@@ -378,6 +378,12 @@ class Transformer(object):
         self.output_format = output_format
         return self
 
+    def clear_effects(self):
+        '''Remove all effects process.
+        '''
+        self.effects = self.effects_log = list()
+        return self
+
     def build(self, input_filepath, output_filepath):
         '''Builds the output_file by executing the current set of commands.
 
