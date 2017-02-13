@@ -165,7 +165,17 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_rate(self):
         self.tfm.set_input_format(rate=44100)
         actual = self.tfm.input_format
-        expected = ['-r', '44100']
+        expected = ['-r', '44100.000000']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_rate_scinotation(self):
+        self.tfm.set_input_format(rate=1.0e3)
+        actual = self.tfm.input_format
+        expected = ['-r', '1000.000000']
         self.assertEqual(expected, actual)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -276,7 +286,17 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_rate(self):
         self.tfm.set_output_format(rate=44100)
         actual = self.tfm.output_format
-        expected = ['-r', '44100']
+        expected = ['-r', '44100.000000']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_rate_scinotation(self):
+        self.tfm.set_output_format(rate=1.0e3)
+        actual = self.tfm.output_format
+        expected = ['-r', '1000.000000']
         self.assertEqual(expected, actual)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -411,10 +431,10 @@ class TestTransformerAllpass(unittest.TestCase):
 
     def test_default(self):
         tfm = new_transformer()
-        tfm.allpass(500.0)
+        tfm.allpass(500)
 
         actual_args = tfm.effects
-        expected_args = ['allpass', '500.0', '2.0q']
+        expected_args = ['allpass', '500.000000', '2.000000q']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -443,7 +463,7 @@ class TestTransformerBandpass(unittest.TestCase):
         tfm.bandpass(500.0)
 
         actual_args = tfm.effects
-        expected_args = ['bandpass', '500.0', '2.0q']
+        expected_args = ['bandpass', '500.000000', '2.000000q']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -459,7 +479,7 @@ class TestTransformerBandpass(unittest.TestCase):
         tfm.bandpass(500.0, constant_skirt=True)
 
         actual_args = tfm.effects
-        expected_args = ['bandpass', '-c', '500.0', '2.0q']
+        expected_args = ['bandpass', '-c', '500.000000', '2.000000q']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -493,7 +513,7 @@ class TestTransformerBandreject(unittest.TestCase):
         tfm.bandreject(500.0)
 
         actual_args = tfm.effects
-        expected_args = ['bandreject', '500.0', '2.0q']
+        expected_args = ['bandreject', '500.000000', '2.000000q']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -522,7 +542,7 @@ class TestTransformerBass(unittest.TestCase):
         tfm.bass(-20.0)
 
         actual_args = tfm.effects
-        expected_args = ['bass', '-20.0', '100.0', '0.5s']
+        expected_args = ['bass', '-20.000000', '100.000000', '0.500000s']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -561,9 +581,9 @@ class TestTransformerBend(unittest.TestCase):
             'bend',
             '-f', '25',
             '-o', '16',
-            '0.35,180,0.25',
-            '0.15,740,0.53',
-            '0.0,-540,0.3'
+            '0.350000,180.000000,0.250000',
+            '0.150000,740.000000,0.530000',
+            '0.000000,-540.000000,0.300000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -670,9 +690,9 @@ class TestTransformerBend(unittest.TestCase):
             'bend',
             '-f', '50',
             '-o', '16',
-            '0.35,180,0.25',
-            '0.15,740,0.53',
-            '0.0,-540,0.3'
+            '0.350000,180.000000,0.250000',
+            '0.150000,740.000000,0.530000',
+            '0.000000,-540.000000,0.300000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -698,9 +718,9 @@ class TestTransformerBend(unittest.TestCase):
             'bend',
             '-f', '25',
             '-o', '31',
-            '0.35,180,0.25',
-            '0.15,740,0.53',
-            '0.0,-540,0.3'
+            '0.350000,180.000000,0.250000',
+            '0.150000,740.000000,0.530000',
+            '0.000000,-540.000000,0.300000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -723,7 +743,10 @@ class TestTransformerBiquad(unittest.TestCase):
         tfm.biquad([0, 0, 0], [1, 0, 0])
 
         actual_args = tfm.effects
-        expected_args = ['biquad', '0', '0', '0', '1', '0', '0']
+        expected_args = [
+            'biquad', '0.000000', '0.000000', '0.000000',
+            '1.000000', '0.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -828,7 +851,8 @@ class TestTransformerChorus(unittest.TestCase):
         # check only the first 3 args - the rest are randomized
         actual_args = tfm.effects
         expected_args = [
-            'chorus', '0.5', '0.9', '50.0', '0.32', '0.25', '2.0', '-t'
+            'chorus', '0.5', '0.9', '50.000000',
+            '0.320000', '0.250000', '2.000000', '-t'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -938,7 +962,7 @@ class TestTransformerContrast(unittest.TestCase):
         tfm.contrast()
 
         actual_args = tfm.effects
-        expected_args = ['contrast', '75']
+        expected_args = ['contrast', '75.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -972,7 +996,11 @@ class TestTransformerCompand(unittest.TestCase):
         tfm.compand()
 
         actual_args = tfm.effects
-        expected_args = ['compand', '0.3,0.8', '6.0:-70,-70,-60,-20,0,0']
+        expected_args = [
+            'compand', '0.300000,0.800000',
+            '6.000000:-70.000000,-70.000000,-60.000000,' +
+            '-20.000000,0.000000,0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -988,7 +1016,11 @@ class TestTransformerCompand(unittest.TestCase):
         tfm.compand(attack_time=0.5)
 
         actual_args = tfm.effects
-        expected_args = ['compand', '0.5,0.8', '6.0:-70,-70,-60,-20,0,0']
+        expected_args = [
+            'compand', '0.500000,0.800000',
+            '6.000000:-70.000000,-70.000000,-60.000000,' +
+            '-20.000000,0.000000,0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1010,7 +1042,11 @@ class TestTransformerCompand(unittest.TestCase):
         tfm.compand(decay_time=0.5)
 
         actual_args = tfm.effects
-        expected_args = ['compand', '0.3,0.5', '6.0:-70,-70,-60,-20,0,0']
+        expected_args = [
+            'compand', '0.300000,0.500000',
+            '6.000000:-70.000000,-70.000000,-60.000000,' +
+            '-20.000000,0.000000,0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1032,7 +1068,10 @@ class TestTransformerCompand(unittest.TestCase):
         tfm.compand(attack_time=1.0, decay_time=0.5)
 
         actual_args = tfm.effects
-        expected_args = ['compand', '1.0,0.5', '6.0:-70,-70,-60,-20,0,0']
+        expected_args = [
+            'compand', '1.000000,0.500000',
+            '6.000000:-70.000000,-70.000000,-60.000000,' +
+            '-20.000000,0.000000,0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1044,7 +1083,11 @@ class TestTransformerCompand(unittest.TestCase):
         tfm.compand(soft_knee_db=-2)
 
         actual_args = tfm.effects
-        expected_args = ['compand', '0.3,0.8', '-2:-70,-70,-60,-20,0,0']
+        expected_args = [
+            'compand', '0.300000,0.800000',
+            '-2.000000:-70.000000,-70.000000,-60.000000,' +
+            '-20.000000,0.000000,0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1056,7 +1099,10 @@ class TestTransformerCompand(unittest.TestCase):
         tfm.compand(soft_knee_db=None)
 
         actual_args = tfm.effects
-        expected_args = ['compand', '0.3,0.8', '-70,-70,-60,-20,0,0']
+        expected_args = [
+            'compand', '0.300000,0.800000',
+            '-70.000000,-70.000000,-60.000000,-20.000000,0.000000,0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1074,7 +1120,9 @@ class TestTransformerCompand(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'compand', '0.3,0.8', '6.0:-70,-60,-60,-20,-40,-40,0,-4'
+            'compand', '0.300000,0.800000',
+            '6.000000:-70.000000,-60.000000,-60.000000,-20.000000,' +
+            '-40.000000,-40.000000,0.000000,-4.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1142,7 +1190,7 @@ class TestTransformerConvert(unittest.TestCase):
         tfm.convert(samplerate=8000)
 
         actual_args = tfm.effects
-        expected_args = ['rate', '-h', '8000']
+        expected_args = ['rate', '-h', '8000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1205,7 +1253,7 @@ class TestTransformerDcshift(unittest.TestCase):
         tfm.dcshift()
 
         actual_args = tfm.effects
-        expected_args = ['dcshift', '0.0']
+        expected_args = ['dcshift', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1258,7 +1306,7 @@ class TestTransformerDelay(unittest.TestCase):
         tfm.delay([1.0])
 
         actual_args = tfm.effects
-        expected_args = ['delay', '1.0']
+        expected_args = ['delay', '1.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1274,7 +1322,7 @@ class TestTransformerDelay(unittest.TestCase):
         tfm.delay([0.0, 1.0])
 
         actual_args = tfm.effects
-        expected_args = ['delay', '0.0', '1.0']
+        expected_args = ['delay', '0.000000', '1.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1358,7 +1406,7 @@ class TestTransformerEcho(unittest.TestCase):
         tfm.echo()
 
         actual_args = tfm.effects
-        expected_args = ['echo', '0.8', '0.9', '60', '0.4']
+        expected_args = ['echo', '0.800000', '0.900000', '60', '0.4']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1374,7 +1422,7 @@ class TestTransformerEcho(unittest.TestCase):
         tfm.echo(gain_in=1.0)
 
         actual_args = tfm.effects
-        expected_args = ['echo', '1.0', '0.9', '60', '0.4']
+        expected_args = ['echo', '1.000000', '0.900000', '60', '0.4']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1391,7 +1439,7 @@ class TestTransformerEcho(unittest.TestCase):
         tfm.echo(gain_out=1.0)
 
         actual_args = tfm.effects
-        expected_args = ['echo', '0.8', '1.0', '60', '0.4']
+        expected_args = ['echo', '0.800000', '1.000000', '60', '0.4']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1408,7 +1456,9 @@ class TestTransformerEcho(unittest.TestCase):
         tfm.echo(n_echos=2, delays=[60, 60], decays=[0.4, 0.4])
 
         actual_args = tfm.effects
-        expected_args = ['echo', '0.8', '0.9', '60', '0.4', '60', '0.4']
+        expected_args = [
+            'echo', '0.800000', '0.900000', '60', '0.4', '60', '0.4'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1425,7 +1475,9 @@ class TestTransformerEcho(unittest.TestCase):
         tfm.echo(n_echos=2, delays=[1, 600], decays=[0.4, 0.4])
 
         actual_args = tfm.effects
-        expected_args = ['echo', '0.8', '0.9', '1', '0.4', '600', '0.4']
+        expected_args = [
+            'echo', '0.800000', '0.900000', '1', '0.4', '600', '0.4'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1452,7 +1504,9 @@ class TestTransformerEcho(unittest.TestCase):
         tfm.echo(n_echos=2, delays=[60, 60], decays=[0.1, 1.0])
 
         actual_args = tfm.effects
-        expected_args = ['echo', '0.8', '0.9', '60', '0.1', '60', '1.0']
+        expected_args = [
+            'echo', '0.800000', '0.900000', '60', '0.1', '60', '1.0'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1482,7 +1536,9 @@ class TestTransformerEchos(unittest.TestCase):
         tfm.echos()
 
         actual_args = tfm.effects
-        expected_args = ['echos', '0.8', '0.9', '60', '0.4']
+        expected_args = [
+            'echos', '0.800000', '0.900000', '60.000000', '0.400000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1498,7 +1554,9 @@ class TestTransformerEchos(unittest.TestCase):
         tfm.echos(gain_in=1.0)
 
         actual_args = tfm.effects
-        expected_args = ['echos', '1.0', '0.9', '60', '0.4']
+        expected_args = [
+            'echos', '1.000000', '0.900000', '60.000000', '0.400000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1515,7 +1573,9 @@ class TestTransformerEchos(unittest.TestCase):
         tfm.echos(gain_out=1.0)
 
         actual_args = tfm.effects
-        expected_args = ['echos', '0.8', '1.0', '60', '0.4']
+        expected_args = [
+            'echos', '0.800000', '1.000000', '60.000000', '0.400000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1532,7 +1592,10 @@ class TestTransformerEchos(unittest.TestCase):
         tfm.echos(n_echos=2, delays=[60, 60], decays=[0.4, 0.4])
 
         actual_args = tfm.effects
-        expected_args = ['echos', '0.8', '0.9', '60', '0.4', '60', '0.4']
+        expected_args = [
+            'echos', '0.800000', '0.900000', '60.000000', '0.400000',
+            '60.000000', '0.400000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1549,7 +1612,10 @@ class TestTransformerEchos(unittest.TestCase):
         tfm.echos(n_echos=2, delays=[1, 600], decays=[0.4, 0.4])
 
         actual_args = tfm.effects
-        expected_args = ['echos', '0.8', '0.9', '1', '0.4', '600', '0.4']
+        expected_args = [
+            'echos', '0.800000', '0.900000', '1.000000', '0.400000',
+            '600.000000', '0.400000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1576,7 +1642,10 @@ class TestTransformerEchos(unittest.TestCase):
         tfm.echos(n_echos=2, delays=[60, 60], decays=[0.1, 1.0])
 
         actual_args = tfm.effects
-        expected_args = ['echos', '0.8', '0.9', '60', '0.1', '60', '1.0']
+        expected_args = [
+            'echos', '0.800000', '0.900000', '60.000000', '0.100000',
+            '60.000000', '1.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1606,7 +1675,7 @@ class TestTransformerEqualizer(unittest.TestCase):
         tfm.equalizer(500.0, 2, 3)
 
         actual_args = tfm.effects
-        expected_args = ['equalizer', '500.0', '2q', '3']
+        expected_args = ['equalizer', '500.000000', '2.000000q', '3.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1640,7 +1709,7 @@ class TestTransformerFade(unittest.TestCase):
         tfm.fade(fade_in_len=0.5)
 
         actual_args = tfm.effects
-        expected_args = ['fade', 'q', '0.5']
+        expected_args = ['fade', 'q', '0.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1656,7 +1725,7 @@ class TestTransformerFade(unittest.TestCase):
         tfm.fade(fade_in_len=1.2)
 
         actual_args = tfm.effects
-        expected_args = ['fade', 'q', '1.2']
+        expected_args = ['fade', 'q', '1.200000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1673,7 +1742,7 @@ class TestTransformerFade(unittest.TestCase):
         tfm.fade(fade_out_len=3)
 
         actual_args = tfm.effects
-        expected_args = ['reverse', 'fade', 'q', '3', 'reverse']
+        expected_args = ['reverse', 'fade', 'q', '3.000000', 'reverse']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1690,7 +1759,7 @@ class TestTransformerFade(unittest.TestCase):
         tfm.fade(fade_shape='p', fade_in_len=1.5)
 
         actual_args = tfm.effects
-        expected_args = ['fade', 'p', '1.5']
+        expected_args = ['fade', 'p', '1.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1711,7 +1780,8 @@ class TestTransformerFir(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'fir', '0.0195', '-0.082', '0.234', '0.891', '-0.145', '0.043'
+            'fir', '0.019500', '-0.082000', '0.234000', '0.891000',
+            '-0.145000', '0.043000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1742,7 +1812,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '2', '0', '71', '0.5', 'sine', '25', 'linear'
+            'flanger', '0.000000', '2.000000', '0.000000', '71.000000',
+            '0.500000', 'sine', '25.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1760,7 +1831,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '10', '2', '0', '71', '0.5', 'sine', '25', 'linear'
+            'flanger', '10.000000', '2.000000', '0.000000', '71.000000',
+            '0.500000', 'sine', '25.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1779,7 +1851,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '0', '0', '71', '0.5', 'sine', '25', 'linear'
+            'flanger', '0.000000', '0.000000', '0.000000', '71.000000',
+            '0.500000', 'sine', '25.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1798,7 +1871,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '2', '-95', '71', '0.5', 'sine', '25', 'linear'
+            'flanger', '0.000000', '2.000000', '-95.000000', '71.000000',
+            '0.500000', 'sine', '25.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1817,7 +1891,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '2', '0', '0', '0.5', 'sine', '25', 'linear'
+            'flanger', '0.000000', '2.000000', '0.000000', '0.000000',
+            '0.500000', 'sine', '25.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1836,7 +1911,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '2', '0', '71', '10', 'sine', '25', 'linear'
+            'flanger', '0.000000', '2.000000', '0.000000', '71.000000',
+            '10.000000', 'sine', '25.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1855,7 +1931,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '2', '0', '71', '0.5', 'triangle', '25', 'linear'
+            'flanger', '0.000000', '2.000000', '0.000000', '71.000000',
+            '0.500000', 'triangle', '25.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1874,7 +1951,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '2', '0', '71', '0.5', 'sine', '95', 'linear'
+            'flanger', '0.000000', '2.000000', '0.000000', '71.000000',
+            '0.500000', 'sine', '95.000000', 'linear'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1893,7 +1971,8 @@ class TestTransformerFlanger(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'flanger', '0', '2', '0', '71', '0.5', 'sine', '25', 'quadratic'
+            'flanger', '0.000000', '2.000000', '0.000000', '71.000000',
+            '0.500000', 'sine', '25.000000', 'quadratic'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -1914,7 +1993,7 @@ class TestTransformerGain(unittest.TestCase):
         tfm.gain()
 
         actual_args = tfm.effects
-        expected_args = ['gain', '-n', '0.0']
+        expected_args = ['gain', '-n', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -1930,7 +2009,7 @@ class TestTransformerGain(unittest.TestCase):
         tfm.gain(gain_db=6)
 
         actual_args = tfm.effects
-        expected_args = ['gain', '-n', '6']
+        expected_args = ['gain', '-n', '6.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1947,7 +2026,7 @@ class TestTransformerGain(unittest.TestCase):
         tfm.gain(normalize=False)
 
         actual_args = tfm.effects
-        expected_args = ['gain', '0.0']
+        expected_args = ['gain', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1964,7 +2043,7 @@ class TestTransformerGain(unittest.TestCase):
         tfm.gain(limiter=True)
 
         actual_args = tfm.effects
-        expected_args = ['gain', '-n', '-l', '0.0']
+        expected_args = ['gain', '-n', '-l', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1981,7 +2060,7 @@ class TestTransformerGain(unittest.TestCase):
         tfm.gain(balance='B')
 
         actual_args = tfm.effects
-        expected_args = ['gain', '-B', '-n', '0.0']
+        expected_args = ['gain', '-B', '-n', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2001,7 +2080,7 @@ class TestTransformerHighpass(unittest.TestCase):
         tfm.highpass(1000.0)
 
         actual_args = tfm.effects
-        expected_args = ['highpass', '-2', '1000.0', '0.707q']
+        expected_args = ['highpass', '-2', '1000.000000', '0.707000q']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2017,7 +2096,7 @@ class TestTransformerHighpass(unittest.TestCase):
         tfm.highpass(1000.0, n_poles=1)
 
         actual_args = tfm.effects
-        expected_args = ['highpass', '-1', '1000.0']
+        expected_args = ['highpass', '-1', '1000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2100,7 +2179,7 @@ class TestTransformerLowpass(unittest.TestCase):
         tfm.lowpass(1000.0)
 
         actual_args = tfm.effects
-        expected_args = ['lowpass', '-2', '1000.0', '0.707q']
+        expected_args = ['lowpass', '-2', '1000.000000', '0.707000q']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2116,7 +2195,7 @@ class TestTransformerLowpass(unittest.TestCase):
         tfm.lowpass(1000.0, n_poles=1)
 
         actual_args = tfm.effects
-        expected_args = ['lowpass', '-1', '1000.0']
+        expected_args = ['lowpass', '-1', '1000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2150,7 +2229,7 @@ class TestTransformerLoudness(unittest.TestCase):
         tfm.loudness()
 
         actual_args = tfm.effects
-        expected_args = ['loudness', '-10.0', '65.0']
+        expected_args = ['loudness', '-10.000000', '65.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2166,7 +2245,7 @@ class TestTransformerLoudness(unittest.TestCase):
         tfm.loudness(gain_db=0)
 
         actual_args = tfm.effects
-        expected_args = ['loudness', '0', '65.0']
+        expected_args = ['loudness', '0.000000', '65.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2183,7 +2262,7 @@ class TestTransformerLoudness(unittest.TestCase):
         tfm.loudness(reference_level=50)
 
         actual_args = tfm.effects
-        expected_args = ['loudness', '-10.0', '50']
+        expected_args = ['loudness', '-10.000000', '50.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2210,9 +2289,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
-            '1600',
-            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '1600.000000',
+            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2237,7 +2318,8 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"'
+            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2257,9 +2339,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
-            '100',
-            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '100.000000',
+            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2284,9 +2368,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.5,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0"',
-            '1600',
-            '"0.0625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+            '"0.500000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '1600.000000',
+            '"0.062500,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2321,9 +2407,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.001 6.0:-47,-40,-34,-34,-17,-33,0,0"',
-            '1600',
-            '"0.000625,0.5 -47,-40,-34,-34,-15,-33,0,0"'
+            '"0.005000,0.001000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '1600.000000',
+            '"0.000625,0.500000 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2358,9 +2446,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.1 -2:-47,-40,-34,-34,-17,-33,0,0"',
-            '1600',
-            '"0.000625,0.0125 -5:-47,-40,-34,-34,-15,-33,0,0"'
+            '"0.005000,0.100000 -2.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '1600.000000',
+            '"0.000625,0.012500 -5.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-15.000000,-33.000000,0.000000,0.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2375,9 +2465,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.1 -47,-40,-34,-34,-17,-33,0,0"',
-            '1600',
-            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0"'
+            '"0.005000,0.100000 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-17.000000,-33.000000,0.000000,0.000000"',
+            '1600.000000',
+            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2412,9 +2504,10 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.1 6.0:-70,-60,-60,-20,-40,-40,0,-4"',
-            '1600',
-            '"0.000625,0.0125 -70,-60,0,-4"'
+            '"0.005000,0.100000 6.000000:-70.000000,-60.000000,-60.000000,'
+            '-20.000000,-40.000000,-40.000000,0.000000,-4.000000"',
+            '1600.000000',
+            '"0.000625,0.012500 -70.000000,-60.000000,0.000000,-4.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2478,9 +2571,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005,0.1 6.0:-47,-40,-34,-34,-17,-33,0,0 3.0"',
-            '1600',
-            '"0.000625,0.0125 -47,-40,-34,-34,-15,-33,0,0 -1.0"'
+            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000 3.000000"',
+            '1600.000000',
+            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000 -1.000000"'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2510,7 +2605,7 @@ class TestTransformerNorm(unittest.TestCase):
         tfm.norm()
 
         actual_args = tfm.effects
-        expected_args = ['norm', '-3.0']
+        expected_args = ['norm', '-3.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2526,7 +2621,7 @@ class TestTransformerNorm(unittest.TestCase):
         tfm.norm(db_level=0)
 
         actual_args = tfm.effects
-        expected_args = ['norm', '0']
+        expected_args = ['norm', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2565,7 +2660,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         tfm.overdrive()
 
         actual_args = tfm.effects
-        expected_args = ['overdrive', '20.0', '20.0']
+        expected_args = ['overdrive', '20.000000', '20.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2581,7 +2676,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         tfm.overdrive(gain_db=2)
 
         actual_args = tfm.effects
-        expected_args = ['overdrive', '2', '20.0']
+        expected_args = ['overdrive', '2.000000', '20.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2598,7 +2693,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         tfm.overdrive(colour=0)
 
         actual_args = tfm.effects
-        expected_args = ['overdrive', '20.0', '0']
+        expected_args = ['overdrive', '20.000000', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2618,7 +2713,7 @@ class TestTransformerPad(unittest.TestCase):
         tfm.pad()
 
         actual_args = tfm.effects
-        expected_args = ['pad', '0.0', '0.0']
+        expected_args = ['pad', '0.000000', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2634,7 +2729,7 @@ class TestTransformerPad(unittest.TestCase):
         tfm.pad(start_duration=3)
 
         actual_args = tfm.effects
-        expected_args = ['pad', '3', '0.0']
+        expected_args = ['pad', '3.000000', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2651,7 +2746,7 @@ class TestTransformerPad(unittest.TestCase):
         tfm.pad(end_duration=0.2)
 
         actual_args = tfm.effects
-        expected_args = ['pad', '0.0', '0.2']
+        expected_args = ['pad', '0.000000', '0.200000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2671,7 +2766,10 @@ class TestTransformerPhaser(unittest.TestCase):
         tfm.phaser()
 
         actual_args = tfm.effects
-        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '0.5', '-s']
+        expected_args = [
+            'phaser', '0.800000', '0.740000', '3.000000', '0.400000',
+            '0.500000', '-s'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2687,7 +2785,9 @@ class TestTransformerPhaser(unittest.TestCase):
         tfm.phaser(gain_in=0.5)
 
         actual_args = tfm.effects
-        expected_args = ['phaser', '0.5', '0.74', '3', '0.4', '0.5', '-s']
+        expected_args = [
+            'phaser', '0.500000', '0.740000', '3.000000', '0.400000',
+            '0.500000', '-s']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2704,7 +2804,9 @@ class TestTransformerPhaser(unittest.TestCase):
         tfm.phaser(gain_out=1.0)
 
         actual_args = tfm.effects
-        expected_args = ['phaser', '0.8', '1.0', '3', '0.4', '0.5', '-s']
+        expected_args = [
+            'phaser', '0.800000', '1.000000', '3.000000', '0.400000',
+            '0.500000', '-s']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2721,7 +2823,10 @@ class TestTransformerPhaser(unittest.TestCase):
         tfm.phaser(delay=5)
 
         actual_args = tfm.effects
-        expected_args = ['phaser', '0.8', '0.74', '5', '0.4', '0.5', '-s']
+        expected_args = [
+            'phaser', '0.800000', '0.740000', '5.000000', '0.400000',
+            '0.500000', '-s'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2738,7 +2843,10 @@ class TestTransformerPhaser(unittest.TestCase):
         tfm.phaser(decay=0.1)
 
         actual_args = tfm.effects
-        expected_args = ['phaser', '0.8', '0.74', '3', '0.1', '0.5', '-s']
+        expected_args = [
+            'phaser', '0.800000', '0.740000', '3.000000', '0.100000',
+            '0.500000', '-s'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2755,7 +2863,10 @@ class TestTransformerPhaser(unittest.TestCase):
         tfm.phaser(speed=2)
 
         actual_args = tfm.effects
-        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '2', '-s']
+        expected_args = [
+            'phaser', '0.800000', '0.740000', '3.000000', '0.400000',
+            '2.000000', '-s'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2772,7 +2883,10 @@ class TestTransformerPhaser(unittest.TestCase):
         tfm.phaser(modulation_shape='triangular')
 
         actual_args = tfm.effects
-        expected_args = ['phaser', '0.8', '0.74', '3', '0.4', '0.5', '-t']
+        expected_args = [
+            'phaser', '0.800000', '0.740000', '3.000000', '0.400000',
+            '0.500000', '-t'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2792,7 +2906,7 @@ class TestTransformerPitch(unittest.TestCase):
         tfm.pitch(0.0)
 
         actual_args = tfm.effects
-        expected_args = ['pitch', '0.0']
+        expected_args = ['pitch', '0.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2808,7 +2922,7 @@ class TestTransformerPitch(unittest.TestCase):
         tfm.pitch(-3.0)
 
         actual_args = tfm.effects
-        expected_args = ['pitch', '-300.0']
+        expected_args = ['pitch', '-300.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2820,7 +2934,7 @@ class TestTransformerPitch(unittest.TestCase):
         tfm.pitch(13.0)
 
         actual_args = tfm.effects
-        expected_args = ['pitch', '1300.0']
+        expected_args = ['pitch', '1300.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2837,7 +2951,7 @@ class TestTransformerPitch(unittest.TestCase):
         tfm.pitch(1.0, quick=True)
 
         actual_args = tfm.effects
-        expected_args = ['pitch', '-q', '100.0']
+        expected_args = ['pitch', '-q', '100.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2857,7 +2971,7 @@ class TestTransformerRate(unittest.TestCase):
         tfm.rate(48000)
 
         actual_args = tfm.effects
-        expected_args = ['rate', '-h', '48000']
+        expected_args = ['rate', '-h', '48000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -2873,7 +2987,7 @@ class TestTransformerRate(unittest.TestCase):
         tfm.rate(1000.5)
 
         actual_args = tfm.effects
-        expected_args = ['rate', '-h', '1000.5']
+        expected_args = ['rate', '-h', '1000.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -2890,7 +3004,7 @@ class TestTransformerRate(unittest.TestCase):
         tfm.rate(44100.0, quality='q')
 
         actual_args = tfm.effects
-        expected_args = ['rate', '-q', '44100.0']
+        expected_args = ['rate', '-q', '44100.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3027,7 +3141,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb()
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '50', '50', '100', '100', '0', '0']
+        expected_args = [
+            'reverb', '50.000000', '50.000000', '100.000000', '100.000000',
+            '0.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3043,7 +3160,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb(reverberance=90)
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '90', '50', '100', '100', '0', '0']
+        expected_args = [
+            'reverb', '90.000000', '50.000000', '100.000000', '100.000000',
+            '0.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3060,7 +3180,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb(high_freq_damping=10)
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '50', '10', '100', '100', '0', '0']
+        expected_args = [
+            'reverb', '50.000000', '10.000000', '100.000000', '100.000000',
+            '0.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3077,7 +3200,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb(room_scale=10)
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '50', '50', '10', '100', '0', '0']
+        expected_args = [
+            'reverb', '50.000000', '50.000000', '10.000000', '100.000000',
+            '0.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3094,7 +3220,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb(stereo_depth=50)
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '50', '50', '100', '50', '0', '0']
+        expected_args = [
+            'reverb', '50.000000', '50.000000', '100.000000', '50.000000',
+            '0.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3111,7 +3240,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb(pre_delay=10)
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '50', '50', '100', '100', '10', '0']
+        expected_args = [
+            'reverb', '50.000000', '50.000000', '100.000000', '100.000000',
+            '10.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3128,7 +3260,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb(wet_gain=5)
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '50', '50', '100', '100', '0', '5']
+        expected_args = [
+            'reverb', '50.000000', '50.000000', '100.000000', '100.000000',
+            '0.000000', '5.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3145,7 +3280,10 @@ class TestTransformerReverb(unittest.TestCase):
         tfm.reverb(wet_only=True)
 
         actual_args = tfm.effects
-        expected_args = ['reverb', '-w', '50', '50', '100', '100', '0', '0']
+        expected_args = [
+            'reverb', '-w', '50.000000', '50.000000', '100.000000',
+            '100.000000', '0.000000', '0.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3184,7 +3322,10 @@ class TestTransformerSilence(unittest.TestCase):
         tfm.silence()
 
         actual_args = tfm.effects
-        expected_args = ['silence', '1', '0.1', '0.1%', '-1', '0.1', '0.1%']
+        expected_args = [
+            'silence', '1', '0.100000', '0.100000%',
+            '-1', '0.100000', '0.100000%'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3200,7 +3341,7 @@ class TestTransformerSilence(unittest.TestCase):
         tfm.silence(location=1)
 
         actual_args = tfm.effects
-        expected_args = ['silence', '1', '0.1', '0.1%']
+        expected_args = ['silence', '1', '0.100000', '0.100000%']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3212,7 +3353,9 @@ class TestTransformerSilence(unittest.TestCase):
         tfm.silence(location=-1)
 
         actual_args = tfm.effects
-        expected_args = ['reverse', 'silence', '1', '0.1', '0.1%', 'reverse']
+        expected_args = [
+            'reverse', 'silence', '1', '0.100000', '0.100000%', 'reverse'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3229,7 +3372,10 @@ class TestTransformerSilence(unittest.TestCase):
         tfm.silence(silence_threshold=10.5)
 
         actual_args = tfm.effects
-        expected_args = ['silence', '1', '0.1', '10.5%', '-1', '0.1', '10.5%']
+        expected_args = [
+            'silence', '1', '0.100000', '10.500000%',
+            '-1', '0.100000', '10.500000%'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3251,7 +3397,9 @@ class TestTransformerSilence(unittest.TestCase):
         tfm.silence(min_silence_duration=2)
 
         actual_args = tfm.effects
-        expected_args = ['silence', '1', '2', '0.1%', '-1', '2', '0.1%']
+        expected_args = [
+            'silence', '1', '2.000000', '0.100000%',
+            '-1', '2.000000', '0.100000%']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3269,7 +3417,8 @@ class TestTransformerSilence(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'silence', '-l', '1', '0.1', '0.1%', '-1', '0.1', '0.1%'
+            'silence', '-l', '1', '0.100000', '0.100000%',
+            '-1', '0.100000', '0.100000%'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -3290,7 +3439,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc()
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '3000']
+        expected_args = ['sinc', '-a', '120.000000', '3000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3306,7 +3455,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(filter_type='low')
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '-3000']
+        expected_args = ['sinc', '-a', '120.000000', '-3000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3318,7 +3467,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(filter_type='pass', cutoff_freq=[3000, 4000])
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '3000-4000']
+        expected_args = ['sinc', '-a', '120.000000', '3000.000000-4000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3330,7 +3479,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(filter_type='reject', cutoff_freq=[3000, 4000])
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '4000-3000']
+        expected_args = ['sinc', '-a', '120.000000', '4000.000000-3000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3347,7 +3496,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(cutoff_freq=300.4)
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '300.4']
+        expected_args = ['sinc', '-a', '120.000000', '300.400000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3359,7 +3508,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(filter_type='pass', cutoff_freq=[300.4, 1000])
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '300.4-1000']
+        expected_args = ['sinc', '-a', '120.000000', '300.400000-1000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3371,7 +3520,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(filter_type='pass', cutoff_freq=[1000, 300.4])
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '300.4-1000']
+        expected_args = ['sinc', '-a', '120.000000', '300.400000-1000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3413,7 +3562,7 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(stop_band_attenuation=60)
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '60', '3000']
+        expected_args = ['sinc', '-a', '60.000000', '3000.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3430,7 +3579,9 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(filter_type='high', transition_bw=100)
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '-t', '100', '3000']
+        expected_args = [
+            'sinc', '-a', '120.000000', '-t', '100.000000', '3000.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3446,7 +3597,9 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(filter_type='low', transition_bw=100)
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '-3000', '-t', '100']
+        expected_args = [
+            'sinc', '-a', '120.000000', '-3000.000000', '-t', '100.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3464,7 +3617,10 @@ class TestTransformerSinc(unittest.TestCase):
         )
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '-t', '100', '3000-4000']
+        expected_args = [
+            'sinc', '-a', '120.000000', '-t', '100.000000',
+            '3000.000000-4000.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3484,7 +3640,8 @@ class TestTransformerSinc(unittest.TestCase):
 
         actual_args = tfm.effects
         expected_args = [
-            'sinc', '-a', '120', '-t', '100', '3000-4000', '-t', '200'
+            'sinc', '-a', '120.000000', '-t', '100.000000',
+            '3000.000000-4000.000000', '-t', '200.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -3532,7 +3689,9 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(phase_response=0)
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '-p', '0', '3000']
+        expected_args = [
+            'sinc', '-a', '120.000000', '-p', '0.000000', '3000.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3548,7 +3707,9 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(phase_response=25)
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '-p', '25', '3000']
+        expected_args = [
+            'sinc', '-a', '120.000000', '-p', '25.000000', '3000.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3564,7 +3725,9 @@ class TestTransformerSinc(unittest.TestCase):
         tfm.sinc(phase_response=100)
 
         actual_args = tfm.effects
-        expected_args = ['sinc', '-a', '120', '-p', '100', '3000']
+        expected_args = [
+            'sinc', '-a', '120.000000', '-p', '100.000000', '3000.000000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3598,7 +3761,7 @@ class TestTransformerSpeed(unittest.TestCase):
         tfm.speed(1.5)
 
         actual_args = tfm.effects
-        expected_args = ['speed', '1.5']
+        expected_args = ['speed', '1.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3614,7 +3777,7 @@ class TestTransformerSpeed(unittest.TestCase):
         tfm.speed(0.7)
 
         actual_args = tfm.effects
-        expected_args = ['speed', '0.7']
+        expected_args = ['speed', '0.700000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3626,7 +3789,7 @@ class TestTransformerSpeed(unittest.TestCase):
         tfm.speed(2.5)
 
         actual_args = tfm.effects
-        expected_args = ['speed', '2.5']
+        expected_args = ['speed', '2.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3665,7 +3828,7 @@ class TestTransformerStretch(unittest.TestCase):
         tfm.stretch(1.1)
 
         actual_args = tfm.effects
-        expected_args = ['stretch', '1.1', '20']
+        expected_args = ['stretch', '1.100000', '20.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3681,7 +3844,7 @@ class TestTransformerStretch(unittest.TestCase):
         tfm.stretch(0.7)
 
         actual_args = tfm.effects
-        expected_args = ['stretch', '0.7', '20']
+        expected_args = ['stretch', '0.700000', '20.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3693,7 +3856,7 @@ class TestTransformerStretch(unittest.TestCase):
         tfm.stretch(0.2)
 
         actual_args = tfm.effects
-        expected_args = ['stretch', '0.2', '20']
+        expected_args = ['stretch', '0.200000', '20.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3710,7 +3873,7 @@ class TestTransformerStretch(unittest.TestCase):
         tfm.stretch(0.99, window=10)
 
         actual_args = tfm.effects
-        expected_args = ['stretch', '0.99', '10']
+        expected_args = ['stretch', '0.990000', '10.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3730,7 +3893,7 @@ class TestTransformerTempo(unittest.TestCase):
         tfm.tempo(1.1)
 
         actual_args = tfm.effects
-        expected_args = ['tempo', '1.1']
+        expected_args = ['tempo', '1.100000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3746,7 +3909,7 @@ class TestTransformerTempo(unittest.TestCase):
         tfm.tempo(0.9)
 
         actual_args = tfm.effects
-        expected_args = ['tempo', '0.9']
+        expected_args = ['tempo', '0.900000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3758,7 +3921,7 @@ class TestTransformerTempo(unittest.TestCase):
         tfm.tempo(0.1)
 
         actual_args = tfm.effects
-        expected_args = ['tempo', '0.1']
+        expected_args = ['tempo', '0.100000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3775,7 +3938,7 @@ class TestTransformerTempo(unittest.TestCase):
         tfm.tempo(1.5, audio_type='m')
 
         actual_args = tfm.effects
-        expected_args = ['tempo', '-m', '1.5']
+        expected_args = ['tempo', '-m', '1.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3792,7 +3955,7 @@ class TestTransformerTempo(unittest.TestCase):
         tfm.tempo(1.5, quick=True)
 
         actual_args = tfm.effects
-        expected_args = ['tempo', '-q', '1.5']
+        expected_args = ['tempo', '-q', '1.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -3812,7 +3975,7 @@ class TestTransformerTreble(unittest.TestCase):
         tfm.treble(20.0)
 
         actual_args = tfm.effects
-        expected_args = ['treble', '20.0', '3000.0', '0.5s']
+        expected_args = ['treble', '20.000000', '3000.000000', '0.500000s']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3846,7 +4009,7 @@ class TestTransformerTremolo(unittest.TestCase):
         tfm.tremolo()
 
         actual_args = tfm.effects
-        expected_args = ['tremolo', '6.0', '40.0']
+        expected_args = ['tremolo', '6.000000', '40.000000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3875,7 +4038,7 @@ class TestTransformerTrim(unittest.TestCase):
         tfm.trim(0, 8.5)
 
         actual_args = tfm.effects
-        expected_args = ['trim', '0', '8.5']
+        expected_args = ['trim', '0.000000', '8.500000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -3949,11 +4112,11 @@ class TestTransformerVad(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'norm', 'vad',
-            '-t', '7.0',
-            '-T', '0.25',
-            '-s', '1.0',
-            '-g', '0.25',
-            '-p', '0.0'
+            '-t', '7.000000',
+            '-T', '0.250000',
+            '-s', '1.000000',
+            '-g', '0.250000',
+            '-p', '0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -3974,11 +4137,11 @@ class TestTransformerVad(unittest.TestCase):
             'norm',
             'reverse',
             'vad',
-            '-t', '7.0',
-            '-T', '0.25',
-            '-s', '1.0',
-            '-g', '0.25',
-            '-p', '0.0',
+            '-t', '7.000000',
+            '-T', '0.250000',
+            '-s', '1.000000',
+            '-g', '0.250000',
+            '-p', '0.000000',
             'reverse'
         ]
         self.assertEqual(expected_args, actual_args)
@@ -3998,11 +4161,11 @@ class TestTransformerVad(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'vad',
-            '-t', '7.0',
-            '-T', '0.25',
-            '-s', '1.0',
-            '-g', '0.25',
-            '-p', '0.0'
+            '-t', '7.000000',
+            '-T', '0.250000',
+            '-s', '1.000000',
+            '-g', '0.250000',
+            '-p', '0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
