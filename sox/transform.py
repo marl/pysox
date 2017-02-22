@@ -2527,19 +2527,97 @@ class Transformer(object):
 
         return self
 
-
-    def stat(self, input_filepath):
+    def stat(self, input_filepath, scale=None, rms=False):
         '''Display time and frequency domain statistical information about the
         audio. Audio is passed unmodified through the SoX processing chain.
 
-        See Also
+        Unlike other Transformer methods, this does not modify the transformer
+        effects chain. Instead it computes statistics on the output file that
+        would be created if the build command were invoked.
+
+        Parameters
         ----------
-        remix
+        input_filepath : str
+            Path to input file to compute stats on.
+        scale : float or None, default=None
+            If not None, scales the input by the given scale factor.
+        rms : bool, default=False
+            If True, scales all values by the average rms amplitude.
 
+        Returns
+        -------
+        stat_dict : dict
+            Dictionary of statistics.
+
+        See Also
+        --------
+        stats, power_spectrum, sox.file_info
         '''
-        output = self.build(input_filepath, None, extra_args=['stat'])
-        pass
+        effect_args = ['stat']
+        if scale is not None:
+            if not is_number(scale) or scale <= 0:
+                raise ValueError("scale must be a positive number.")
+            effect_args.extend(['-s', '{:f}'.format(scale)])
 
+        if rms:
+            effect_args.append('-rms')
+
+        _, _, stat_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        stat_dict = {}
+        lines = stat_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) == 0:
+                continue
+            value = split_line[-1]
+            key = ' '.join(split_line[:-1])
+            stat_dict[key.strip(':')] = value
+
+        return stat_dict
+
+    def power_spectrum(self, input_filepath):
+        '''Calculates the power spectrum (4096 point DFT). This method
+        internally invokes the stat command with the -freq option.
+
+        Note: This should only be used with a single channel audio file.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input file to compute stats on.
+
+        Returns
+        -------
+        power_spectrum : list
+            List of 
+
+        See Also
+        --------
+        stat, stats, sox.file_info
+        '''
+        effect_args = ['stat', '-freq']
+
+        _, _, stat_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        power_spectrum = []
+        lines = stat_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) != 2:
+                continue
+
+            freq, amp = split_line
+            if not is_number(freq):
+                continue
+            else:
+                power_spectrum.append([float(freq), float(amp)])
+
+        return power_spectrum
 
     def stats():
         pass
