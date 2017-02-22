@@ -378,7 +378,8 @@ class Transformer(object):
         self.output_format = output_format
         return self
 
-    def build(self, input_filepath, output_filepath):
+    def build(self, input_filepath, output_filepath, extra_args=None,
+              return_output=False):
         '''Builds the output_file by executing the current set of commands.
 
         Parameters
@@ -389,6 +390,14 @@ class Transformer(object):
             Path to desired output file. If a file already exists at the given
             path, the file will be overwritten.
             If None, no file will be created.
+        extra_args : list or None, default=None
+            If a list is given, these additional arguments are passed to SoX
+            at the end of the list of effects.
+            Don't use this argument unless you know exactly what you're doing!
+        return_output : bool, default=False
+            If True, returns the status and information sent to stderr and
+            stdout as a tuple (status, stdout, stderr).
+            Otherwise returns True on success.
 
         '''
         file_info.validate_input_file(input_filepath)
@@ -413,6 +422,11 @@ class Transformer(object):
         args.append(output_filepath)
         args.extend(self.effects)
 
+        if extra_args is not None:
+            if not isinstance(extra_args, list):
+                raise ValueError("extra_args must be a list.")
+            args.extend(extra_args)
+
         status, out, err = sox(args)
 
         if status != 0:
@@ -427,7 +441,11 @@ class Transformer(object):
             )
             if out is not None:
                 logging.info("[SoX] {}".format(out))
-            return True
+
+            if return_output:
+                return status, out, err
+            else:
+                return True
 
     def preview(self, input_filepath):
         '''Play a preview of the output with the current set of effects
@@ -2509,24 +2527,17 @@ class Transformer(object):
 
         return self
 
-    def swap(self):
-        '''Swap stereo channels. If the input is not stereo, pairs of channels
-        are swapped, and a possible odd last channel passed through.
 
-        E.g., for seven channels, the output order will be 2, 1, 4, 3, 6, 5, 7.
+    def stat(self, input_filepath):
+        '''Display time and frequency domain statistical information about the
+        audio. Audio is passed unmodified through the SoX processing chain.
 
         See Also
         ----------
         remix
 
         '''
-        effect_args = ['swap']
-        self.effects.extend(effect_args)
-        self.effects_log.append('swap')
-
-        return self
-
-    def stat():
+        output = self.build(input_filepath, None, extra_args=['stat'])
         pass
 
 
@@ -2580,6 +2591,23 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('stretch')
+
+        return self
+
+    def swap(self):
+        '''Swap stereo channels. If the input is not stereo, pairs of channels
+        are swapped, and a possible odd last channel passed through.
+
+        E.g., for seven channels, the output order will be 2, 1, 4, 3, 6, 5, 7.
+
+        See Also
+        ----------
+        remix
+
+        '''
+        effect_args = ['swap']
+        self.effects.extend(effect_args)
+        self.effects_log.append('swap')
 
         return self
 

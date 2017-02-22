@@ -416,6 +416,24 @@ class TestTransformerBuild(unittest.TestCase):
         status = self.tfm.build(INPUT_FILE, None)
         self.assertTrue(status)
 
+    def test_extra_arg(self):
+        status = self.tfm.build(INPUT_FILE, OUTPUT_FILE, ['norm'])
+        self.assertTrue(status)
+
+    def test_return_outputs(self):
+        status, out, err = self.tfm.build(
+            INPUT_FILE, OUTPUT_FILE, return_output=True)
+        self.assertEqual(status, 0)
+        self.assertEqual(out, '')
+        self.assertEqual(err, '')
+
+    def test_return_outputs_err(self):
+        status, out, err = self.tfm.build(
+            INPUT_FILE, OUTPUT_FILE, ['stats'], return_output=True)
+        self.assertEqual(status, 0)
+        self.assertEqual(out, '')
+        self.assertNotEqual(err, '')
+
     def test_invalid(self):
         with self.assertRaises(IOError):
             self.tfm.build('blah/asdf.wav', OUTPUT_FILE)
