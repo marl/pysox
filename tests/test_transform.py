@@ -442,6 +442,10 @@ class TestTransformerBuild(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tfm.build(INPUT_FILE, INPUT_FILE)
 
+    def test_extra_args_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build(INPUT_FILE, INPUT_FILE, extra_args=0)
+
     def test_failed_sox(self):
         self.tfm.effects = ['channels', '-1']
         with self.assertRaises(SoxError):

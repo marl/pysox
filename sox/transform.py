@@ -2614,10 +2614,7 @@ class Transformer(object):
                 continue
 
             freq, amp = split_line
-            if not is_number(freq):
-                continue
-            else:
-                power_spectrum.append([float(freq), float(amp)])
+            power_spectrum.append([float(freq), float(amp)])
 
         return power_spectrum
 
