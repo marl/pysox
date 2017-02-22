@@ -3910,6 +3910,28 @@ class TestTransformerStat(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_multichannel(self):
+        tfm = new_transformer()
+        actual = tfm.stat(INPUT_FILE4)
+        expected = {
+            'Length (seconds)': '10.000000',
+            'Minimum amplitude': '-0.264252',
+            'RMS amplitude': '0.053924',
+            'Volume adjustment': '3.521',
+            'Mean norm': '0.042598',
+            'Minimum delta': '0.000000',
+            'Samples read': '441000',
+            'Maximum amplitude': '0.284027',
+            'Mean amplitude': '0.000014',
+            'RMS delta': '0.006387',
+            'Midline amplitude': '0.009888',
+            'Maximum delta': '0.112427',
+            'Mean delta': '0.004495',
+            'Scaled by': '2147483647.0',
+            'Rough frequency': '831'
+        }
+        self.assertEqual(expected, actual)
+
 
 class TestTransformerPowerSpectrum(unittest.TestCase):
 
@@ -3925,6 +3947,65 @@ class TestTransformerPowerSpectrum(unittest.TestCase):
         self.assertEqual(expected_first, actual[0])
         self.assertEqual(expected_last, actual[-1])
 
+    def test_multichannel(self):
+        tfm = new_transformer()
+        actual = tfm.power_spectrum(INPUT_FILE4)
+        expected_len = 221184
+        expected_first = [0.0, 0.016436]
+        expected_last = [22039.234375, 0.000697]
+
+        self.assertEqual(expected_len, len(actual))
+        self.assertEqual(expected_first, actual[0])
+        self.assertEqual(expected_last, actual[-1])
+
+
+
+class TestTransformerStats(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        actual = tfm.stats(INPUT_FILE)
+        expected = {
+            'Max level': '0.284027',
+            'Crest factor': '5.27',
+            'RMS Tr dB': '-78.27',
+            'Num samples': '441k',
+            'DC offset': '0.000014',
+            'Length s': '10.000',
+            'Bit-depth': '15/16',
+            'Flat factor': '0.00',
+            'Pk lev dB': '-10.93',
+            'Min level': '-0.264252',
+            'RMS Pk dB': '-21.75',
+            'Window s': '0.050',
+            'Scale max': '1.000000',
+            'RMS lev dB': '-25.36',
+            'Pk count': '2'
+        }
+
+        self.assertEqual(expected, actual)
+
+    def test_multichannel(self):
+        tfm = new_transformer()
+        actual = tfm.stats(INPUT_FILE4)
+        expected = {
+            'Max level': '0.284027',
+            'Crest factor': '5.27',
+            'RMS Tr dB': '-78.27',
+            'Num samples': '441k',
+            'DC offset': '0.000014',
+            'Length s': '10.000',
+            'Bit-depth': '15/16',
+            'Flat factor': '0.00',
+            'Pk lev dB': '-10.93',
+            'Min level': '-0.264252',
+            'RMS Pk dB': '-21.75',
+            'Window s': '0.050',
+            'Scale max': '1.000000',
+            'RMS lev dB': '-25.36',
+            'Pk count': '2'
+        }
+        self.assertEqual(expected, actual)
 
 class TestTransformerSwap(unittest.TestCase):
 
