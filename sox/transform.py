@@ -385,13 +385,20 @@ class Transformer(object):
         ----------
         input_filepath : str
             Path to input audio file.
-        output_filepath : str
+        output_filepath : str or None
             Path to desired output file. If a file already exists at the given
             path, the file will be overwritten.
+            If None, no file will be created.
 
         '''
         file_info.validate_input_file(input_filepath)
-        file_info.validate_output_file(output_filepath)
+        input_filepath = enquote_filepath(input_filepath)
+
+        if output_filepath is not None:
+            file_info.validate_output_file(output_filepath)
+            output_filepath = enquote_filepath(output_filepath)
+        else:
+            output_filepath = '-n'
 
         if input_filepath == output_filepath:
             raise ValueError(
@@ -401,9 +408,9 @@ class Transformer(object):
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
-        args.append(enquote_filepath(input_filepath))
+        args.append(input_filepath)
         args.extend(self.output_format)
-        args.append(enquote_filepath(output_filepath))
+        args.append(output_filepath)
         args.extend(self.effects)
 
         status, out, err = sox(args)
@@ -2518,6 +2525,13 @@ class Transformer(object):
         self.effects_log.append('swap')
 
         return self
+
+    def stat():
+        pass
+
+
+    def stats():
+        pass
 
     def stretch(self, factor, window=20):
         '''Change the audio duration (but not its pitch).

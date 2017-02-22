@@ -279,6 +279,16 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
+    def test_file_type_null_output(self):
+        self.tfm.set_output_format(file_type='wav')
+        actual = self.tfm.output_format
+        expected = ['-t', 'wav']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(INPUT_FILE, None)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
     def test_file_type_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(file_type='blurg')
@@ -400,6 +410,10 @@ class TestTransformerBuild(unittest.TestCase):
 
     def test_valid_spacey(self):
         status = self.tfm.build(SPACEY_FILE, OUTPUT_FILE)
+        self.assertTrue(status)
+
+    def test_null_output(self):
+        status = self.tfm.build(INPUT_FILE, None)
         self.assertTrue(status)
 
     def test_invalid(self):
