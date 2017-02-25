@@ -1834,7 +1834,7 @@ class Transformer(object):
         Paramters
         ---------
         profile : str, default='noise.prof'
-            A temp file used to store noise inforation.
+            A file used to store noise inforation.
 
         profile_path : str
             Path to save the noise profile file.
@@ -1860,7 +1860,7 @@ class Transformer(object):
         Parameters
         ---------
         profile_path: str
-            Path to a noise profile file. 
+            Path to a noise profile file.
             This file can be generated using the `noiseprof` effect.
         amount : float, default=0.5
             How much noise should be removed is specified by amount. Should
