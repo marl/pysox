@@ -397,6 +397,20 @@ class TestTransformerBuild(unittest.TestCase):
             self.tfm.build(INPUT_FILE, OUTPUT_FILE)
 
 
+class TestTransformerClearEffects(unittest.TestCase):
+
+    def test_clear(self):
+        tfm = new_transformer()
+        tfm.clear_effects()
+
+        expected = []
+        actual = tfm.effects
+        self.assertEqual(expected, actual)
+
+        actual = tfm.effects_log
+        self.assertEqual(expected, actual)
+
+
 class TestTransformerPreview(unittest.TestCase):
     def setUp(self):
         self.tfm = new_transformer()
@@ -2502,6 +2516,7 @@ class TestTransformerMcompand(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.mcompand(gain=['a', None])
+
 
 class TestTransformerNoiseprof(unittest.TestCase):
     
