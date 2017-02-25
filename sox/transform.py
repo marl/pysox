@@ -1852,7 +1852,7 @@ class Transformer(object):
         self.effects_log.append('noiseprof')
         return self
 
-    def noisered(self, amount=0.5, profile_path):
+    def noisered(self, profile_path, amount=0.5):
         '''Reduce noise in the audio signal  by  profiling  and  filtering.
         This effect is moderately effective at removing consistent back‐
         ground noise such as hiss or hum.
