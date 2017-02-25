@@ -1844,8 +1844,13 @@ class Transformer(object):
         --------
         noisered
         '''
-        if not os.access(profile_path, os.W_OK):
+
+        try:
+            open(profile_path, 'w')
+        except IOError:
             raise IOError("profile_path {} is not writeable.".format(profile_path))
+        else:
+            os.remove(profile_path)
 
         effect_args = ['noiseprof', profile_path]
 
@@ -1882,7 +1887,7 @@ class Transformer(object):
 
         effect_args = [
             'noisered',
-            profile,
+            profile_path,
             '{:f}'.format(amount)
         ]
         self.effects.extend(effect_args)
