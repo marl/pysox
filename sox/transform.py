@@ -8,6 +8,7 @@ This module requires that SoX is installed.
 from __future__ import print_function
 import logging
 import random
+import os
 
 from .core import ENCODING_VALS
 from .core import enquote_filepath
