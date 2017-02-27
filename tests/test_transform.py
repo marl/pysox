@@ -279,6 +279,16 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
+    def test_file_type_null_output(self):
+        self.tfm.set_output_format(file_type='wav')
+        actual = self.tfm.output_format
+        expected = ['-t', 'wav']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(INPUT_FILE, None)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
     def test_file_type_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(file_type='blurg')
@@ -402,6 +412,28 @@ class TestTransformerBuild(unittest.TestCase):
         status = self.tfm.build(SPACEY_FILE, OUTPUT_FILE)
         self.assertTrue(status)
 
+    def test_null_output(self):
+        status = self.tfm.build(INPUT_FILE, None)
+        self.assertTrue(status)
+
+    def test_extra_arg(self):
+        status = self.tfm.build(INPUT_FILE, OUTPUT_FILE, ['norm'])
+        self.assertTrue(status)
+
+    def test_return_outputs(self):
+        status, out, err = self.tfm.build(
+            INPUT_FILE, OUTPUT_FILE, return_output=True)
+        self.assertEqual(status, 0)
+        self.assertEqual(out, '')
+        self.assertEqual(err, '')
+
+    def test_return_outputs_err(self):
+        status, out, err = self.tfm.build(
+            INPUT_FILE, OUTPUT_FILE, ['stats'], return_output=True)
+        self.assertEqual(status, 0)
+        self.assertEqual(out, '')
+        self.assertNotEqual(err, '')
+
     def test_invalid(self):
         with self.assertRaises(IOError):
             self.tfm.build('blah/asdf.wav', OUTPUT_FILE)
@@ -409,6 +441,10 @@ class TestTransformerBuild(unittest.TestCase):
     def test_input_output_equal(self):
         with self.assertRaises(ValueError):
             self.tfm.build(INPUT_FILE, INPUT_FILE)
+
+    def test_extra_args_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build(INPUT_FILE, OUTPUT_FILE, extra_args=0)
 
     def test_failed_sox(self):
         self.tfm.effects = ['channels', '-1']
@@ -3801,6 +3837,179 @@ class TestTransformerSpeed(unittest.TestCase):
         with self.assertRaises(ValueError):
             tfm.speed(-1)
 
+
+class TestTransformerStat(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        actual = tfm.stat(INPUT_FILE)
+        expected = {
+            'Length (seconds)': '10.000000',
+            'Minimum amplitude': '-0.264252',
+            'RMS amplitude': '0.053924',
+            'Volume adjustment': '3.521',
+            'Mean norm': '0.042598',
+            'Minimum delta': '0.000000',
+            'Samples read': '441000',
+            'Maximum amplitude': '0.284027',
+            'Mean amplitude': '0.000014',
+            'RMS delta': '0.006387',
+            'Midline amplitude': '0.009888',
+            'Maximum delta': '0.112427',
+            'Mean delta': '0.004495',
+            'Scaled by': '2147483647.0',
+            'Rough frequency': '831'
+        }
+
+        self.assertEqual(expected, actual)
+
+    def test_scale(self):
+        tfm = new_transformer()
+        actual = tfm.stat(INPUT_FILE, scale=2147483647.0 / 2.0)
+        expected = {
+            'Length (seconds)': '10.000000',
+            'Minimum amplitude': '-0.528503',
+            'RMS amplitude': '0.107848',
+            'Volume adjustment': '3.521',
+            'Mean norm': '0.085196',
+            'Minimum delta': '0.000000',
+            'Samples read': '441000',
+            'Maximum amplitude': '0.568054',
+            'Mean amplitude': '0.000028',
+            'RMS delta': '0.012773',
+            'Midline amplitude': '0.019775',
+            'Maximum delta': '0.224854',
+            'Mean delta': '0.008991',
+            'Scaled by': '1073741823.5',
+            'Rough frequency': '831'
+        }
+
+        self.assertEqual(expected, actual)
+
+    def test_scale_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.stat(INPUT_FILE, 'asdf')
+
+    def test_rms(self):
+        tfm = new_transformer()
+        actual = tfm.stat(INPUT_FILE, rms=True)
+        expected = {
+            'Length (seconds)': '10.000000',
+            'Minimum amplitude': '-4.900466',
+            'RMS amplitude': '1.000000',
+            'Volume adjustment': '3.521',
+            'Mean norm': '0.789962',
+            'Minimum delta': '0.000000',
+            'Samples read': '441000',
+            'Maximum amplitude': '5.267194',
+            'Mean amplitude': '0.000256',
+            'RMS delta': '0.118437',
+            'Midline amplitude': '0.183364',
+            'Maximum delta': '2.084919',
+            'Mean delta': '0.083366',
+            'Rough frequency': '831',
+            'Scaled by rms': '0.053924'
+        }
+
+        self.assertEqual(expected, actual)
+
+    def test_multichannel(self):
+        tfm = new_transformer()
+        actual = tfm.stat(INPUT_FILE4)
+        expected = {
+            'Length (seconds)': '10.000000',
+            'Minimum amplitude': '-0.264252',
+            'RMS amplitude': '0.053924',
+            'Volume adjustment': '3.521',
+            'Mean norm': '0.042598',
+            'Minimum delta': '0.000000',
+            'Samples read': '441000',
+            'Maximum amplitude': '0.284027',
+            'Mean amplitude': '0.000014',
+            'RMS delta': '0.006387',
+            'Midline amplitude': '0.009888',
+            'Maximum delta': '0.112427',
+            'Mean delta': '0.004495',
+            'Scaled by': '2147483647.0',
+            'Rough frequency': '831'
+        }
+        self.assertEqual(expected, actual)
+
+
+class TestTransformerPowerSpectrum(unittest.TestCase):
+
+    def test_valid(self):
+        tfm = new_transformer()
+        actual = tfm.power_spectrum(INPUT_FILE)
+
+        expected_len = 221184
+        expected_first = [0.0, 0.016436]
+        expected_last = [22039.234375, 0.000697]
+
+        self.assertEqual(expected_len, len(actual))
+        self.assertEqual(expected_first, actual[0])
+        self.assertEqual(expected_last, actual[-1])
+
+    def test_multichannel(self):
+        tfm = new_transformer()
+        actual = tfm.power_spectrum(INPUT_FILE4)
+        expected_len = 221184
+        expected_first = [0.0, 0.016436]
+        expected_last = [22039.234375, 0.000697]
+
+        self.assertEqual(expected_len, len(actual))
+        self.assertEqual(expected_first, actual[0])
+        self.assertEqual(expected_last, actual[-1])
+
+
+
+class TestTransformerStats(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        actual = tfm.stats(INPUT_FILE)
+        expected = {
+            'Max level': '0.284027',
+            'Crest factor': '5.27',
+            'RMS Tr dB': '-78.27',
+            'Num samples': '441k',
+            'DC offset': '0.000014',
+            'Length s': '10.000',
+            'Bit-depth': '15/16',
+            'Flat factor': '0.00',
+            'Pk lev dB': '-10.93',
+            'Min level': '-0.264252',
+            'RMS Pk dB': '-21.75',
+            'Window s': '0.050',
+            'Scale max': '1.000000',
+            'RMS lev dB': '-25.36',
+            'Pk count': '2'
+        }
+
+        self.assertEqual(expected, actual)
+
+    def test_multichannel(self):
+        tfm = new_transformer()
+        actual = tfm.stats(INPUT_FILE4)
+        expected = {
+            'Max level': '0.284027',
+            'Crest factor': '5.27',
+            'RMS Tr dB': '-78.27',
+            'Num samples': '441k',
+            'DC offset': '0.000014',
+            'Length s': '10.000',
+            'Bit-depth': '15/16',
+            'Flat factor': '0.00',
+            'Pk lev dB': '-10.93',
+            'Min level': '-0.264252',
+            'RMS Pk dB': '-21.75',
+            'Window s': '0.050',
+            'Scale max': '1.000000',
+            'RMS lev dB': '-25.36',
+            'Pk count': '2'
+        }
+        self.assertEqual(expected, actual)
 
 class TestTransformerSwap(unittest.TestCase):
 

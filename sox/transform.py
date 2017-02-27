@@ -378,20 +378,36 @@ class Transformer(object):
         self.output_format = output_format
         return self
 
-    def build(self, input_filepath, output_filepath):
+    def build(self, input_filepath, output_filepath, extra_args=None,
+              return_output=False):
         '''Builds the output_file by executing the current set of commands.
 
         Parameters
         ----------
         input_filepath : str
             Path to input audio file.
-        output_filepath : str
+        output_filepath : str or None
             Path to desired output file. If a file already exists at the given
             path, the file will be overwritten.
+            If None, no file will be created.
+        extra_args : list or None, default=None
+            If a list is given, these additional arguments are passed to SoX
+            at the end of the list of effects.
+            Don't use this argument unless you know exactly what you're doing!
+        return_output : bool, default=False
+            If True, returns the status and information sent to stderr and
+            stdout as a tuple (status, stdout, stderr).
+            Otherwise returns True on success.
 
         '''
         file_info.validate_input_file(input_filepath)
-        file_info.validate_output_file(output_filepath)
+        input_filepath = enquote_filepath(input_filepath)
+
+        if output_filepath is not None:
+            file_info.validate_output_file(output_filepath)
+            output_filepath = enquote_filepath(output_filepath)
+        else:
+            output_filepath = '-n'
 
         if input_filepath == output_filepath:
             raise ValueError(
@@ -401,10 +417,15 @@ class Transformer(object):
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
-        args.append(enquote_filepath(input_filepath))
+        args.append(input_filepath)
         args.extend(self.output_format)
-        args.append(enquote_filepath(output_filepath))
+        args.append(output_filepath)
         args.extend(self.effects)
+
+        if extra_args is not None:
+            if not isinstance(extra_args, list):
+                raise ValueError("extra_args must be a list.")
+            args.extend(extra_args)
 
         status, out, err = sox(args)
 
@@ -420,7 +441,11 @@ class Transformer(object):
             )
             if out is not None:
                 logging.info("[SoX] {}".format(out))
-            return True
+
+            if return_output:
+                return status, out, err
+            else:
+                return True
 
     def preview(self, input_filepath):
         '''Play a preview of the output with the current set of effects
@@ -2502,22 +2527,139 @@ class Transformer(object):
 
         return self
 
-    def swap(self):
-        '''Swap stereo channels. If the input is not stereo, pairs of channels
-        are swapped, and a possible odd last channel passed through.
+    def stat(self, input_filepath, scale=None, rms=False):
+        '''Display time and frequency domain statistical information about the
+        audio. Audio is passed unmodified through the SoX processing chain.
 
-        E.g., for seven channels, the output order will be 2, 1, 4, 3, 6, 5, 7.
+        Unlike other Transformer methods, this does not modify the transformer
+        effects chain. Instead it computes statistics on the output file that
+        would be created if the build command were invoked.
+
+        Note: The file is downmixed to mono prior to computation.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input file to compute stats on.
+        scale : float or None, default=None
+            If not None, scales the input by the given scale factor.
+        rms : bool, default=False
+            If True, scales all values by the average rms amplitude.
+
+        Returns
+        -------
+        stat_dict : dict
+            Dictionary of statistics.
 
         See Also
-        ----------
-        remix
-
+        --------
+        stats, power_spectrum, sox.file_info
         '''
-        effect_args = ['swap']
-        self.effects.extend(effect_args)
-        self.effects_log.append('swap')
+        effect_args = ['channels', '1', 'stat']
+        if scale is not None:
+            if not is_number(scale) or scale <= 0:
+                raise ValueError("scale must be a positive number.")
+            effect_args.extend(['-s', '{:f}'.format(scale)])
 
-        return self
+        if rms:
+            effect_args.append('-rms')
+
+        _, _, stat_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        stat_dict = {}
+        lines = stat_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) == 0:
+                continue
+            value = split_line[-1]
+            key = ' '.join(split_line[:-1])
+            stat_dict[key.strip(':')] = value
+
+        return stat_dict
+
+    def power_spectrum(self, input_filepath):
+        '''Calculates the power spectrum (4096 point DFT). This method
+        internally invokes the stat command with the -freq option.
+
+        Note: The file is downmixed to mono prior to computation.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input file to compute stats on.
+
+        Returns
+        -------
+        power_spectrum : list
+            List of frequency (Hz), amplitdue pairs.
+
+        See Also
+        --------
+        stat, stats, sox.file_info
+        '''
+        effect_args = ['channels', '1', 'stat', '-freq']
+
+        _, _, stat_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        power_spectrum = []
+        lines = stat_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) != 2:
+                continue
+
+            freq, amp = split_line
+            power_spectrum.append([float(freq), float(amp)])
+
+        return power_spectrum
+
+    def stats(self, input_filepath):
+        '''Display time domain statistical information about the audio
+        channels. Audio is passed unmodified through the SoX processing chain.
+        Statistics are calculated and displayed for each audio channel
+
+        Unlike other Transformer methods, this does not modify the transformer
+        effects chain. Instead it computes statistics on the output file that
+        would be created if the build command were invoked.
+
+        Note: The file is downmixed to mono prior to computation.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input file to compute stats on.
+
+        Returns
+        -------
+        stats_dict : dict
+            List of frequency (Hz), amplitdue pairs.
+
+        See Also
+        --------
+        stat, sox.file_info
+        '''
+        effect_args = ['channels', '1', 'stats']
+
+        _, _, stats_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        stats_dict = {}
+        lines = stats_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) == 0:
+                continue
+            value = split_line[-1]
+            key = ' '.join(split_line[:-1])
+            stats_dict[key] = value
+
+        return stats_dict
 
     def stretch(self, factor, window=20):
         '''Change the audio duration (but not its pitch).
@@ -2566,6 +2708,23 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('stretch')
+
+        return self
+
+    def swap(self):
+        '''Swap stereo channels. If the input is not stereo, pairs of channels
+        are swapped, and a possible odd last channel passed through.
+
+        E.g., for seven channels, the output order will be 2, 1, 4, 3, 6, 5, 7.
+
+        See Also
+        ----------
+        remix
+
+        '''
+        effect_args = ['swap']
+        self.effects.extend(effect_args)
+        self.effects_log.append('swap')
 
         return self
 
