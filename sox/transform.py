@@ -1834,9 +1834,6 @@ class Transformer(object):
 
         Paramters
         ---------
-        profile : str, default='noise.prof'
-            A file used to store noise inforation.
-
         profile_path : str
             Path to save the noise profile file.
 
