@@ -1828,7 +1828,7 @@ class Transformer(object):
         self.effects_log.append('mcompand')
         return self
 
-    def noiseprof(self, profile_path, profile):
+    def noiseprof(self, profile_path=os.getcwd(), profile="noise.prof"):
         '''Calculate  a  profile  of  the audio for use in noise reduction.
         See the description of the noisered effect for details.
 
@@ -1837,7 +1837,7 @@ class Transformer(object):
         profile_path : str
             Path to save the noise profile file.
         profile : str
-            Filename of the profile.
+            Filename of the profile of noise.
 
         See Also
         --------
@@ -1853,16 +1853,19 @@ class Transformer(object):
         self.effects_log.append('noiseprof')
         return self
 
-    def noisered(self, profile_path, amount=0.5):
+    def noisered(self, profile_path=os.getcwd(),
+            profile='noise.prof', amount=0.5):
         '''Reduce noise in the audio signal  by  profiling  and  filtering.
         This effect is moderately effective at removing consistent back‐
         ground noise such as hiss or hum.
 
         Parameters
         ---------
-        profile_path: str
+        profile_path : str
             Path to a noise profile file.
             This file can be generated using the `noiseprof` effect.
+        profile : str
+            Filename of the profile of noise.
         amount : float, default=0.5
             How much noise should be removed is specified by amount. Should
             be between 0 and 1.  Higher numbers will remove more noise but
@@ -1882,7 +1885,7 @@ class Transformer(object):
 
         effect_args = [
             'noisered',
-            profile_path,
+            os.path.join(profile_path, profile),
             '{:f}'.format(amount)
         ]
         self.effects.extend(effect_args)
