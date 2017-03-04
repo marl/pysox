@@ -1828,7 +1828,7 @@ class Transformer(object):
         self.effects_log.append('mcompand')
         return self
 
-    def noiseprof(self, profile_path):
+    def noiseprof(self, profile_path, profile):
         '''Calculate  a  profile  of  the audio for use in noise reduction.
         See the description of the noisered effect for details.
 
@@ -1836,20 +1836,18 @@ class Transformer(object):
         ---------
         profile_path : str
             Path to save the noise profile file.
+        profile : str
+            Filename of the profile.
 
         See Also
         --------
         noisered
         '''
 
-        try:
-            open(profile_path, 'w')
-        except IOError:
+        if not os.access(profile_path, os.W_OK):
             raise IOError("profile_path {} is not writeable.".format(profile_path))
-        else:
-            os.remove(profile_path)
 
-        effect_args = ['noiseprof', profile_path]
+        effect_args = ['noiseprof', os.path.join(profile_path, profile)]
 
         self.effects.extend(effect_args)
         self.effects_log.append('noiseprof')
