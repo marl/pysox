@@ -1832,7 +1832,7 @@ class Transformer(object):
         '''Calculate  a  profile  of  the audio for use in noise reduction.
         See the description of the noisered effect for details.
 
-        Paramters
+        Parameters
         ---------
         profile_path : str
             Path to save the noise profile file.
