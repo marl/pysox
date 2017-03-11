@@ -2653,19 +2653,21 @@ class TestTransformerNoiseprof(unittest.TestCase):
     
     def test_default(self):
         tfm = new_transformer()
-        tfm.noiseprof(os.path.join(os.getcwd(), 'noise.prof'))
+        save_path = os.path.join(os.getcwd(), 'noise.prof')
+        actual_res = tfm.noiseprof(save_path)
+        expected_res = None
+        self.assertEqual(expected_res, actual_res)
+        self.assertTrue(os.path.exists(save_path))
 
+        # this should not update the effects
         actual_args = tfm.effects
-        expected_args = ['noiseprof', os.path.join(os.getcwd(), 'noise.prof')]
+        expected_args = []
         self.assertEqual(expected_args, actual_args)
 
+        # this should not update the effects log
         actual_log = tfm.effects_log
-        expected_log = ['noiseprof']
+        expected_log = []
         self.assertEqual(expected_log, actual_log)
-
-        actual_res = tfm.build(INPUT_FILE, '-n')
-        expected_res = True
-        self.assertEqual(expected_res, actual_res)
 
     def test_noise_prof_invalid_dir(self):
         tfm = new_transformer()
