@@ -8,6 +8,7 @@ This module requires that SoX is installed.
 from __future__ import print_function
 import logging
 import random
+import os
 
 from .core import ENCODING_VALS
 from .core import enquote_filepath
@@ -376,6 +377,14 @@ class Transformer(object):
                 output_format.extend(['--comment', comments])
 
         self.output_format = output_format
+        return self
+
+    def clear_effects(self):
+        '''Remove all effects processes.
+
+        '''
+        self.effects = list()
+        self.effects_log = list()
         return self
 
     def build(self, input_filepath, output_filepath, extra_args=None,
@@ -1845,6 +1854,73 @@ class Transformer(object):
 
         self.effects.extend(effect_args)
         self.effects_log.append('mcompand')
+        return self
+
+    def noiseprof(self, input_filepath, profile_path):
+        '''Calculate a profile of the audio for use in noise reduction.
+        Running this command does not effect the Transformer effects
+        chain. When this function is called, the calculated noise profile
+        file is saved to the `profile_path`.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to audiofile from which to compute a noise profile.
+        profile_path : str
+            Path to save the noise profile file.
+
+        See Also
+        --------
+        noisered
+
+        '''
+        if os.path.isdir(profile_path):
+            raise ValueError("profile_path {} is a directory, but should be a file")
+        
+        if not os.access(os.path.dirname(profile_path), os.W_OK):
+            raise IOError("profile_path {} is not writeable.".format(profile_path))
+
+        effect_args = ['noiseprof', profile_path]
+        self.build(input_filepath, None, extra_args=effect_args)
+
+        return None
+
+    def noisered(self, profile_path, amount=0.5):
+        '''Reduce noise in the audio signal by profiling and filtering.
+        This effect is moderately effective at removing consistent
+        background noise such as hiss or hum.
+
+        Parameters
+        ----------
+        profile_path : str
+            Path to a noise profile file.
+            This file can be generated using the `noiseprof` effect.
+        amount : float, default=0.5
+            How much noise should be removed is specified by amount. Should
+            be between 0 and 1.  Higher numbers will remove more noise but
+            present a greater likelihood  of  removing wanted  components  of
+            the  audio  signal.
+
+        See Also
+        --------
+        noiseprof
+
+        '''
+
+        if not os.path.exists(profile_path):
+            raise IOError("profile_path {} does not exist.".format(profile_path))
+
+        if not is_number(amount) or amount < 0 or amount > 1:
+            raise ValueError("amount must be a number between 0 and 1.")
+
+        effect_args = [
+            'noisered',
+            profile_path,
+            '{:f}'.format(amount)
+        ]
+        self.effects.extend(effect_args)
+        self.effects_log.append('noisered')
+
         return self
 
     def norm(self, db_level=-3.0):
