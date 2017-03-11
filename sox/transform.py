@@ -1858,6 +1858,9 @@ class Transformer(object):
 
     def noiseprof(self, profile_path):
         '''Calculate a profile of the audio for use in noise reduction.
+        Running this command does not effect the Transformer effects
+        chain. When this function is called, the calculated noise profile
+        file is saved to the `profile_path`.
         See the description of the `noisered` effect for details.
 
         Parameters
@@ -1877,10 +1880,9 @@ class Transformer(object):
             raise IOError("profile_path {} is not writeable.".format(profile_path))
 
         effect_args = ['noiseprof', profile_path]
+        self.build(input_filepath, None, extra_args=effect_args)
 
-        self.effects.extend(effect_args)
-        self.effects_log.append('noiseprof')
-        return self
+        return None
 
     def noisered(self, profile_path, amount=0.5):
         '''Reduce noise in the audio signal by profiling and filtering.
