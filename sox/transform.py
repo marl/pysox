@@ -1876,7 +1876,7 @@ class Transformer(object):
         if not os.access(os.path.dirname(profile_path), os.W_OK):
             raise IOError("profile_path {} is not writeable.".format(profile_path))
 
-        effect_args = ['noiseprof', os.path.join(profile_path, profile)]
+        effect_args = ['noiseprof', profile_path]
 
         self.effects.extend(effect_args)
         self.effects_log.append('noiseprof')
@@ -1912,7 +1912,7 @@ class Transformer(object):
 
         effect_args = [
             'noisered',
-            os.path.join(profile_path, profile),
+            profile_path,
             '{:f}'.format(amount)
         ]
         self.effects.extend(effect_args)
