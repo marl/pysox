@@ -13,7 +13,7 @@ SPACEY_FILE = relpath("data/annoying filename (derp).wav")
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE4 = relpath('data/input4.wav')
 OUTPUT_FILE = relpath('data/output.wav')
-NOISE_CLEAR_FILE = relpath('data/clear.wav')
+NOISE_PROF_FILE = relpath('data/noise.prof')
 
 
 def new_transformer():
@@ -2682,12 +2682,12 @@ class TestTransformerNoisered(unittest.TestCase):
     
     def test_default(self):
         tfm = new_transformer()
-        tfm.noisered(os.path.join(os.getcwd(), 'noise.prof'))
+        tfm.noisered(NOISE_PROF_FILE)
 
         actual_args = tfm.effects
         expected_args = [
             'noisered',
-            os.path.join(os.getcwd(),'noise.prof'),
+            NOISE_PROF_FILE,
             '0.500000'
         ]
         self.assertEqual(expected_args, actual_args)
@@ -2696,23 +2696,23 @@ class TestTransformerNoisered(unittest.TestCase):
         expected_log = ['noisered']
         self.assertEqual(expected_log, actual_log)
 
-        actual_res = tfm.build(INPUT_FILE, NOISE_CLEAR_FILE)
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
     
     def test_noise_prof_valid(self):
         tfm = new_transformer()
-        tfm.noisered(os.getcwd(), 'noise.prof')
+        tfm.noisered(NOISE_PROF_FILE)
 
         actual_args = tfm.effects
         expected_args = [
             'noisered',
-            os.path.join(os.getcwd(), 'noise.prof'),
+            NOISE_PROF_FILE,
             '0.500000'
         ]
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build(INPUT_FILE, NOISE_CLEAR_FILE)
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
@@ -2724,24 +2724,24 @@ class TestTransformerNoisered(unittest.TestCase):
     def test_amount_valid(self):
         tfm = new_transformer()
         tfm.noisered(
-            os.path.join(os.getcwd(), 'noise.prof'), 'noise.prof', 0.7
+            NOISE_PROF_FILE, 0.7
         )
 
         actual_args = tfm.effects
         expected_args = ['noisered',
-            os.path.join(os.getcwd(), 'noise.prof'),
+            NOISE_PROF_FILE,
             '0.700000'
             ]
         self.assertEqual(expected_args, actual_args)
 
-        actual_res = tfm.build(INPUT_FILE, NOISE_CLEAR_FILE)
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
     def test_amount_invalid(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
-            tfm.noisered(os.getcwd(), 'noise.prof', 1.3)
+            tfm.noisered(NOISE_PROF_FILE, 1.3)
 
 
 class TestTransformerNorm(unittest.TestCase):
