@@ -235,7 +235,7 @@ class Transformer(object):
             input_format.extend(['-t', '{}'.format(file_type)])
 
         if rate is not None:
-            input_format.extend(['-r', '{}'.format(rate)])
+            input_format.extend(['-r', '{:f}'.format(rate)])
 
         if bits is not None:
             input_format.extend(['-b', '{}'.format(bits)])
@@ -359,7 +359,7 @@ class Transformer(object):
             output_format.extend(['-t', '{}'.format(file_type)])
 
         if rate is not None:
-            output_format.extend(['-r', '{}'.format(rate)])
+            output_format.extend(['-r', '{:f}'.format(rate)])
 
         if bits is not None:
             output_format.extend(['-b', '{}'.format(bits)])
@@ -387,20 +387,36 @@ class Transformer(object):
         self.effects_log = list()
         return self
 
-    def build(self, input_filepath, output_filepath):
+    def build(self, input_filepath, output_filepath, extra_args=None,
+              return_output=False):
         '''Builds the output_file by executing the current set of commands.
 
         Parameters
         ----------
         input_filepath : str
             Path to input audio file.
-        output_filepath : str
+        output_filepath : str or None
             Path to desired output file. If a file already exists at the given
             path, the file will be overwritten.
+            If None, no file will be created.
+        extra_args : list or None, default=None
+            If a list is given, these additional arguments are passed to SoX
+            at the end of the list of effects.
+            Don't use this argument unless you know exactly what you're doing!
+        return_output : bool, default=False
+            If True, returns the status and information sent to stderr and
+            stdout as a tuple (status, stdout, stderr).
+            Otherwise returns True on success.
 
         '''
         file_info.validate_input_file(input_filepath)
-        file_info.validate_output_file(output_filepath)
+        input_filepath = enquote_filepath(input_filepath)
+
+        if output_filepath is not None:
+            file_info.validate_output_file(output_filepath)
+            output_filepath = enquote_filepath(output_filepath)
+        else:
+            output_filepath = '-n'
 
         if input_filepath == output_filepath:
             raise ValueError(
@@ -410,10 +426,15 @@ class Transformer(object):
         args = []
         args.extend(self.globals)
         args.extend(self.input_format)
-        args.append(enquote_filepath(input_filepath))
+        args.append(input_filepath)
         args.extend(self.output_format)
-        args.append(enquote_filepath(output_filepath))
+        args.append(output_filepath)
         args.extend(self.effects)
+
+        if extra_args is not None:
+            if not isinstance(extra_args, list):
+                raise ValueError("extra_args must be a list.")
+            args.extend(extra_args)
 
         status, out, err = sox(args)
 
@@ -429,7 +450,11 @@ class Transformer(object):
             )
             if out is not None:
                 logging.info("[SoX] {}".format(out))
-            return True
+
+            if return_output:
+                return status, out, err
+            else:
+                return True
 
     def preview(self, input_filepath):
         '''Play a preview of the output with the current set of effects
@@ -467,7 +492,7 @@ class Transformer(object):
             raise ValueError("width_q must be a positive number.")
 
         effect_args = [
-            'allpass', '{}'.format(frequency), '{}q'.format(width_q)
+            'allpass', '{:f}'.format(frequency), '{:f}q'.format(width_q)
         ]
 
         self.effects.extend(effect_args)
@@ -509,7 +534,7 @@ class Transformer(object):
         if constant_skirt:
             effect_args.append('-c')
 
-        effect_args.extend(['{}'.format(frequency), '{}q'.format(width_q)])
+        effect_args.extend(['{:f}'.format(frequency), '{:f}q'.format(width_q)])
 
         self.effects.extend(effect_args)
         self.effects_log.append('bandpass')
@@ -543,7 +568,7 @@ class Transformer(object):
             raise ValueError("width_q must be a positive number.")
 
         effect_args = [
-            'bandreject', '{}'.format(frequency), '{}q'.format(width_q)
+            'bandreject', '{:f}'.format(frequency), '{:f}q'.format(width_q)
         ]
 
         self.effects.extend(effect_args)
@@ -584,8 +609,8 @@ class Transformer(object):
             raise ValueError("width_q must be a positive number.")
 
         effect_args = [
-            'bass', '{}'.format(gain_db), '{}'.format(frequency),
-            '{}s'.format(slope)
+            'bass', '{:f}'.format(gain_db), '{:f}'.format(frequency),
+            '{:f}s'.format(slope)
         ]
 
         self.effects.extend(effect_args)
@@ -678,14 +703,13 @@ class Transformer(object):
             t_start = round(start_times[i] - last, 2)
             t_end = round(end_times[i] - start_times[i], 2)
             effect_args.append(
-                '{},{},{}'.format(t_start, cents[i], t_end)
+                '{:f},{:f},{:f}'.format(t_start, cents[i], t_end)
             )
             last = end_times[i]
 
         self.effects.extend(effect_args)
         self.effects_log.append('bend')
         return self
-
 
     def biquad(self, b, a):
         '''Apply a biquad IIR filter with the given coefficients.
@@ -721,8 +745,9 @@ class Transformer(object):
             raise ValueError('all elements of a must be numbers.')
 
         effect_args = [
-            'biquad', '{}'.format(b[0]), '{}'.format(b[1]), '{}'.format(b[2]),
-            '{}'.format(a[0]), '{}'.format(a[1]), '{}'.format(a[2])
+            'biquad', '{:f}'.format(b[0]), '{:f}'.format(b[1]),
+            '{:f}'.format(b[2]), '{:f}'.format(a[0]),
+            '{:f}'.format(a[1]), '{:f}'.format(a[2])
         ]
 
         self.effects.extend(effect_args)
@@ -869,10 +894,10 @@ class Transformer(object):
 
         for i in range(n_voices):
             effect_args.extend([
-                '{}'.format(delays[i]),
-                '{}'.format(decays[i]),
-                '{}'.format(speeds[i]),
-                '{}'.format(depths[i]),
+                '{:f}'.format(delays[i]),
+                '{:f}'.format(decays[i]),
+                '{:f}'.format(speeds[i]),
+                '{:f}'.format(depths[i]),
                 '-{}'.format(shapes[i])
             ])
 
@@ -944,17 +969,17 @@ class Transformer(object):
         transfer_list = []
         for point in tf_points:
             transfer_list.extend([
-                "{}".format(point[0]), "{}".format(point[1])
+                "{:f}".format(point[0]), "{:f}".format(point[1])
             ])
 
         effect_args = [
             'compand',
-            "{},{}".format(attack_time, decay_time)
+            "{:f},{:f}".format(attack_time, decay_time)
         ]
 
         if soft_knee_db is not None:
             effect_args.append(
-                "{}:{}".format(soft_knee_db, ",".join(transfer_list))
+                "{:f}:{}".format(soft_knee_db, ",".join(transfer_list))
             )
         else:
             effect_args.append(",".join(transfer_list))
@@ -980,7 +1005,7 @@ class Transformer(object):
         if not is_number(amount) or amount < 0 or amount > 100:
             raise ValueError('amount must be a number between 0 and 100.')
 
-        effect_args = ['contrast', '{}'.format(amount)]
+        effect_args = ['contrast', '{:f}'.format(amount)]
 
         self.effects.extend(effect_args)
         self.effects_log.append('contrast')
@@ -1038,7 +1063,7 @@ class Transformer(object):
         if not is_number(shift) or shift < -2 or shift > 2:
             raise ValueError('shift must be a number between -2 and 2.')
 
-        effect_args = ['dcshift', '{}'.format(shift)]
+        effect_args = ['dcshift', '{:f}'.format(shift)]
 
         self.effects.extend(effect_args)
         self.effects_log.append('dcshift')
@@ -1088,7 +1113,7 @@ class Transformer(object):
             raise ValueError("positions must be positive nubmers")
 
         effect_args = ['delay']
-        effect_args.extend(['{}'.format(p) for p in positions])
+        effect_args.extend(['{:f}'.format(p) for p in positions])
 
         self.effects.extend(effect_args)
         self.effects_log.append('delay')
@@ -1197,7 +1222,7 @@ class Transformer(object):
                 "the elements of decays must be between 0 and 1"
             )
 
-        effect_args = ['echo', '{}'.format(gain_in), '{}'.format(gain_out)]
+        effect_args = ['echo', '{:f}'.format(gain_in), '{:f}'.format(gain_out)]
 
         for i in range(n_echos):
             effect_args.extend([
@@ -1266,12 +1291,14 @@ class Transformer(object):
                 "the elements of decays must be between 0 and 1"
             )
 
-        effect_args = ['echos', '{}'.format(gain_in), '{}'.format(gain_out)]
+        effect_args = [
+            'echos', '{:f}'.format(gain_in), '{:f}'.format(gain_out)
+        ]
 
         for i in range(n_echos):
             effect_args.extend([
-                '{}'.format(delays[i]),
-                '{}'.format(decays[i])
+                '{:f}'.format(delays[i]),
+                '{:f}'.format(decays[i])
             ])
 
         self.effects.extend(effect_args)
@@ -1308,9 +1335,9 @@ class Transformer(object):
 
         effect_args = [
             'equalizer',
-            '{}'.format(frequency),
-            '{}q'.format(width_q),
-            '{}'.format(gain_db)
+            '{:f}'.format(frequency),
+            '{:f}q'.format(width_q),
+            '{:f}'.format(gain_db)
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('equalizer')
@@ -1355,13 +1382,13 @@ class Transformer(object):
 
         if fade_in_len > 0:
             effect_args.extend([
-                'fade', str(fade_shape), str(fade_in_len)
+                'fade', '{}'.format(fade_shape), '{:f}'.format(fade_in_len)
             ])
 
         if fade_out_len > 0:
             effect_args.extend([
-                'reverse', 'fade', str(fade_shape),
-                str(fade_out_len), 'reverse'
+                'reverse', 'fade', '{}'.format(fade_shape),
+                '{:f}'.format(fade_out_len), 'reverse'
             ])
 
         if len(effect_args) > 0:
@@ -1386,7 +1413,7 @@ class Transformer(object):
             raise ValueError("coefficients must be numbers.")
 
         effect_args = ['fir']
-        effect_args.extend(['{}'.format(c) for c in coefficients])
+        effect_args.extend(['{:f}'.format(c) for c in coefficients])
 
         self.effects.extend(effect_args)
         self.effects_log.append('fir')
@@ -1440,13 +1467,13 @@ class Transformer(object):
 
         effect_args = [
             'flanger',
-            '{}'.format(delay),
-            '{}'.format(depth),
-            '{}'.format(regen),
-            '{}'.format(width),
-            '{}'.format(speed),
+            '{:f}'.format(delay),
+            '{:f}'.format(depth),
+            '{:f}'.format(regen),
+            '{:f}'.format(width),
+            '{:f}'.format(speed),
             '{}'.format(shape),
-            '{}'.format(phase),
+            '{:f}'.format(phase),
             '{}'.format(interp)
         ]
 
@@ -1509,7 +1536,7 @@ class Transformer(object):
         if limiter:
             effect_args.append('-l')
 
-        effect_args.append('{}'.format(gain_db))
+        effect_args.append('{:f}'.format(gain_db))
         self.effects.extend(effect_args)
         self.effects_log.append('gain')
 
@@ -1545,11 +1572,11 @@ class Transformer(object):
             raise ValueError("n_poles must be 1 or 2.")
 
         effect_args = [
-            'highpass', '-{}'.format(n_poles), '{}'.format(frequency)
+            'highpass', '-{}'.format(n_poles), '{:f}'.format(frequency)
         ]
 
         if n_poles == 2:
-            effect_args.append('{}q'.format(width_q))
+            effect_args.append('{:f}q'.format(width_q))
 
         self.effects.extend(effect_args)
         self.effects_log.append('highpass')
@@ -1586,11 +1613,11 @@ class Transformer(object):
             raise ValueError("n_poles must be 1 or 2.")
 
         effect_args = [
-            'lowpass', '-{}'.format(n_poles), '{}'.format(frequency)
+            'lowpass', '-{}'.format(n_poles), '{:f}'.format(frequency)
         ]
 
         if n_poles == 2:
-            effect_args.append('{}q'.format(width_q))
+            effect_args.append('{:f}q'.format(width_q))
 
         self.effects.extend(effect_args)
         self.effects_log.append('lowpass')
@@ -1659,8 +1686,8 @@ class Transformer(object):
 
         effect_args = [
             'loudness',
-            '{}'.format(gain_db),
-            '{}'.format(reference_level)
+            '{:f}'.format(gain_db),
+            '{:f}'.format(reference_level)
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('loudness')
@@ -1798,9 +1825,9 @@ class Transformer(object):
         for i in range(n_bands):
 
             if i > 0:
-                effect_args.append('{}'.format(crossover_frequencies[i - 1]))
+                effect_args.append('{:f}'.format(crossover_frequencies[i - 1]))
 
-            intermed_args = ["{},{}".format(attack_time[i], decay_time[i])]
+            intermed_args = ["{:f},{:f}".format(attack_time[i], decay_time[i])]
 
             tf_points_band = tf_points[i]
             tf_points_band = sorted(
@@ -1810,18 +1837,18 @@ class Transformer(object):
             transfer_list = []
             for point in tf_points_band:
                 transfer_list.extend([
-                    "{}".format(point[0]), "{}".format(point[1])
+                    "{:f}".format(point[0]), "{:f}".format(point[1])
                 ])
 
             if soft_knee_db[i] is not None:
                 intermed_args.append(
-                    "{}:{}".format(soft_knee_db[i], ",".join(transfer_list))
+                    "{:f}:{}".format(soft_knee_db[i], ",".join(transfer_list))
                 )
             else:
                 intermed_args.append(",".join(transfer_list))
 
             if gain[i] is not None:
-                intermed_args.append("{}".format(gain[i]))
+                intermed_args.append("{:f}".format(gain[i]))
 
             effect_args.append('"{}"'.format(' '.join(intermed_args)))
 
@@ -1912,7 +1939,7 @@ class Transformer(object):
 
         effect_args = [
             'norm',
-            '{}'.format(db_level)
+            '{:f}'.format(db_level)
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('norm')
@@ -1951,8 +1978,8 @@ class Transformer(object):
 
         effect_args = [
             'overdrive',
-            '{}'.format(gain_db),
-            '{}'.format(colour)
+            '{:f}'.format(gain_db),
+            '{:f}'.format(colour)
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('overdrive')
@@ -1983,8 +2010,8 @@ class Transformer(object):
 
         effect_args = [
             'pad',
-            '{}'.format(start_duration),
-            '{}'.format(end_duration)
+            '{:f}'.format(start_duration),
+            '{:f}'.format(end_duration)
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('pad')
@@ -2036,11 +2063,11 @@ class Transformer(object):
 
         effect_args = [
             'phaser',
-            '{}'.format(gain_in),
-            '{}'.format(gain_out),
-            '{}'.format(delay),
-            '{}'.format(decay),
-            '{}'.format(speed)
+            '{:f}'.format(gain_in),
+            '{:f}'.format(gain_out),
+            '{:f}'.format(delay),
+            '{:f}'.format(decay),
+            '{:f}'.format(speed)
         ]
 
         if modulation_shape == 'sinusoidal':
@@ -2090,7 +2117,7 @@ class Transformer(object):
         if quick:
             effect_args.append('-q')
 
-        effect_args.append('{}'.format(n_semitones * 100.))
+        effect_args.append('{:f}'.format(n_semitones * 100.))
 
         self.effects.extend(effect_args)
         self.effects_log.append('pitch')
@@ -2112,14 +2139,6 @@ class Transformer(object):
              * m : Medium,
              * h : High (default),
              * v : Very high
-        silence_threshold : float
-            Silence threshold as percentage of maximum sample amplitude.
-        min_silence_duration : float
-            The minimum ammount of time in seconds required for a region to be
-            considered non-silent.
-        buffer_around_silence : bool
-            If True, leaves a buffer of min_silence_duration around removed
-            silent regions.
 
         See Also
         --------
@@ -2138,7 +2157,7 @@ class Transformer(object):
         effect_args = [
             'rate',
             '-{}'.format(quality),
-            '{}'.format(samplerate)
+            '{:f}'.format(samplerate)
         ]
         self.effects.extend(effect_args)
         self.effects_log.append('rate')
@@ -2302,12 +2321,12 @@ class Transformer(object):
             effect_args.append('-w')
 
         effect_args.extend([
-            '{}'.format(reverberance),
-            '{}'.format(high_freq_damping),
-            '{}'.format(room_scale),
-            '{}'.format(stereo_depth),
-            '{}'.format(pre_delay),
-            '{}'.format(wet_gain)
+            '{:f}'.format(reverberance),
+            '{:f}'.format(high_freq_damping),
+            '{:f}'.format(room_scale),
+            '{:f}'.format(stereo_depth),
+            '{:f}'.format(pre_delay),
+            '{:f}'.format(wet_gain)
         ])
 
         self.effects.extend(effect_args)
@@ -2382,15 +2401,15 @@ class Transformer(object):
 
         effect_args.extend([
             '1',
-            '{}'.format(min_silence_duration),
-            '{}%'.format(silence_threshold)
+            '{:f}'.format(min_silence_duration),
+            '{:f}%'.format(silence_threshold)
         ])
 
         if location == 0:
             effect_args.extend([
                 '-1',
-                '{}'.format(min_silence_duration),
-                '{}%'.format(silence_threshold)
+                '{:f}'.format(min_silence_duration),
+                '{:f}%'.format(silence_threshold)
             ])
 
         if location == -1:
@@ -2509,32 +2528,36 @@ class Transformer(object):
             raise ValueError("phase response must be between 0 and 100")
 
         effect_args = ['sinc']
-        effect_args.extend(['-a', '{}'.format(stop_band_attenuation)])
+        effect_args.extend(['-a', '{:f}'.format(stop_band_attenuation)])
 
         if phase_response is not None:
-            effect_args.extend(['-p', '{}'.format(phase_response)])
+            effect_args.extend(['-p', '{:f}'.format(phase_response)])
 
         if filter_type == 'high':
             if transition_bw is not None:
-                effect_args.extend(['-t', '{}'.format(transition_bw)])
-            effect_args.append('{}'.format(cutoff_freq))
+                effect_args.extend(['-t', '{:f}'.format(transition_bw)])
+            effect_args.append('{:f}'.format(cutoff_freq))
         elif filter_type == 'low':
-            effect_args.append('-{}'.format(cutoff_freq))
+            effect_args.append('-{:f}'.format(cutoff_freq))
             if transition_bw is not None:
-                effect_args.extend(['-t', '{}'.format(transition_bw)])
+                effect_args.extend(['-t', '{:f}'.format(transition_bw)])
         else:
             if is_number(transition_bw):
-                effect_args.extend(['-t', '{}'.format(transition_bw)])
+                effect_args.extend(['-t', '{:f}'.format(transition_bw)])
             elif isinstance(transition_bw, list):
-                effect_args.extend(['-t', '{}'.format(transition_bw[0])])
+                effect_args.extend(['-t', '{:f}'.format(transition_bw[0])])
 
         if filter_type == 'pass':
-            effect_args.append('{}-{}'.format(cutoff_freq[0], cutoff_freq[1]))
+            effect_args.append(
+                '{:f}-{:f}'.format(cutoff_freq[0], cutoff_freq[1])
+            )
         elif filter_type == 'reject':
-            effect_args.append('{}-{}'.format(cutoff_freq[1], cutoff_freq[0]))
+            effect_args.append(
+                '{:f}-{:f}'.format(cutoff_freq[1], cutoff_freq[0])
+            )
 
         if isinstance(transition_bw, list):
-            effect_args.extend(['-t', '{}'.format(transition_bw[1])])
+            effect_args.extend(['-t', '{:f}'.format(transition_bw[1])])
 
         self.effects.extend(effect_args)
         self.effects_log.append('sinc')
@@ -2570,29 +2593,146 @@ class Transformer(object):
                 "Using an extreme factor. Quality of results will be poor"
             )
 
-        effect_args = ['speed', '{}'.format(factor)]
+        effect_args = ['speed', '{:f}'.format(factor)]
 
         self.effects.extend(effect_args)
         self.effects_log.append('speed')
 
         return self
 
-    def swap(self):
-        '''Swap stereo channels. If the input is not stereo, pairs of channels
-        are swapped, and a possible odd last channel passed through.
+    def stat(self, input_filepath, scale=None, rms=False):
+        '''Display time and frequency domain statistical information about the
+        audio. Audio is passed unmodified through the SoX processing chain.
 
-        E.g., for seven channels, the output order will be 2, 1, 4, 3, 6, 5, 7.
+        Unlike other Transformer methods, this does not modify the transformer
+        effects chain. Instead it computes statistics on the output file that
+        would be created if the build command were invoked.
+
+        Note: The file is downmixed to mono prior to computation.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input file to compute stats on.
+        scale : float or None, default=None
+            If not None, scales the input by the given scale factor.
+        rms : bool, default=False
+            If True, scales all values by the average rms amplitude.
+
+        Returns
+        -------
+        stat_dict : dict
+            Dictionary of statistics.
 
         See Also
-        ----------
-        remix
-
+        --------
+        stats, power_spectrum, sox.file_info
         '''
-        effect_args = ['swap']
-        self.effects.extend(effect_args)
-        self.effects_log.append('swap')
+        effect_args = ['channels', '1', 'stat']
+        if scale is not None:
+            if not is_number(scale) or scale <= 0:
+                raise ValueError("scale must be a positive number.")
+            effect_args.extend(['-s', '{:f}'.format(scale)])
 
-        return self
+        if rms:
+            effect_args.append('-rms')
+
+        _, _, stat_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        stat_dict = {}
+        lines = stat_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) == 0:
+                continue
+            value = split_line[-1]
+            key = ' '.join(split_line[:-1])
+            stat_dict[key.strip(':')] = value
+
+        return stat_dict
+
+    def power_spectrum(self, input_filepath):
+        '''Calculates the power spectrum (4096 point DFT). This method
+        internally invokes the stat command with the -freq option.
+
+        Note: The file is downmixed to mono prior to computation.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input file to compute stats on.
+
+        Returns
+        -------
+        power_spectrum : list
+            List of frequency (Hz), amplitdue pairs.
+
+        See Also
+        --------
+        stat, stats, sox.file_info
+        '''
+        effect_args = ['channels', '1', 'stat', '-freq']
+
+        _, _, stat_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        power_spectrum = []
+        lines = stat_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) != 2:
+                continue
+
+            freq, amp = split_line
+            power_spectrum.append([float(freq), float(amp)])
+
+        return power_spectrum
+
+    def stats(self, input_filepath):
+        '''Display time domain statistical information about the audio
+        channels. Audio is passed unmodified through the SoX processing chain.
+        Statistics are calculated and displayed for each audio channel
+
+        Unlike other Transformer methods, this does not modify the transformer
+        effects chain. Instead it computes statistics on the output file that
+        would be created if the build command were invoked.
+
+        Note: The file is downmixed to mono prior to computation.
+
+        Parameters
+        ----------
+        input_filepath : str
+            Path to input file to compute stats on.
+
+        Returns
+        -------
+        stats_dict : dict
+            List of frequency (Hz), amplitdue pairs.
+
+        See Also
+        --------
+        stat, sox.file_info
+        '''
+        effect_args = ['channels', '1', 'stats']
+
+        _, _, stats_output = self.build(
+            input_filepath, None, extra_args=effect_args, return_output=True
+        )
+
+        stats_dict = {}
+        lines = stats_output.split('\n')
+        for line in lines:
+            split_line = line.split()
+            if len(split_line) == 0:
+                continue
+            value = split_line[-1]
+            key = ' '.join(split_line[:-1])
+            stats_dict[key] = value
+
+        return stats_dict
 
     def stretch(self, factor, window=20):
         '''Change the audio duration (but not its pitch).
@@ -2637,10 +2777,27 @@ class Transformer(object):
                 "window must be a positive number."
             )
 
-        effect_args = ['stretch', '{}'.format(factor), '{}'.format(window)]
+        effect_args = ['stretch', '{:f}'.format(factor), '{:f}'.format(window)]
 
         self.effects.extend(effect_args)
         self.effects_log.append('stretch')
+
+        return self
+
+    def swap(self):
+        '''Swap stereo channels. If the input is not stereo, pairs of channels
+        are swapped, and a possible odd last channel passed through.
+
+        E.g., for seven channels, the output order will be 2, 1, 4, 3, 6, 5, 7.
+
+        See Also
+        ----------
+        remix
+
+        '''
+        effect_args = ['swap']
+        self.effects.extend(effect_args)
+        self.effects_log.append('swap')
 
         return self
 
@@ -2701,7 +2858,7 @@ class Transformer(object):
         if audio_type is not None:
             effect_args.append('-{}'.format(audio_type))
 
-        effect_args.append('{}'.format(factor))
+        effect_args.append('{:f}'.format(factor))
 
         self.effects.extend(effect_args)
         self.effects_log.append('tempo')
@@ -2742,8 +2899,8 @@ class Transformer(object):
             raise ValueError("width_q must be a positive number.")
 
         effect_args = [
-            'treble', '{}'.format(gain_db), '{}'.format(frequency),
-            '{}s'.format(slope)
+            'treble', '{:f}'.format(gain_db), '{:f}'.format(frequency),
+            '{:f}s'.format(slope)
         ]
 
         self.effects.extend(effect_args)
@@ -2782,8 +2939,8 @@ class Transformer(object):
 
         effect_args = [
             'tremolo',
-            '{}'.format(speed),
-            '{}'.format(depth)
+            '{:f}'.format(speed),
+            '{:f}'.format(depth)
         ]
 
         self.effects.extend(effect_args)
@@ -2811,8 +2968,8 @@ class Transformer(object):
 
         effect_args = [
             'trim',
-            '{}'.format(start_time),
-            '{}'.format(end_time - start_time)
+            '{:f}'.format(start_time),
+            '{:f}'.format(end_time - start_time)
         ]
 
         self.effects.extend(effect_args)
@@ -2924,11 +3081,11 @@ class Transformer(object):
 
         effect_args.extend([
             'vad',
-            '-t', '{}'.format(activity_threshold),
-            '-T', '{}'.format(min_activity_duration),
-            '-s', '{}'.format(initial_search_buffer),
-            '-g', '{}'.format(max_gap),
-            '-p', '{}'.format(initial_pad)
+            '-t', '{:f}'.format(activity_threshold),
+            '-T', '{:f}'.format(min_activity_duration),
+            '-s', '{:f}'.format(initial_search_buffer),
+            '-g', '{:f}'.format(max_gap),
+            '-p', '{:f}'.format(initial_pad)
         ])
 
         if location == -1:

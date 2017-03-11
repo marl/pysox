@@ -24,6 +24,10 @@ To install SoX on Mac with Homebrew:
 
 ```brew install sox```
 
+If you want support for `mp3`, `flac`, or `ogg` files, add the following flags:
+
+```brew install sox --with-lame --with-flac --with-libvorbis```
+
 on Linux:
 
 ```apt-get install sox```
