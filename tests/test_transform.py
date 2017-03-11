@@ -2654,7 +2654,7 @@ class TestTransformerNoiseprof(unittest.TestCase):
     def test_default(self):
         tfm = new_transformer()
         save_path = os.path.join(os.getcwd(), 'noise.prof')
-        actual_res = tfm.noiseprof(save_path)
+        actual_res = tfm.noiseprof(INPUT_FILE, save_path)
         expected_res = None
         self.assertEqual(expected_res, actual_res)
         self.assertTrue(os.path.exists(save_path))
