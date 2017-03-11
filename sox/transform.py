@@ -380,7 +380,8 @@ class Transformer(object):
         return self
 
     def clear_effects(self):
-        '''Remove all effects process.
+        '''Remove all effects processes.
+
         '''
         self.effects = list()
         self.effects_log = list()
@@ -1828,23 +1829,24 @@ class Transformer(object):
         self.effects_log.append('mcompand')
         return self
 
-    def noiseprof(self, profile_path=os.getcwd(), profile="noise.prof"):
-        '''Calculate  a  profile  of  the audio for use in noise reduction.
-        See the description of the noisered effect for details.
+    def noiseprof(self, profile_path):
+        '''Calculate a profile of the audio for use in noise reduction.
+        See the description of the `noisered` effect for details.
 
         Parameters
-        ---------
+        ----------
         profile_path : str
             Path to save the noise profile file.
-        profile : str
-            Filename of the profile of noise.
 
         See Also
         --------
         noisered
-        '''
 
-        if not os.access(profile_path, os.W_OK):
+        '''
+        if os.path.isdir(profile_path):
+            raise ValueError("profile_path {} is a directory, but should be a file")
+        
+        if not os.access(os.path.dirname(profile_path), os.W_OK):
             raise IOError("profile_path {} is not writeable.".format(profile_path))
 
         effect_args = ['noiseprof', os.path.join(profile_path, profile)]
@@ -1853,19 +1855,16 @@ class Transformer(object):
         self.effects_log.append('noiseprof')
         return self
 
-    def noisered(self, profile_path=os.getcwd(),
-            profile='noise.prof', amount=0.5):
-        '''Reduce noise in the audio signal  by  profiling  and  filtering.
-        This effect is moderately effective at removing consistent back‐
-        ground noise such as hiss or hum.
+    def noisered(self, profile_path, amount=0.5):
+        '''Reduce noise in the audio signal by profiling and filtering.
+        This effect is moderately effective at removing consistent
+        background noise such as hiss or hum.
 
         Parameters
-        ---------
+        ----------
         profile_path : str
             Path to a noise profile file.
             This file can be generated using the `noiseprof` effect.
-        profile : str
-            Filename of the profile of noise.
         amount : float, default=0.5
             How much noise should be removed is specified by amount. Should
             be between 0 and 1.  Higher numbers will remove more noise but
@@ -1875,6 +1874,7 @@ class Transformer(object):
         See Also
         --------
         noiseprof
+
         '''
 
         if not os.path.exists(profile_path):
