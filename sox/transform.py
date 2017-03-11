@@ -1856,15 +1856,16 @@ class Transformer(object):
         self.effects_log.append('mcompand')
         return self
 
-    def noiseprof(self, profile_path):
+    def noiseprof(self, input_filepath, profile_path):
         '''Calculate a profile of the audio for use in noise reduction.
         Running this command does not effect the Transformer effects
         chain. When this function is called, the calculated noise profile
         file is saved to the `profile_path`.
-        See the description of the `noisered` effect for details.
 
         Parameters
         ----------
+        input_filepath : str
+            Path to audiofile from which to compute a noise profile.
         profile_path : str
             Path to save the noise profile file.
 
