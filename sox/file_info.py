@@ -259,7 +259,7 @@ def validate_output_file(output_filepath):
 
     nowrite_conditions = [
         bool(os.path.dirname(output_filepath)) or\
-            not os.access(os.path.join(os.getcwd(), output_filepath)),
+            not os.access(os.getcwd(), os.W_OK),
         not os.access(os.path.dirname(output_filepath), os.W_OK)]
 
     if all(nowrite_conditions):
