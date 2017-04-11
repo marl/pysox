@@ -2679,6 +2679,14 @@ class TestTransformerNoiseprof(unittest.TestCase):
         with self.assertRaises(IOError):
             tfm.noiseprof(INPUT_FILE, '/usr/noise.prof')
 
+    def test_noise_prof_invalid_cwd(self):
+        tfm = new_transformer()
+        _cwd = os.getcwd()
+        os.chdir('/')
+        with self.assertRaises(IOError):
+            tfm.noiseprof(INPUT_FILE, 'noise.prof')
+        os.chdir(_cwd)
+
 
 class TestTransformerNoisered(unittest.TestCase):
     
