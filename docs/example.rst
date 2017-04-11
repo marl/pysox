@@ -44,6 +44,10 @@ Combiner Example
 Advanced Usage
 ==============
 
+The following functions behave differently than the rest in `Transformer`.
+the `build` function is not need to be call after them, instead the result
+will be output as soon as they are called.
+
 noiseprof / noisered
 --------------------
 
@@ -66,3 +70,20 @@ noiseprof / noisered
     tfm.preview('sing.wav')
     # create the output
     tfm.build('sing.wav') 
+
+power spectrum
+--------------
+
+.. code-block:: python
+    :linenos:
+
+    import sox
+    # create transformer
+    tfm = sox.Transformer()
+    # get power spectrum data
+    # by default, it analyse sound in channel 1
+    power = tfm.power_spectrum('talk.wav')
+    # the result is a list contain lists where [0] is frequency
+    # and [1] is amplitude
+    # you can split amplitude data for further analyse / display for gui
+    amp = [pair[1] for pair in power]
