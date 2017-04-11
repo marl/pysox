@@ -39,3 +39,30 @@ Combiner Example
     cbn.build(
         ['input1.wav', 'input2.wav', 'input3.wav'], output.wav, 'concatenate'
     )
+
+
+Advanced Usage
+==============
+
+noiseprof / noisered
+--------------------
+
+.. code-block:: python
+    :linenos:
+
+    import sox
+    # create transformer
+    tfm = sox.Transformer()
+    # create a prof file with noise data
+    # you can record an "empty" file contains noise from environment
+    # so sox will identify noise data without do harm to what you need
+    tfm.noiseprof('noise.wav', 'noise.prof')
+    # now noise.prof is in your working directory
+    # it is time to fire up noisered and get noise rid
+    # amount parameter means how much noise should be remove
+    # high amount may cause detail losing
+    tfm.noisered('noise.prof', amount=0.3)
+    # preview the effect before output
+    tfm.preview('sing.wav')
+    # create the output
+    tfm.build('sing.wav') 
