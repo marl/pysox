@@ -46,7 +46,7 @@ Advanced Usage
 
 The following functions behave differently than the rest in `Transformer`.
 the `build` function is not need to be call after them, instead the result
-will be output as soon as they are called.
+will be output or returned as soon as they are called.
 
 noiseprof / noisered
 --------------------
@@ -87,3 +87,23 @@ power spectrum
     # and [1] is amplitude
     # you can split amplitude data for further analyse / display for gui
     amp = [pair[1] for pair in power]
+
+stat / stats
+------------
+
+Both `stat` and `stats` provides some domain statistical information
+about an audio. Here we will show how to get these data, for the meaning
+of output information, please read `man sox`.
+
+.. code-block:: python
+   :linenos:
+
+   import sox
+   # create transformer
+   tfm = sox.Transformer()
+   # get stat data
+   stat_data = tfm.stat('input.wav')
+   # now for the stats data
+   stats_data = tfm.stat('input.wav')
+   type(stat_data)
+   > <type 'dict'>
