@@ -39,3 +39,71 @@ Combiner Example
     cbn.build(
         ['input1.wav', 'input2.wav', 'input3.wav'], output.wav, 'concatenate'
     )
+
+
+Advanced Usage
+==============
+
+The following functions behave differently than the rest in `Transformer`.
+the `build` function is not need to be call after them, instead the result
+will be output or returned as soon as they are called.
+
+noiseprof / noisered
+--------------------
+
+.. code-block:: python
+    :linenos:
+
+    import sox
+    # create transformer
+    tfm = sox.Transformer()
+    # create a prof file with noise data
+    # you can record an "empty" file contains noise from environment
+    # so sox will identify noise data without do harm to what you need
+    tfm.noiseprof('noise.wav', 'noise.prof')
+    # now noise.prof is in your working directory
+    # it is time to fire up noisered and get noise rid
+    # amount parameter means how much noise should be remove
+    # high amount may cause detail losing
+    tfm.noisered('noise.prof', amount=0.3)
+    # preview the effect before output
+    tfm.preview('sing.wav')
+    # create the output
+    tfm.build('sing.wav') 
+
+power spectrum
+--------------
+
+.. code-block:: python
+    :linenos:
+
+    import sox
+    # create transformer
+    tfm = sox.Transformer()
+    # get power spectrum data
+    # by default, it analyse sound in channel 1
+    power = tfm.power_spectrum('talk.wav')
+    # the result is a list contain lists where [0] is frequency
+    # and [1] is amplitude
+    # you can split amplitude data for further analyse / display for gui
+    amp = [pair[1] for pair in power]
+
+stat / stats
+------------
+
+Both `stat` and `stats` provides some domain statistical information
+about an audio. Here we will show how to get these data, for the meaning
+of output information, please read `man sox`.
+
+.. code-block:: python
+   :linenos:
+
+   import sox
+   # create transformer
+   tfm = sox.Transformer()
+   # get stat data
+   stat_data = tfm.stat('input.wav')
+   # now for the stats data
+   stats_data = tfm.stat('input.wav')
+   type(stat_data)
+   > <type 'dict'>
