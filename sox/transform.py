@@ -3111,7 +3111,7 @@ class Transformer(object):
 
         return self
 
-    def vol(gain, gtype='amplitude', limitergain=None):
+    def vol(self, gain, gtype='amplitude', limitergain=None):
         '''Apply an amplification or an attenuation to the audio signal.
         Unlike the -v option (which is used for balancing multiple
         input files as they enter the SoX effects processing chain),
@@ -3145,21 +3145,22 @@ class Transformer(object):
         _ALLOWED_GTYPE = ['amplitude', 'power', 'dB']
 
         if not isinstance(gain, float):
-            raise ValueError('gian must be a float')
+            raise TypeError('gain must be a float')
 
         if not isinstance(gtype, str):
-            raise ValueError(gtype, str)
+            raise TypeError(gtype, str)
 
         if not gtype in _ALLOWED_GTYPE:
             raise ValueError(
-                'gtype must be one of {}'.format(', '.join(_ALLOWED_TYPE))
+                'gtype must be one of {}'.format(', '.join(_ALLOWED_GTYPE))
             )
 
         if limitergain is not None and not isinstance(limitergain, float):
-            raise ValueError('limitergain must be a float')
+            raise TypeError('limitergain must be a float')
 
         effect_args = []
         effect_args.extend([
+            'vol',
             '{:f}'.format(gain),
             '{}'.format(gtype)
         ])
