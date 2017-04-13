@@ -3110,3 +3110,65 @@ class Transformer(object):
         self.effects_log.append('vad')
 
         return self
+
+    def vol(gain, gtype='amplitude', limitergain=None):
+        '''Apply an amplification or an attenuation to the audio signal.
+        Unlike the -v option (which is used for balancing multiple
+        input files as they enter the SoX effects processing chain),
+        vol is an effect like any other so can be applied anywhere,  and
+        several times if necessary, during the processing chain. 
+        
+        Parameters
+        ----------
+        gain : float
+        The amount to change the volume.
+
+        gtype : str, default='amplitude'
+        Set the way to gain volume, if gtype is set to amplitude (default),
+        the gain is an aplitude (i.e. voltage or linear) ratio, if power, then
+        a power (i,e, wattage or voltage-squared) ratio, and if dB the a power
+        change in dB. When type is amplitude or power, a gain of 1 leaves the
+        volume unchanged, less than 1 decreases it, and greater than 1 increases
+        it; a negative gain inverts the audio signal in addition to adjusting
+        its volume. When  type  is  dB, a gain of 0 leaves the volume unchanged,
+        less than 0 decreases it, and greater than 0 increases it.
+
+        limitergain : float
+        will be used only on peaks to prevent clipping. To get better
+        effect, the value is suggested to set much less than 1.0.
+
+        See also
+        --------
+        gain, compand
+
+        '''
+        _ALLOWED_GTYPE = ['amplitude', 'power', 'dB']
+
+        if not isinstance(gain, float):
+            raise ValueError('gian must be a float')
+
+        if not isinstance(gtype, str):
+            raise ValueError(gtype, str)
+
+        if not gtype in _ALLOWED_GTYPE:
+            raise ValueError(
+                'gtype must be one of {}'.format(', '.join(_ALLOWED_TYPE))
+            )
+
+        if limitergain is not None and not isinstance(limitergain, float):
+            raise ValueError('limitergain must be a float')
+
+        effect_args = []
+        effect_args.extend([
+            '{:f}'.format(gain),
+            '{}'.format(gtype)
+        ])
+
+        if limitergain is not None:
+            effect_args.append('{:f}'.format(limitergain))
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('vol')
+
+        return self
+
