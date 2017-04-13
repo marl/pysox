@@ -3145,10 +3145,10 @@ class Transformer(object):
         _ALLOWED_GTYPE = ['amplitude', 'power', 'dB']
 
         if not isinstance(gain, float):
-            raise TypeError('gain must be a float')
+            raise ValueError('gain must be a float')
 
         if not isinstance(gtype, str):
-            raise TypeError(gtype, str)
+            raise ValueError(gtype, str)
 
         if not gtype in _ALLOWED_GTYPE:
             raise ValueError(
@@ -3156,7 +3156,7 @@ class Transformer(object):
             )
 
         if limitergain is not None and not isinstance(limitergain, float):
-            raise TypeError('limitergain must be a float')
+            raise ValueError('limitergain must be a float')
 
         effect_args = []
         effect_args.extend([
