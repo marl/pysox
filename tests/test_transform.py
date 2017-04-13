@@ -255,6 +255,20 @@ class TestTransformSetInputFormat(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(ignore_length=None)
 
+    def test_volume(self):
+        self.tfm.set_input_format(volume=2.5)
+        actual = self.tfm.input_format
+        expected = ['-v', '2.500000']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_volume_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(volume=2)
+
 
 class TestTransformSetOutputFormat(unittest.TestCase):
 

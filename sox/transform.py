@@ -235,7 +235,7 @@ class Transformer(object):
         if not isinstance(ignore_length, bool):
             raise ValueError('ignore_length must be a boolean')
 
-        if not isinstance(volume, float):
+        if not isinstance(volume, float) and volume is not None:
             raise ValueError('volume must be a float')
 
         input_format = []
@@ -259,7 +259,7 @@ class Transformer(object):
             input_format.append('--ignore-length')
 
         if volume is not None:
-            input_format.append(['-v', '{:f}'.format(volume)]
+            input_format.extend(['-v', '{:f}'.format(volume)])
 
         self.input_format = input_format
         return self
