@@ -255,6 +255,20 @@ class TestTransformSetInputFormat(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(ignore_length=None)
 
+    def test_volume(self):
+        self.tfm.set_input_format(volume=2.5)
+        actual = self.tfm.input_format
+        expected = ['-v', '2.500000']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_volume_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.set_input_format(volume=2)
+
 
 class TestTransformSetOutputFormat(unittest.TestCase):
 
@@ -4540,3 +4554,58 @@ class TestTransformerVad(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.vad(initial_pad=-1)
+
+
+class TestTransformerVol(unittest.TestCase):
+
+    def test_default(self):
+        tfm = new_transformer()
+        tfm.vol(2.0)
+
+        actual_args = tfm.effects
+        expected_args = ['vol', '2.000000', 'amplitude']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vol']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_limitergain(self):
+        tfm = new_transformer()
+        tfm.vol(2.0, limitergain=0.02)
+
+        actual_args = tfm.effects
+        expected_args = ['vol', '2.000000', 'amplitude', '0.020000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vol']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_invalid_gain(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vol(1)
+
+    def test_invalid_gtype(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vol(2.0, gtype='WoW')
+
+    def test_invalid_gtype_val(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vol(2.0, gtype=3)
+
+    def test_invalid_limitergain(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.vol(2.0, limitergain=3)

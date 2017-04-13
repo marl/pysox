@@ -134,7 +134,8 @@ class Transformer(object):
         return self
 
     def set_input_format(self, file_type=None, rate=None, bits=None,
-                         channels=None, encoding=None, ignore_length=False):
+                         channels=None, encoding=None, ignore_length=False,
+                         volume=None):
         '''Sets input file format arguments. This is primarily useful when
         dealing with audio files without a file extension. Overwrites any
         previously set input file arguments.
@@ -196,6 +197,11 @@ class Transformer(object):
             If True, overrides an (incorrect) audio length given in an audio
             file’s header. If this option is given then SoX will keep reading
             audio until it reaches the end of the input file.
+        volume : float, default=None
+            This is a linear (amplitude) adjustment, so a number less than 1
+            decreases the volume and a number greater than 1 increases it.
+            If a negative number is given then in addition to the volume adjustment,
+            the audio signal will be inverted.
 
         '''
         if file_type not in VALID_FORMATS + [None]:
@@ -229,6 +235,9 @@ class Transformer(object):
         if not isinstance(ignore_length, bool):
             raise ValueError('ignore_length must be a boolean')
 
+        if not isinstance(volume, float) and volume is not None:
+            raise ValueError('volume must be a float')
+
         input_format = []
 
         if file_type is not None:
@@ -248,6 +257,9 @@ class Transformer(object):
 
         if ignore_length:
             input_format.append('--ignore-length')
+
+        if volume is not None:
+            input_format.extend(['-v', '{:f}'.format(volume)])
 
         self.input_format = input_format
         return self
@@ -3103,3 +3115,66 @@ class Transformer(object):
         self.effects_log.append('vad')
 
         return self
+
+    def vol(self, gain, gtype='amplitude', limitergain=None):
+        '''Apply an amplification or an attenuation to the audio signal.
+        Unlike the -v option (which is used for balancing multiple
+        input files as they enter the SoX effects processing chain),
+        vol is an effect like any other so can be applied anywhere,  and
+        several times if necessary, during the processing chain. 
+        
+        Parameters
+        ----------
+        gain : float
+        The amount to change the volume.
+
+        gtype : str, default='amplitude'
+        Set the way to gain volume, if gtype is set to amplitude (default),
+        the gain is an aplitude (i.e. voltage or linear) ratio, if power, then
+        a power (i,e, wattage or voltage-squared) ratio, and if dB the a power
+        change in dB. When type is amplitude or power, a gain of 1 leaves the
+        volume unchanged, less than 1 decreases it, and greater than 1 increases
+        it; a negative gain inverts the audio signal in addition to adjusting
+        its volume. When  type  is  dB, a gain of 0 leaves the volume unchanged,
+        less than 0 decreases it, and greater than 0 increases it.
+
+        limitergain : float
+        will be used only on peaks to prevent clipping. To get better
+        effect, the value is suggested to set much less than 1.0.
+
+        See also
+        --------
+        gain, compand
+
+        '''
+        _ALLOWED_GTYPE = ['amplitude', 'power', 'dB']
+
+        if not isinstance(gain, float):
+            raise ValueError('gain must be a float')
+
+        if not isinstance(gtype, str):
+            raise ValueError(gtype, str)
+
+        if not gtype in _ALLOWED_GTYPE:
+            raise ValueError(
+                'gtype must be one of {}'.format(', '.join(_ALLOWED_GTYPE))
+            )
+
+        if limitergain is not None and not isinstance(limitergain, float):
+            raise ValueError('limitergain must be a float')
+
+        effect_args = []
+        effect_args.extend([
+            'vol',
+            '{:f}'.format(gain),
+            '{}'.format(gtype)
+        ])
+
+        if limitergain is not None:
+            effect_args.append('{:f}'.format(limitergain))
+
+        self.effects.extend(effect_args)
+        self.effects_log.append('vol')
+
+        return self
+
