@@ -252,7 +252,7 @@ class Combiner(Transformer):
 
         max_input_arg_len = max([
             len(file_type), len(rate), len(bits), len(channels),
-            len(encoding), len(ignore_length)
+            len(encoding), len(ignore_length), len(volume)
         ])
 
         input_format = []

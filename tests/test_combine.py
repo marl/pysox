@@ -215,6 +215,23 @@ class TestSetInputFormat(unittest.TestCase):
         cbn = new_combiner()
         with self.assertRaises(ValueError):
             cbn.set_input_format(ignore_length=[False, True, 3])
+            
+    def test_volume(self):
+        cbn = new_combiner()
+        cbn.set_input_format(volume=[1.2, 3.4])
+        expected = [['-v', '1.200000'], ['-v', '3.400000']]
+        actual = cbn.input_format
+        self.assertEqual(expected, actual)
+
+    def test_invalid_volume(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(volume=1)
+
+    def test_invalid_volume_val(self):
+        cbn = new_combiner()
+        with self.assertRaises(ValueError):
+            cbn.set_input_format(volume=[2, 3.2])
 
     def test_multiple_same_len(self):
         cbn = new_combiner()
