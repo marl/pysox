@@ -1875,10 +1875,15 @@ class Transformer(object):
 
         '''
         if os.path.isdir(profile_path):
-            raise ValueError("profile_path {} is a directory, but should be a file")
+            raise ValueError("profile_path {} is a directory, but filename should be specified.")
         
-        if not os.access(os.path.dirname(profile_path), os.W_OK):
-            raise IOError("profile_path {} is not writeable.".format(profile_path))
+        if os.path.dirname(profile_path) == '' and profile_path != '':
+            _abs_profile_path = os.path.join(os.getcwd(), profile_path)
+        else:
+            _abs_profile_path = profile_path
+                
+        if not os.access(os.path.dirname(_abs_profile_path), os.W_OK):
+            raise IOError("profile_path {} is not writeable.".format(_abs_profile_path))
 
         effect_args = ['noiseprof', profile_path]
         self.build(input_filepath, None, extra_args=effect_args)
