@@ -111,7 +111,8 @@ class Combiner(Transformer):
             return True
 
     def set_input_format(self, file_type=None, rate=None, bits=None,
-                         channels=None, encoding=None, ignore_length=None):
+                         channels=None, encoding=None, ignore_length=None,
+                         volume=None):
         '''Sets input file format arguments. This is primarily useful when
         dealing with audio files without a file extension. Overwrites any
         previously set input file arguments.
@@ -173,6 +174,11 @@ class Combiner(Transformer):
             If True, overrides an (incorrect) audio length given in an audio
             file’s header. If this option is given then SoX will keep reading
             audio until it reaches the end of the input file.
+        volume : list of float or None, default=None
+            This is a linear (amplitude) adjustment, so a number less than 1
+            decreases the volume and a number greater than 1 increases it.
+            If a negative number is given then in addition to the volume adjustment,
+            the audio signal will be inverted.
 
         '''
         if file_type is not None and not isinstance(file_type, list):
@@ -235,6 +241,15 @@ class Combiner(Transformer):
         else:
             ignore_length = []
 
+        if volume is not None and not isinstance(volume, list):
+            raise ValueError('volume must be a list.')
+
+        if volume is not None:
+            if not all([isinstance(v, float) for v in volume]):
+                raise ValueError('volume elements must be floats.')
+        else:
+            volume = []
+
         max_input_arg_len = max([
             len(file_type), len(rate), len(bits), len(channels),
             len(encoding), len(ignore_length)
@@ -262,6 +277,9 @@ class Combiner(Transformer):
         for i, l in enumerate(ignore_length):
             if l is True:
                 input_format[i].append('--ignore-length')
+
+        for i, v in enumerate(volume):
+            input_format[i].extend(['-v', '{:f}'.format(v)])
 
         self.input_format = input_format
         return self

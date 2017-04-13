@@ -134,7 +134,8 @@ class Transformer(object):
         return self
 
     def set_input_format(self, file_type=None, rate=None, bits=None,
-                         channels=None, encoding=None, ignore_length=False):
+                         channels=None, encoding=None, ignore_length=False,
+                         volume=None):
         '''Sets input file format arguments. This is primarily useful when
         dealing with audio files without a file extension. Overwrites any
         previously set input file arguments.
@@ -196,6 +197,11 @@ class Transformer(object):
             If True, overrides an (incorrect) audio length given in an audio
             file’s header. If this option is given then SoX will keep reading
             audio until it reaches the end of the input file.
+        volume : float, default=None
+            This is a linear (amplitude) adjustment, so a number less than 1
+            decreases the volume and a number greater than 1 increases it.
+            If a negative number is given then in addition to the volume adjustment,
+            the audio signal will be inverted.
 
         '''
         if file_type not in VALID_FORMATS + [None]:
@@ -229,6 +235,9 @@ class Transformer(object):
         if not isinstance(ignore_length, bool):
             raise ValueError('ignore_length must be a boolean')
 
+        if not isinstance(volume, float):
+            raise ValueError('volume must be a float')
+
         input_format = []
 
         if file_type is not None:
@@ -248,6 +257,9 @@ class Transformer(object):
 
         if ignore_length:
             input_format.append('--ignore-length')
+
+        if volume is not None:
+            input_format.append(['-v', '{:f}'.format(volume)]
 
         self.input_format = input_format
         return self
