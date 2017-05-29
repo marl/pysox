@@ -4554,10 +4554,10 @@ class TestTransformerVol(unittest.TestCase):
 
     def test_limiter_gain(self):
         tfm = new_transformer()
-        tfm.vol(0.8, limiter_gain=0.02)
+        tfm.vol(1.8, limiter_gain=0.02)
 
         actual_args = tfm.effects
-        expected_args = ['vol', '0.800000', 'amplitude', '0.020000']
+        expected_args = ['vol', '1.800000', 'amplitude', '0.020000']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
@@ -4567,6 +4567,38 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)        
+
+    def test_limiter_gain_vol_down(self):
+        tfm = new_transformer()
+        tfm.vol(0.8, limiter_gain=0.02)
+
+        actual_args = tfm.effects
+        expected_args = ['vol', '0.800000', 'amplitude']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vol']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_limiter_gain_vol_down_db(self):
+        tfm = new_transformer()
+        tfm.vol(-2.0, gain_type='db', limiter_gain=0.05)
+
+        actual_args = tfm.effects
+        expected_args = ['vol', '-2.000000', 'dB']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vol']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
 
     def test_gain_type_power(self):
         tfm = new_transformer()
@@ -4589,7 +4621,7 @@ class TestTransformerVol(unittest.TestCase):
         tfm.vol(0.8, gain_type='db')
 
         actual_args = tfm.effects
-        expected_args = ['vol', '0.800000', 'db']
+        expected_args = ['vol', '0.800000', 'dB']
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log

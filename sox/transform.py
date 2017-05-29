@@ -3139,6 +3139,8 @@ class Transformer(object):
 
         effect_args = ['vol']
 
+        effect_args.append('{:f}'.format(gain))
+
         if gain_type == 'amplitude':
             effect_args.append('amplitude')
         elif gain_type == 'power':
@@ -3148,9 +3150,11 @@ class Transformer(object):
         else:
             raise ValueError('gain_type must be one of amplitude, power, or db')
 
-        effect_args = ['vol', '{:f}'.format(gain), '{}'.format(gain_type)]
         if limiter_gain is not None:
-            effect_args.append('{:f}'.format(limiter_gain))
+            if gain_type in ['amplitude', 'power'] and gain > 1:
+                effect_args.append('{:f}'.format(limiter_gain))
+            elif gain_type == 'db' and gain > 0:
+                effect_args.append('{:f}'.format(limiter_gain))
 
         self.effects.extend(effect_args)
         self.effects_log.append('vol')
