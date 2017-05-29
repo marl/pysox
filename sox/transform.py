@@ -3126,8 +3126,6 @@ class Transformer(object):
         '''
         if not is_number(gain):
             raise ValueError('gain must be a number.')
-        if gain_type not in ['amplitude', 'power', 'db']:
-            raise ValueError('gain_type must be one of amplitude, power, or db')
         if limiter_gain is not None:
             if (not is_number(limiter_gain) or
                     limiter_gain <= 0 or limiter_gain >= 1):
@@ -3138,6 +3136,17 @@ class Transformer(object):
             raise ValueError(
                 "If gain_type = amplitude or power, gain must be positive."
             )
+
+        effect_args = ['vol']
+
+        if gain_type == 'amplitude':
+            effect_args.append('amplitude')
+        elif gain_type == 'power':
+            effect_args.append('power')
+        elif gain_type == 'db':
+            effect_args.append('dB')
+        else:
+            raise ValueError('gain_type must be one of amplitude, power, or db')
 
         effect_args = ['vol', '{:f}'.format(gain), '{}'.format(gain_type)]
         if limiter_gain is not None:
