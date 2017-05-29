@@ -379,6 +379,22 @@ class TestBuildInputFormatList(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+class TestCombinePreview(unittest.TestCase):
+    def setUp(self):
+        self.cbn = new_combiner()
+        self.cbn.trim(0, 0.1)
+
+    def test_valid(self):
+        expected = None
+        actual = self.cbn.preview([INPUT_WAV, INPUT_WAV], 'mix')
+        self.assertEqual(expected, actual)
+
+    def test_valid_vol(self):
+        expected = None
+        actual = self.cbn.preview([INPUT_WAV, INPUT_WAV], 'mix', [1.0, 0.5])
+        self.assertEqual(expected, actual)
+
+
 class TestBuildInputArgs(unittest.TestCase):
 
     def test_unequal_length(self):
