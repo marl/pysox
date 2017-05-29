@@ -4600,6 +4600,22 @@ class TestTransformerVol(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+    def test_limiter_gain_vol_up_db(self):
+        tfm = new_transformer()
+        tfm.vol(2.0, gain_type='db', limiter_gain=0.05)
+
+        actual_args = tfm.effects
+        expected_args = ['vol', '2.000000', 'dB', '0.050000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['vol']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
     def test_gain_type_power(self):
         tfm = new_transformer()
         tfm.vol(0.8, gain_type='power')
