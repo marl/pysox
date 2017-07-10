@@ -94,7 +94,7 @@ cbn.pitch(3.0)
 cbn.convert(samplerate=8000, channels=2)
 # create the output file
 cbn.build(
-    ['input1.wav', 'input2.wav', 'input3.wav'], output.wav, 'concatenate'
+    ['input1.wav', 'input2.wav', 'input3.wav'], 'output.wav', 'concatenate'
 )
 
 ```
