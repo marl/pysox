@@ -1,7 +1,5 @@
 '''Base module for calling SoX '''
-import logging
-
-logger = logging.getLogger('sox')
+from .log import logger
 
 import subprocess
 from subprocess import CalledProcessError

@@ -1,8 +1,6 @@
 ''' Audio file info computed by soxi.
 '''
-import logging
-
-logger = logging.getLogger('sox')
+from .log import logger
 
 import os
 

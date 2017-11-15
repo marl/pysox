@@ -6,12 +6,10 @@ This module requires that SoX is installed.
 '''
 
 from __future__ import print_function
-import logging
-logger = logging.getLogger('sox')
-
 
 from . import file_info
 from . import core
+from .log import logger
 from .core import ENCODING_VALS
 from .core import enquote_filepath
 from .core import is_number

@@ -6,9 +6,7 @@ This module requires that SoX is installed.
 '''
 
 from __future__ import print_function
-import logging
-
-logger = logging.getLogger('sox')
+from .log import logger
 
 import random
 import os

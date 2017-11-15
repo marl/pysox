@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """ init method for sox module """
-import logging
-logger = logging.getLogger('sox')
+from .log import logger
 import os
 
 # Check that SoX is installed and callable
