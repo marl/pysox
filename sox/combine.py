@@ -6,11 +6,10 @@ This module requires that SoX is installed.
 '''
 
 from __future__ import print_function
-import logging
-
 
 from . import file_info
 from . import core
+from .log import logger
 from .core import ENCODING_VALS
 from .core import enquote_filepath
 from .core import is_number
@@ -81,7 +80,7 @@ class Combiner(Transformer):
         try:
             _validate_file_formats(input_filepath_list, combine_type)
         except SoxiError:
-            logging.warning("unable to validate file formats.")
+            logger.warning("unable to validate file formats.")
 
         args = []
         args.extend(self.globals)
@@ -101,14 +100,14 @@ class Combiner(Transformer):
                 "Stdout: {}\nStderr: {}".format(out, err)
             )
         else:
-            logging.info(
+            logger.info(
                 "Created %s with combiner %s and  effects: %s",
                 output_filepath,
                 combine_type,
                 " ".join(self.effects_log)
             )
             if out is not None:
-                logging.info("[SoX] {}".format(out))
+                logger.info("[SoX] {}".format(out))
             return True
 
     def preview(self, input_filepath_list, combine_type, input_volumes=None):
@@ -378,14 +377,14 @@ def _build_input_format_list(input_filepath_list, input_volumes=None,
     else:
         n_volumes = len(input_volumes)
         if n_volumes < n_inputs:
-            logging.warning(
+            logger.warning(
                 'Volumes were only specified for %s out of %s files.'
                 'The last %s files will remain at their original volumes.',
                 n_volumes, n_inputs, n_inputs - n_volumes
             )
             vols = input_volumes + [1] * (n_inputs - n_volumes)
         elif n_volumes > n_inputs:
-            logging.warning(
+            logger.warning(
                 '%s volumes were specified but only %s input files exist.'
                 'The last %s volumes will be ignored.',
                 n_volumes, n_inputs, n_volumes - n_inputs
@@ -400,7 +399,7 @@ def _build_input_format_list(input_filepath_list, input_volumes=None,
     else:
         n_fmts = len(input_format)
         if n_fmts < n_inputs:
-            logging.warning(
+            logger.warning(
                 'Input formats were only specified for %s out of %s files.'
                 'The last %s files will remain unformatted.',
                 n_fmts, n_inputs, n_inputs - n_fmts
@@ -408,7 +407,7 @@ def _build_input_format_list(input_filepath_list, input_volumes=None,
             fmts = [f for f in input_format]
             fmts.extend([[] for _ in range(n_inputs - n_fmts)])
         elif n_fmts > n_inputs:
-            logging.warning(
+            logger.warning(
                 '%s Input formats were specified but only %s input files exist'
                 '. The last %s formats will be ignored.',
                 n_fmts, n_inputs, n_fmts - n_inputs

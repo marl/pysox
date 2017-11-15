@@ -6,7 +6,8 @@ This module requires that SoX is installed.
 '''
 
 from __future__ import print_function
-import logging
+from .log import logger
+
 import random
 import os
 
@@ -443,13 +444,13 @@ class Transformer(object):
                 "Stdout: {}\nStderr: {}".format(out, err)
             )
         else:
-            logging.info(
+            logger.info(
                 "Created %s with effects: %s",
                 output_filepath,
                 " ".join(self.effects_log)
             )
             if out is not None:
-                logging.info("[SoX] {}".format(out))
+                logger.info("[SoX] {}".format(out))
 
             if return_output:
                 return status, out, err
@@ -943,7 +944,7 @@ class Transformer(object):
             raise ValueError("decay_time must be a positive number.")
 
         if attack_time > decay_time:
-            logging.warning(
+            logger.warning(
                 "attack_time is larger than decay_time.\n"
                 "For most situations, attack_time should be shorter than "
                 "decay time because the human ear is more sensitive to sudden "
@@ -1780,7 +1781,7 @@ class Transformer(object):
             raise ValueError("decay_time elements must be positive numbers.")
 
         if any([a > d for a, d in zip(attack_time, decay_time)]):
-            logging.warning(
+            logger.warning(
                 "Elements of attack_time are larger than decay_time.\n"
                 "For most situations, attack_time should be shorter than "
                 "decay time because the human ear is more sensitive to sudden "
@@ -2118,7 +2119,7 @@ class Transformer(object):
             raise ValueError("n_semitones must be a positive number")
 
         if n_semitones < -12 or n_semitones > 12:
-            logging.warning(
+            logger.warning(
                 "Using an extreme pitch shift. "
                 "Quality of results will be poor"
             )
@@ -2603,7 +2604,7 @@ class Transformer(object):
             raise ValueError("factor must be a positive number")
 
         if factor < 0.5 or factor > 2:
-            logging.warning(
+            logger.warning(
                 "Using an extreme factor. Quality of results will be poor"
             )
 
@@ -2775,13 +2776,13 @@ class Transformer(object):
             raise ValueError("factor must be a positive number")
 
         if factor < 0.5 or factor > 2:
-            logging.warning(
+            logger.warning(
                 "Using an extreme time stretching factor. "
                 "Quality of results will be poor"
             )
 
         if abs(factor - 1.0) > 0.1:
-            logging.warning(
+            logger.warning(
                 "For this stretch factor, "
                 "the tempo effect has better performance."
             )
@@ -2845,13 +2846,13 @@ class Transformer(object):
             raise ValueError("factor must be a positive number")
 
         if factor < 0.5 or factor > 2:
-            logging.warning(
+            logger.warning(
                 "Using an extreme time stretching factor. "
                 "Quality of results will be poor"
             )
 
         if abs(factor - 1.0) <= 0.1:
-            logging.warning(
+            logger.warning(
                 "For this stretch factor, "
                 "the stretch effect has better performance."
             )

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """ init method for sox module """
-import logging
+from .log import logger
 import os
 
 # Check that SoX is installed and callable
 NO_SOX = False
 if not len(os.popen('sox -h').readlines()):
-    logging.warning("""SoX could not be found!
+    logger.warning("""SoX could not be found!
 
     If you do not have SoX, proceed here:
      - - - http://sox.sourceforge.net/ - - -
