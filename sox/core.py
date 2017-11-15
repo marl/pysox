@@ -1,5 +1,8 @@
 '''Base module for calling SoX '''
 import logging
+
+logger = logging.getLogger('sox')
+
 import subprocess
 from subprocess import CalledProcessError
 
@@ -43,7 +46,7 @@ def sox(args):
 
     try:
         command = ' '.join(args)
-        logging.info("Executing: %s", command)
+        logger.info("Executing: %s", command)
 
         process_handle = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -58,9 +61,9 @@ def sox(args):
         return status, out, err
 
     except OSError as error_msg:
-        logging.error("OSError: SoX failed! %s", error_msg)
+        logger.error("OSError: SoX failed! %s", error_msg)
     except TypeError as error_msg:
-        logging.error("TypeError: %s", error_msg)
+        logger.error("TypeError: %s", error_msg)
     return 1, None, None
 
 
@@ -125,7 +128,7 @@ def soxi(filepath, argument):
             shell=True, stderr=subprocess.PIPE
         )
     except CalledProcessError as cpe:
-        logging.info("Soxi error message: {}".format(cpe.output))
+        logger.info("Soxi error message: {}".format(cpe.output))
         raise SoxiError("Soxi failed with exit code {}".format(cpe.returncode))
 
     shell_output = shell_output.decode("utf-8")
@@ -154,24 +157,24 @@ def play(args):
         args[0] = "play"
 
     try:
-        logging.info("Executing: %s", " ".join(args))
+        logger.info("Executing: %s", " ".join(args))
         process_handle = subprocess.Popen(
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
         status = process_handle.wait()
         if process_handle.stderr is not None:
-            logging.info(process_handle.stderr)
+            logger.info(process_handle.stderr)
 
         if status == 0:
             return True
         else:
-            logging.info("Play returned with error code %s", status)
+            logger.info("Play returned with error code %s", status)
             return False
     except OSError as error_msg:
-        logging.error("OSError: Play failed! %s", error_msg)
+        logger.error("OSError: Play failed! %s", error_msg)
     except TypeError as error_msg:
-        logging.error("TypeError: %s", error_msg)
+        logger.error("TypeError: %s", error_msg)
     return False
 
 

@@ -1,6 +1,9 @@
 ''' Audio file info computed by soxi.
 '''
 import logging
+
+logger = logging.getLogger('sox')
+
 import os
 
 from .core import VALID_FORMATS
@@ -27,7 +30,7 @@ def bitrate(input_filepath):
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'b')
     if output == '0':
-        logging.warning("Bitrate unavailable for %s", input_filepath)
+        logger.warning("Bitrate unavailable for %s", input_filepath)
     return int(output)
 
 
@@ -88,7 +91,7 @@ def duration(input_filepath):
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'D')
     if output == '0':
-        logging.warning("Duration unavailable for %s", input_filepath)
+        logger.warning("Duration unavailable for %s", input_filepath)
 
     return float(output)
 
@@ -149,7 +152,7 @@ def num_samples(input_filepath):
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 's')
     if output == '0':
-        logging.warning("Number of samples unavailable for %s", input_filepath)
+        logger.warning("Number of samples unavailable for %s", input_filepath)
     return int(output)
 
 
@@ -216,8 +219,8 @@ def validate_input_file(input_filepath):
         )
     ext = file_extension(input_filepath)
     if ext not in VALID_FORMATS:
-        logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
-        logging.warning(
+        logger.info("Valid formats: %s", " ".join(VALID_FORMATS))
+        logger.warning(
             "This install of SoX cannot process .{} files.".format(ext)
         )
 
@@ -270,13 +273,13 @@ def validate_output_file(output_filepath):
 
     ext = file_extension(output_filepath)
     if ext not in VALID_FORMATS:
-        logging.info("Valid formats: %s", " ".join(VALID_FORMATS))
-        logging.warning(
+        logger.info("Valid formats: %s", " ".join(VALID_FORMATS))
+        logger.warning(
             "This install of SoX cannot process .{} files.".format(ext)
         )
 
     if os.path.exists(output_filepath):
-        logging.warning(
+        logger.warning(
             'output_file: %s already exists and will be overwritten on build',
             output_filepath
         )
