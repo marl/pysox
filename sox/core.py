@@ -17,7 +17,7 @@ ENCODING_VALS = [
 def enquote_filepath(fpath):
     """Wrap a filepath in double-quotes to protect difficult characters.
     """
-    if ' ' in fpath:
+    if ' ' in fpath or '(' in fpath or ')' in fpath:
         fpath = '"{}"'.format(fpath.strip("'").strip('"'))
     return fpath
 
