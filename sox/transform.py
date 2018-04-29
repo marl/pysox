@@ -1662,6 +1662,39 @@ class Transformer(object):
 
         return self
 
+
+    def ladspa(self, name='';  params='', ladspa_path='/usr/lib/ladspa/'):
+        '''Applies a LADSPA plugin.
+
+        Parameters
+        ----------
+        name : string, default = ''
+            The name of the LADSPA plugin file, e.g. 'mbeq_1197'.
+            This will get ladspa_path prepended to it, and '.so' appended.
+        params: string: default
+            String of parameters to send to the LADSPA plugin via sox.
+
+
+        '''
+        if not is_str(name):
+            raise ValueError('name must be a string.')
+
+        if not is_str(params):
+            raise ValueError('params must be a string')
+
+
+        effect_args = [
+            'ladspa',
+            name,
+            params
+        ]
+        self.effects.extend(effect_args)
+        self.effects_log.append('ladspa')
+
+        return self
+
+
+
     def loudness(self, gain_db=-10.0, reference_level=65.0):
         '''Loudness control. Similar to the gain effect, but provides
         equalisation for the human auditory system.
@@ -1883,12 +1916,12 @@ class Transformer(object):
         '''
         if os.path.isdir(profile_path):
             raise ValueError("profile_path {} is a directory, but filename should be specified.")
-        
+
         if os.path.dirname(profile_path) == '' and profile_path != '':
             _abs_profile_path = os.path.join(os.getcwd(), profile_path)
         else:
             _abs_profile_path = profile_path
-                
+
         if not os.access(os.path.dirname(_abs_profile_path), os.W_OK):
             raise IOError("profile_path {} is not writeable.".format(_abs_profile_path))
 
