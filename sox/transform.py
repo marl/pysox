@@ -1663,8 +1663,10 @@ class Transformer(object):
         return self
 
 
-    def ladspa(self, name='';  params='', ladspa_path='/usr/lib/ladspa/'):
-        '''Applies a LADSPA plugin.
+    def ladspa(self, name='',  params='', ladspa_path='/usr/lib/ladspa/'):
+        '''Sox supports the Linux Audio Developer's Simple Plugin API (LADSPA) standard
+           and will call plugins via the sox -ladspa command-line option. This
+           module simply passess the string name of a module and a list of parameters as a string
 
         Parameters
         ----------
@@ -1674,18 +1676,24 @@ class Transformer(object):
         params: string: default
             String of parameters to send to the LADSPA plugin via sox.
 
+        Example: For one of Steve Harris' compressors (sudo apt-get install swh-plugins)
+            tfm.ladspa('mbeq_1197','mbeq -2 -3 -3 -6 -9 -9 -10 -8 -6 -5 -4 -3 -1 0 0 0')
 
         '''
-        if not is_str(name):
+        if not isinstance(name, str):
             raise ValueError('name must be a string.')
 
-        if not is_str(params):
+        if not isinstance(params, str):
             raise ValueError('params must be a string')
 
+        full_name = ladspa_path + name + '.so'
+
+        if not os.path.isfile(full_name):
+            raise IOError('LADSPA plugin file not found at '+full_name)
 
         effect_args = [
             'ladspa',
-            name,
+            ladspa_path + name + '.so',
             params
         ]
         self.effects.extend(effect_args)
