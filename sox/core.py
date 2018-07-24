@@ -116,7 +116,7 @@ def soxi(filepath, argument):
     '''
 
     if argument not in SOXI_ARGS:
-        raise ValueError("Invalid argument '{}' to Soxi".format(argument))
+        raise ValueError("Invalid argument '{}' to soxi".format(argument))
 
     args = ['soxi']
     args.append("-{}".format(argument))
