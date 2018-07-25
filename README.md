@@ -67,7 +67,7 @@ nosetests .
 
 ```python
 import sox
-# create trasnformer
+# create transformer
 tfm = sox.Transformer()
 # trim the audio between 5 and 10.5 seconds.
 tfm.trim(5, 10.5)
