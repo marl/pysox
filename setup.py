@@ -18,7 +18,7 @@ if __name__ == "__main__":
         package_data={'sox': []},
         long_description="""Python wrapper around SoX.""",
         keywords='audio effects SoX',
-        license='MIT',
+        license='BSD-3-Clause',
         install_requires=[
         ],
         extras_require={

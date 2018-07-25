@@ -3,7 +3,7 @@ Python wrapper around sox. [Read the Docs here](http://pysox.readthedocs.org).
 
 [![PyPI version](https://badge.fury.io/py/sox.svg)](https://badge.fury.io/py/sox)
 [![Documentation Status](https://readthedocs.org/projects/resampy/badge/?version=latest)](http://pysox.readthedocs.io/en/latest/?badge=latest)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/rabitt/pysox/master/LICENSE.md)
+[![GitHub license](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://raw.githubusercontent.com/rabitt/pysox/master/LICENSE.md)
 [![PyPI](https://img.shields.io/pypi/pyversions/Django.svg?maxAge=2592000)]()
 
 [![Build Status](https://travis-ci.org/rabitt/pysox.svg?branch=master)](https://travis-ci.org/rabitt/pysox)
