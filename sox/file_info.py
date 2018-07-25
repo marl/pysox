@@ -10,9 +10,9 @@ from .core import sox
 from .core import enquote_filepath
 
 
-def bitrate(input_filepath):
+def bitdepth(input_filepath):
     '''
-    Number of bits per sample (0 if not applicable).
+    Number of bits per sample, or None if not applicable.
 
     Parameters
     ----------
@@ -21,15 +21,48 @@ def bitrate(input_filepath):
 
     Returns
     -------
-    bitrate : int
-        number of bits per sample
-        returns 0 if not applicable
+    bitdepth : int or None
+        Number of bits per sample.
+        Returns None if not applicable.
     '''
+    
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'b')
     if output == '0':
-        logger.warning("Bitrate unavailable for %s", input_filepath)
+        logger.warning("Bit depth unavailable for %s", input_filepath)
+        return None
     return int(output)
+
+
+def bitrate(input_filepath):
+    '''
+    Bit rate averaged over the whole file.
+    Expressed in bytes per second (bps), or None if not applicable.
+
+    Parameters
+    ----------
+    input_filepath : str
+        Path to audio file.
+
+    Returns
+    -------
+    bitrate : float or None
+        Bit rate, expressed in bytes per second.
+        Returns None if not applicable.
+    '''
+    
+    validate_input_file(input_filepath)
+    output = soxi(input_filepath, 'B')
+    # The characters below stand for kilo, Mega, Giga, etc.
+    greek_prefixes = '\0kMGTPEZY'
+    if output == "0":
+        logger.warning("Bit rate unavailable for %s", input_filepath)
+        return None
+    elif output[-1] in greek_prefixes:
+        multiplier = 1000**(greek_prefixes.index(output[-1]))
+        return float(output[:-1])*multiplier
+    else:
+        return float(output[:-1])
 
 
 def channels(input_filepath):
@@ -73,7 +106,7 @@ def comments(input_filepath):
 
 def duration(input_filepath):
     '''
-    Show duration in seconds (0 if unavailable).
+    Show duration in seconds, or None if not available.
 
     Parameters
     ----------
@@ -82,15 +115,15 @@ def duration(input_filepath):
 
     Returns
     -------
-    duration : float
+    duration : float or None
         Duration of audio file in seconds.
-        If unavailable or empty, returns 0.
+        If unavailable or empty, returns None.
     '''
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'D')
-    if output == '0':
+    if float(output) == 0.0:
         logger.warning("Duration unavailable for %s", input_filepath)
-
+        return None
     return float(output)
 
 
@@ -134,7 +167,7 @@ def file_type(input_filepath):
 
 def num_samples(input_filepath):
     '''
-    Show number of samples (0 if unavailable).
+    Show number of samples, or None if unavailable.
 
     Parameters
     ----------
@@ -143,14 +176,15 @@ def num_samples(input_filepath):
 
     Returns
     -------
-    n_samples : int
+    n_samples : int or None
         total number of samples in audio file.
-        Returns 0 if empty or unavailable
+        Returns None if empty or unavailable.
     '''
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 's')
     if output == '0':
         logger.warning("Number of samples unavailable for %s", input_filepath)
+        return None
     return int(output)
 
 
@@ -313,6 +347,7 @@ def info(filepath):
         Dictionary of file information. Fields are:
             * channels
             * sample_rate
+            * bitdepth
             * bitrate
             * duration
             * num_samples
@@ -322,6 +357,7 @@ def info(filepath):
     info_dictionary = {
         'channels': channels(filepath),
         'sample_rate': sample_rate(filepath),
+        'bitdepth': bitdepth(filepath),
         'bitrate': bitrate(filepath),
         'duration': duration(filepath),
         'num_samples': num_samples(filepath),

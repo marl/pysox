@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 
 from . import NO_SOX
 
-SOXI_ARGS = ['b', 'c', 'a', 'D', 'e', 't', 's', 'r']
+SOXI_ARGS = ['B', 'b', 'c', 'a', 'D', 'e', 't', 's', 'r']
 
 ENCODING_VALS = [
     'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
