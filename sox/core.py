@@ -99,7 +99,7 @@ VALID_FORMATS = _get_valid_formats()
 
 
 def soxi(filepath, argument):
-    ''' Base call to Soxi.
+    ''' Base call to SoXI.
 
     Parameters
     ----------
@@ -107,18 +107,18 @@ def soxi(filepath, argument):
         Path to audio file.
 
     argument : str
-        Argument to pass to Soxi.
+        Argument to pass to SoXI.
 
     Returns
     -------
     shell_output : str
-        Command line output of Soxi
+        Command line output of SoXI
     '''
 
     if argument not in SOXI_ARGS:
-        raise ValueError("Invalid argument '{}' to Soxi".format(argument))
+        raise ValueError("Invalid argument '{}' to SoXI".format(argument))
 
-    args = ['soxi']
+    args = ['sox --i']
     args.append("-{}".format(argument))
     args.append(enquote_filepath(filepath))
 
@@ -128,8 +128,8 @@ def soxi(filepath, argument):
             shell=True, stderr=subprocess.PIPE
         )
     except CalledProcessError as cpe:
-        logger.info("Soxi error message: {}".format(cpe.output))
-        raise SoxiError("Soxi failed with exit code {}".format(cpe.returncode))
+        logger.info("SoXI error message: {}".format(cpe.output))
+        raise SoxiError("SoXI failed with exit code {}".format(cpe.returncode))
 
     shell_output = shell_output.decode("utf-8")
 
@@ -179,7 +179,7 @@ def play(args):
 
 
 class SoxiError(Exception):
-    '''Exception to be raised when SoXi exits with non-zero status.
+    '''Exception to be raised when SoXI exits with non-zero status.
     '''
 
     def __init__(self, *args, **kwargs):
