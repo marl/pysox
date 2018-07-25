@@ -2682,7 +2682,7 @@ class Transformer(object):
         Returns
         -------
         power_spectrum : list
-            List of frequency (Hz), amplitdue pairs.
+            List of frequency (Hz), amplitude pairs.
 
         See Also
         --------
@@ -2725,7 +2725,7 @@ class Transformer(object):
         Returns
         -------
         stats_dict : dict
-            List of frequency (Hz), amplitdue pairs.
+            List of frequency (Hz), amplitude pairs.
 
         See Also
         --------
