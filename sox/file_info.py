@@ -59,7 +59,7 @@ def bitrate(input_filepath):
         logger.warning("Bit rate unavailable for %s", input_filepath)
         return None
     elif output[-1] in greek_prefixes:
-        multiplier = 1000**(greek_prefixes.index(output[-1]))
+        multiplier = 1000.0**(greek_prefixes.index(output[-1]))
         return float(output[:-1])*multiplier
     else:
         return float(output[:-1])
