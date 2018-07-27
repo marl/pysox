@@ -242,10 +242,7 @@ class TestInfo(unittest.TestCase):
             'channels': 1,
             'sample_rate': 44100.0,
             'bitdepth': 16,
-<<<<<<< HEAD
             'bitrate': 706000.0,
-=======
->>>>>>> 255ace8... rename bitrate to bitdepth in test_file_info.py
             'duration': 10.0,
             'num_samples': 441000,
             'encoding': 'Signed Integer PCM',
