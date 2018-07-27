@@ -12,7 +12,6 @@ import random
 import os
 
 from .core import ENCODING_VALS
-from .core import enquote_filepath
 from .core import is_number
 from .core import play
 from .core import sox
@@ -411,11 +410,9 @@ class Transformer(object):
 
         '''
         file_info.validate_input_file(input_filepath)
-        input_filepath = enquote_filepath(input_filepath)
 
         if output_filepath is not None:
             file_info.validate_output_file(output_filepath)
-            output_filepath = enquote_filepath(output_filepath)
         else:
             output_filepath = '-n'
 
@@ -1857,7 +1854,7 @@ class Transformer(object):
             if gain[i] is not None:
                 intermed_args.append("{:f}".format(gain[i]))
 
-            effect_args.append('"{}"'.format(' '.join(intermed_args)))
+            effect_args.append(' '.join(intermed_args))
 
         self.effects.extend(effect_args)
         self.effects_log.append('mcompand')
@@ -1882,15 +1879,17 @@ class Transformer(object):
 
         '''
         if os.path.isdir(profile_path):
-            raise ValueError("profile_path {} is a directory, but filename should be specified.")
-        
+            raise ValueError(
+                "profile_path {} is a directory.".format(profile_path))
+
         if os.path.dirname(profile_path) == '' and profile_path != '':
             _abs_profile_path = os.path.join(os.getcwd(), profile_path)
         else:
             _abs_profile_path = profile_path
-                
+
         if not os.access(os.path.dirname(_abs_profile_path), os.W_OK):
-            raise IOError("profile_path {} is not writeable.".format(_abs_profile_path))
+            raise IOError(
+                "profile_path {} is not writeable.".format(_abs_profile_path))
 
         effect_args = ['noiseprof', profile_path]
         self.build(input_filepath, None, extra_args=effect_args)
@@ -1920,7 +1919,8 @@ class Transformer(object):
         '''
 
         if not os.path.exists(profile_path):
-            raise IOError("profile_path {} does not exist.".format(profile_path))
+            raise IOError(
+                "profile_path {} does not exist.".format(profile_path))
 
         if not is_number(amount) or amount < 0 or amount > 1:
             raise ValueError("amount must be a number between 0 and 1.")
@@ -2208,7 +2208,8 @@ class Transformer(object):
         >>> tfm.remix(remix_dictionary)
 
         '''
-        if not (isinstance(remix_dictionary, dict) or remix_dictionary is None):
+        if not (isinstance(remix_dictionary, dict) or
+                remix_dictionary is None):
             raise ValueError("remix_dictionary must be a dictionary or None.")
 
         if remix_dictionary is not None:
@@ -3118,7 +3119,7 @@ class Transformer(object):
         ----------
         gain : float
             Interpreted according to the given `gain_type`.
-            If `gain_type' = 'amplitude', `gain' is a (positive) amplitude ratio.
+            If `gain_type' = 'amplitude', `gain' is a positive amplitude ratio.
             If `gain_type' = 'power', `gain' is a power (voltage squared).
             If `gain_type' = 'db', `gain' is in decibels.
         gain_type : string, default='amplitude'
@@ -3160,7 +3161,7 @@ class Transformer(object):
         elif gain_type == 'db':
             effect_args.append('dB')
         else:
-            raise ValueError('gain_type must be one of amplitude, power, or db')
+            raise ValueError('gain_type must be one of amplitude power or db')
 
         if limiter_gain is not None:
             if gain_type in ['amplitude', 'power'] and gain > 1:

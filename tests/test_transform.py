@@ -2340,18 +2340,17 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000',
             '1600.000000',
-            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
-            '-15.000000,-33.000000,0.000000,0.000000"'
+            '0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
         actual_log = tfm.effects_log
         expected_log = ['mcompand']
         self.assertEqual(expected_log, actual_log)
-
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
@@ -2369,8 +2368,8 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"'
+            '0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2390,11 +2389,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000',
             '100.000000',
-            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
-            '-15.000000,-33.000000,0.000000,0.000000"'
+            '0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2419,11 +2418,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.500000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '0.500000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000',
             '1600.000000',
-            '"0.062500,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
-            '-15.000000,-33.000000,0.000000,0.000000"'
+            '0.062500,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2458,11 +2457,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.001000 6.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '0.005000,0.001000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000',
             '1600.000000',
-            '"0.000625,0.500000 -47.000000,-40.000000,-34.000000,-34.000000,'
-            '-15.000000,-33.000000,0.000000,0.000000"'
+            '0.000625,0.500000 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2497,11 +2496,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.100000 -2.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-17.000000,-33.000000,0.000000,0.000000"',
+            '0.005000,0.100000 -2.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000',
             '1600.000000',
-            '"0.000625,0.012500 -5.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-15.000000,-33.000000,0.000000,0.000000"'
+            '0.000625,0.012500 -5.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-15.000000,-33.000000,0.000000,0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2516,11 +2515,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.100000 -47.000000,-40.000000,-34.000000,-34.000000,'
-            '-17.000000,-33.000000,0.000000,0.000000"',
+            '0.005000,0.100000 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-17.000000,-33.000000,0.000000,0.000000',
             '1600.000000',
-            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
-            '-15.000000,-33.000000,0.000000,0.000000"'
+            '0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2555,10 +2554,10 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.100000 6.000000:-70.000000,-60.000000,-60.000000,'
-            '-20.000000,-40.000000,-40.000000,0.000000,-4.000000"',
+            '0.005000,0.100000 6.000000:-70.000000,-60.000000,-60.000000,'
+            '-20.000000,-40.000000,-40.000000,0.000000,-4.000000',
             '1600.000000',
-            '"0.000625,0.012500 -70.000000,-60.000000,0.000000,-4.000000"'
+            '0.000625,0.012500 -70.000000,-60.000000,0.000000,-4.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2622,11 +2621,11 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_args = tfm.effects
         expected_args = [
             'mcompand',
-            '"0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
-            '-34.000000,-17.000000,-33.000000,0.000000,0.000000 3.000000"',
+            '0.005000,0.100000 6.000000:-47.000000,-40.000000,-34.000000,'
+            '-34.000000,-17.000000,-33.000000,0.000000,0.000000 3.000000',
             '1600.000000',
-            '"0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
-            '-15.000000,-33.000000,0.000000,0.000000 -1.000000"'
+            '0.000625,0.012500 -47.000000,-40.000000,-34.000000,-34.000000,'
+            '-15.000000,-33.000000,0.000000,0.000000 -1.000000'
         ]
         self.assertEqual(expected_args, actual_args)
 
@@ -2650,7 +2649,7 @@ class TestTransformerMcompand(unittest.TestCase):
 
 
 class TestTransformerNoiseprof(unittest.TestCase):
-    
+
     def test_default(self):
         tfm = new_transformer()
         save_path = os.path.join(os.getcwd(), 'noise.prof')
@@ -2673,7 +2672,7 @@ class TestTransformerNoiseprof(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.noiseprof(INPUT_FILE, os.getcwd())
-        
+
     def test_noise_prof_invalid_write(self):
         tfm = new_transformer()
         with self.assertRaises(IOError):
@@ -2689,7 +2688,7 @@ class TestTransformerNoiseprof(unittest.TestCase):
 
 
 class TestTransformerNoisered(unittest.TestCase):
-    
+
     def test_default(self):
         tfm = new_transformer()
         tfm.noisered(NOISE_PROF_FILE)
@@ -2709,7 +2708,7 @@ class TestTransformerNoisered(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
-    
+
     def test_noise_prof_valid(self):
         tfm = new_transformer()
         tfm.noisered(NOISE_PROF_FILE)
@@ -2738,10 +2737,9 @@ class TestTransformerNoisered(unittest.TestCase):
         )
 
         actual_args = tfm.effects
-        expected_args = ['noisered',
-            NOISE_PROF_FILE,
-            '0.700000'
-            ]
+        expected_args = [
+            'noisered', NOISE_PROF_FILE, '0.700000'
+        ]
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -4083,7 +4081,6 @@ class TestTransformerPowerSpectrum(unittest.TestCase):
         self.assertEqual(expected_last, actual[-1])
 
 
-
 class TestTransformerStats(unittest.TestCase):
 
     def test_default(self):
@@ -4130,6 +4127,7 @@ class TestTransformerStats(unittest.TestCase):
             'Pk count': '2'
         }
         self.assertEqual(expected, actual)
+
 
 class TestTransformerSwap(unittest.TestCase):
 
@@ -4574,7 +4572,7 @@ class TestTransformerVol(unittest.TestCase):
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
-        self.assertEqual(expected_res, actual_res)        
+        self.assertEqual(expected_res, actual_res)
 
     def test_limiter_gain_vol_down(self):
         tfm = new_transformer()

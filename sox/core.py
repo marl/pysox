@@ -14,14 +14,6 @@ ENCODING_VALS = [
 ]
 
 
-def enquote_filepath(fpath):
-    """Wrap a filepath in double-quotes to protect difficult characters.
-    """
-    if ' ' in fpath:
-        fpath = '"{}"'.format(fpath.strip("'").strip('"'))
-    return fpath
-
-
 def sox(args):
     '''Pass an argument list to SoX.
 
@@ -43,12 +35,10 @@ def sox(args):
         args[0] = "sox"
 
     try:
-        command = ' '.join(args)
-        logger.info("Executing: %s", command)
+        logger.info("Executing: %s", ' '.join(args))
 
         process_handle = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            shell=True
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
         out, err = process_handle.communicate()
@@ -85,7 +75,7 @@ def _get_valid_formats():
     if NO_SOX:
         return []
 
-    so = subprocess.check_output('sox -h', shell=True)
+    so = subprocess.check_output(['sox', '-h'])
     if type(so) is not str:
         so = str(so, encoding='UTF-8')
     so = so.split('\n')
@@ -118,14 +108,14 @@ def soxi(filepath, argument):
     if argument not in SOXI_ARGS:
         raise ValueError("Invalid argument '{}' to SoXI".format(argument))
 
-    args = ['sox --i']
+    args = ['sox', '--i']
     args.append("-{}".format(argument))
-    args.append(enquote_filepath(filepath))
+    args.append(filepath)
 
     try:
         shell_output = subprocess.check_output(
-            " ".join(args),
-            shell=True, stderr=subprocess.PIPE
+            args,
+            stderr=subprocess.PIPE
         )
     except CalledProcessError as cpe:
         logger.info("SoXI error message: {}".format(cpe.output))
@@ -181,7 +171,6 @@ def play(args):
 class SoxiError(Exception):
     '''Exception to be raised when SoXI exits with non-zero status.
     '''
-
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
