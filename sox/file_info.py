@@ -7,7 +7,6 @@ import os
 from .core import VALID_FORMATS
 from .core import soxi
 from .core import sox
-from .core import enquote_filepath
 
 
 def bitrate(input_filepath):
@@ -363,7 +362,7 @@ def _stat_call(filepath):
         Sox output from stderr.
     '''
     validate_input_file(filepath)
-    args = ['sox', enquote_filepath(filepath), '-n', 'stat']
+    args = ['sox', filepath, '-n', 'stat']
     _, _, stat_output = sox(args)
     return stat_output
 
