@@ -2964,7 +2964,7 @@ class Transformer(object):
 
         return self
 
-    def trim(self, start_time, end_time):
+    def trim(self, start_time, end_time=None):
         '''Excerpt a clip from an audio file, given a start and end time.
 
         Parameters
@@ -2977,16 +2977,19 @@ class Transformer(object):
         '''
         if not is_number(start_time) or start_time < 0:
             raise ValueError("start_time must be a positive number.")
-        if not is_number(end_time) or end_time < 0:
-            raise ValueError("end_time must be a positive number.")
-        if start_time >= end_time:
-            raise ValueError("start_time must be smaller than end_time.")
 
         effect_args = [
             'trim',
-            '{:f}'.format(start_time),
-            '{:f}'.format(end_time - start_time)
+            '{:f}'.format(start_time)
         ]
+
+        if end_time is not None:
+            if not is_number(end_time) or end_time < 0:
+                raise ValueError("end_time must be a positive number.")
+            if start_time >= end_time:
+                raise ValueError("start_time must be smaller than end_time.")
+
+            effect_args.append('{:f}'.format(end_time - start_time))
 
         self.effects.extend(effect_args)
         self.effects_log.append('trim')
