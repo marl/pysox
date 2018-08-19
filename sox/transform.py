@@ -2971,7 +2971,7 @@ class Transformer(object):
         ----------
         start_time : float
             Start time of the clip (seconds)
-        end_time : float
+        end_time : float or None, default=None
             End time of the clip (seconds)
 
         '''

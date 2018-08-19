@@ -4362,6 +4362,22 @@ class TestTransformerTrim(unittest.TestCase):
 
     def test_default(self):
         tfm = new_transformer()
+        tfm.trim(5.0)
+
+        actual_args = tfm.effects
+        expected_args = ['trim', '5.000000']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_log = tfm.effects_log
+        expected_log = ['trim']
+        self.assertEqual(expected_log, actual_log)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+    def test_end_time(self):
+        tfm = new_transformer()
         tfm.trim(0, 8.5)
 
         actual_args = tfm.effects
