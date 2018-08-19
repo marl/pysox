@@ -2965,7 +2965,7 @@ class Transformer(object):
         return self
 
     def trim(self, start_time, end_time=None):
-        '''Excerpt a clip from an audio file, given a start and end time.
+        '''Excerpt a clip from an audio file, given the start timestamp and end timestamp of the clip within the file, expressed in seconds. If the end timestamp is set to `None` or left unspecified, it defaults to the duration of the audio file.
 
         Parameters
         ----------
