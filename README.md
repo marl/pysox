@@ -91,7 +91,7 @@ cbn = sox.Combiner()
 # pitch shift combined audio up 3 semitones
 cbn.pitch(3.0)
 # convert output to 8000 Hz stereo
-cbn.convert(samplerate=8000, channels=2)
+cbn.convert(samplerate=8000, n_channels=2)
 # create the output file
 cbn.build(
     ['input1.wav', 'input2.wav', 'input3.wav'], 'output.wav', 'concatenate'
