@@ -10,6 +10,7 @@ from .log import logger
 
 import random
 import os
+import numpy as np
 
 from .core import ENCODING_VALS
 from .core import is_number
@@ -22,6 +23,12 @@ from . import file_info
 
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
 
+ENCODINGS_MAPPING = {
+    np.int16: 's16',
+    np.int8: 's8',
+    np.float32: 'f32',
+    np.float64: 'f64',
+}
 
 class Transformer(object):
     '''Audio file transformer.
@@ -435,6 +442,93 @@ class Transformer(object):
             args.extend(extra_args)
 
         status, out, err = sox(args)
+
+        if status != 0:
+            raise SoxError(
+                "Stdout: {}\nStderr: {}".format(out, err)
+            )
+        else:
+            logger.info(
+                "Created %s with effects: %s",
+                output_filepath,
+                " ".join(self.effects_log)
+            )
+            if out is not None:
+                logger.info("[SoX] {}".format(out))
+
+            if return_output:
+                return status, out, err
+            else:
+                return True
+
+    def build_array(self, input_array, sample_rate_in, sample_rate_out=None,
+                    channels_in=None, channels_out=None, bits_in=None, 
+                    bits_out=None, encoding_out=None, extra_args=None,
+                    return_output=True):
+        '''Builds an output numpy array by executing the current set of 
+        commands.
+
+        Parameters
+        ----------
+        input_array : np.ndarray
+            Input audio as a numpy array - (samples, channels).
+        sample_rate : int
+            Sample rate of audio. Since the data is given as a numpy 
+            array, we need this at build to set the input format correctly.
+        extra_args : list or None, default=None
+            If a list is given, these additional arguments are passed to SoX
+            at the end of the list of effects.
+            Don't use this argument unless you know exactly what you're doing!
+        return_output : bool, default=False
+            If True, returns the status and information sent to stderr and
+            stdout as a tuple (status, stdout, stderr).
+            Otherwise returns True on success.
+
+        '''
+        output_filepath = '-'
+        input_filepath = '-'
+
+        if channels_in is None:
+            channels_in = (
+                input_array.shape[-1] if len(input_array.shape) > 1 else 1
+            )
+        if channels_out is None:
+            channels_out = channels_in
+        
+        if sample_rate_out is None:
+            sample_rate_out = sample_rate_in
+
+        encoding = input_array.dtype.type
+        if encoding_out is None:
+            encoding_out = encoding
+
+        self.set_input_format(
+            rate=sample_rate_in, channels=channels_in,
+            file_type=ENCODINGS_MAPPING[encoding], bits=bits_in,
+        )
+        self.set_output_format(
+            rate=sample_rate_out, channels=channels_out,
+            file_type=ENCODINGS_MAPPING[encoding_out], bits=bits_out,
+        )
+
+        args = []
+        args.extend(self.globals)
+        args.extend(self.input_format)
+        args.append(input_filepath)
+        args.extend(self.output_format)
+        args.append(output_filepath)
+        args.extend(self.effects)
+
+        if extra_args is not None:
+            if not isinstance(extra_args, list):
+                raise ValueError("extra_args must be a list.")
+            args.extend(extra_args)
+        
+        status, out, err = sox(args, input_array, encoding_out)
+        if channels_out > 1:
+            out = out.reshape(
+                (channels_out, int(len(out) / channels_out)), order='F'
+            ).T
 
         if status != 0:
             raise SoxError(

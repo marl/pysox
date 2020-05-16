@@ -20,12 +20,14 @@ if __name__ == "__main__":
         keywords='audio effects SoX',
         license='BSD-3-Clause',
         install_requires=[
+            'numpy',
         ],
         extras_require={
             'tests': [
                 'pytest',
                 'pytest-cov',
                 'pytest-pep8',
+                'pysoundfile',
             ],
             'docs': [
                 'sphinx==1.2.3',  # autodoc was broken in 1.3.1

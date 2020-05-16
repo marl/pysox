@@ -1,8 +1,10 @@
 import unittest
 import os
 
-from sox import transform
+from sox import transform, file_info
 from sox.core import SoxError
+import soundfile as sf
+import numpy as np
 
 
 def relpath(f):
@@ -19,6 +21,13 @@ NOISE_PROF_FILE = relpath('data/noise.prof')
 def new_transformer():
     return transform.Transformer()
 
+def tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm, 
+                                    dtype='int16', **kwargs):
+    INPUT_ARRAY, RATE = sf.read(INPUT_FILE, dtype=dtype)
+    ACTUAL_OUTPUT, _ = sf.read(OUTPUT_FILE, dtype=dtype)
+
+    _, EST_ARRAY, _ = tfm.build_array(INPUT_ARRAY, RATE, **kwargs)
+    assert np.allclose(ACTUAL_OUTPUT, EST_ARRAY.astype(dtype))
 
 class TestTransformDefault(unittest.TestCase):
     def setUp(self):
@@ -495,6 +504,7 @@ class TestTransformerAllpass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_frequency_invalid(self):
         tfm = new_transformer()
@@ -524,6 +534,7 @@ class TestTransformerBandpass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_constant_skirt(self):
         tfm = new_transformer()
@@ -540,6 +551,7 @@ class TestTransformerBandpass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_frequency_invalid(self):
         tfm = new_transformer()
@@ -574,6 +586,7 @@ class TestTransformerBandreject(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_frequency_invalid(self):
         tfm = new_transformer()
@@ -603,6 +616,7 @@ class TestTransformerBass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_invalid(self):
         tfm = new_transformer()
@@ -645,6 +659,8 @@ class TestTransformerBend(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_n_bends_invalid(self):
         tfm = new_transformer()
@@ -751,6 +767,8 @@ class TestTransformerBend(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_frame_rate_invalid(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -778,6 +796,8 @@ class TestTransformerBend(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_oversample_rate_invalid(self):
         tfm = new_transformer()
@@ -807,6 +827,8 @@ class TestTransformerBiquad(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_b_nonlist(self):
         tfm = new_transformer()
@@ -857,6 +879,9 @@ class TestTransformerChannels(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(
+            INPUT_FILE, OUTPUT_FILE, tfm, channels_out=3)
+
     def test_invalid_nchannels(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -892,6 +917,8 @@ class TestTransformerChorus(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_explicit_args(self):
         tfm = new_transformer()
         tfm.chorus(
@@ -914,6 +941,8 @@ class TestTransformerChorus(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_invalid_gain_in(self):
         tfm = new_transformer()
@@ -1024,6 +1053,8 @@ class TestTransformerContrast(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_invalid_amount_nonnum(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -1062,6 +1093,8 @@ class TestTransformerCompand(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_attack_time_valid(self):
         tfm = new_transformer()
         tfm.compand(attack_time=0.5)
@@ -1077,6 +1110,8 @@ class TestTransformerCompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_attack_time_invalid_neg(self):
         tfm = new_transformer()
@@ -1104,6 +1139,8 @@ class TestTransformerCompand(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_decay_time_invalid_neg(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -1129,6 +1166,8 @@ class TestTransformerCompand(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_soft_knee_valid(self):
         tfm = new_transformer()
         tfm.compand(soft_knee_db=-2)
@@ -1145,6 +1184,8 @@ class TestTransformerCompand(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_soft_knee_none(self):
         tfm = new_transformer()
         tfm.compand(soft_knee_db=None)
@@ -1159,6 +1200,8 @@ class TestTransformerCompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_soft_knee_invalid(self):
         tfm = new_transformer()
@@ -1180,6 +1223,8 @@ class TestTransformerCompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_tf_points_nonlist(self):
         tfm = new_transformer()
@@ -1236,6 +1281,8 @@ class TestTransformerConvert(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_samplerate_valid(self):
         tfm = new_transformer()
         tfm.convert(samplerate=8000)
@@ -1251,6 +1298,9 @@ class TestTransformerConvert(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(
+            INPUT_FILE, OUTPUT_FILE, tfm, sample_rate_out=8000)
 
     def test_samplerate_invalid(self):
         tfm = new_transformer()
@@ -1268,6 +1318,9 @@ class TestTransformerConvert(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(
+            INPUT_FILE, OUTPUT_FILE, tfm, channels_out=3)
 
     def test_channels_invalid1(self):
         tfm = new_transformer()
@@ -1290,6 +1343,12 @@ class TestTransformerConvert(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        # Failing the cast if bitdepth = 8, but passing for >16.
+        # tfm_assert_array_to_file_output(
+        #     INPUT_FILE, OUTPUT_FILE, tfm, bits_out=8, 
+        #     encoding_out=np.int8
+        # )
 
     def test_bitdepth_invalid(self):
         tfm = new_transformer()
@@ -1314,6 +1373,8 @@ class TestTransformerDcshift(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_invalid_shift_nonnum(self):
         tfm = new_transformer()
@@ -1349,6 +1410,8 @@ class TestTransformerDeemph(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
 
 class TestTransformerDelay(unittest.TestCase):
 
@@ -1368,6 +1431,8 @@ class TestTransformerDelay(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_default_three_channel(self):
         tfm = new_transformer()
         tfm.delay([0.0, 1.0])
@@ -1383,6 +1448,8 @@ class TestTransformerDelay(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE4, OUTPUT_FILE, tfm)
 
     def test_invalid_position_type(self):
         tfm = new_transformer()
@@ -1418,6 +1485,8 @@ class TestTransformerDownsample(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_invalid_factor_nonnum(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -1449,6 +1518,9 @@ class TestTransformerEarwax(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(
+            INPUT_FILE, OUTPUT_FILE, tfm, channels_out=2)
+
 
 class TestTransformerEcho(unittest.TestCase):
 
@@ -1468,6 +1540,8 @@ class TestTransformerEcho(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_gain_in_valid(self):
         tfm = new_transformer()
         tfm.echo(gain_in=1.0)
@@ -1479,6 +1553,8 @@ class TestTransformerEcho(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_in_invalid(self):
         tfm = new_transformer()
@@ -1496,6 +1572,8 @@ class TestTransformerEcho(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_out_invalid(self):
         tfm = new_transformer()
@@ -1516,6 +1594,8 @@ class TestTransformerEcho(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_n_echos_invalid(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -1534,6 +1614,8 @@ class TestTransformerEcho(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_delays_invalid_type(self):
         tfm = new_transformer()
@@ -1563,6 +1645,8 @@ class TestTransformerEcho(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_decays_invalid_type(self):
         tfm = new_transformer()
@@ -1600,6 +1684,8 @@ class TestTransformerEchos(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_gain_in_valid(self):
         tfm = new_transformer()
         tfm.echos(gain_in=1.0)
@@ -1613,6 +1699,8 @@ class TestTransformerEchos(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_in_invalid(self):
         tfm = new_transformer()
@@ -1632,6 +1720,8 @@ class TestTransformerEchos(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_out_invalid(self):
         tfm = new_transformer()
@@ -1653,6 +1743,8 @@ class TestTransformerEchos(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_n_echos_invalid(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -1672,6 +1764,8 @@ class TestTransformerEchos(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_delays_invalid_type(self):
         tfm = new_transformer()
@@ -1702,6 +1796,8 @@ class TestTransformerEchos(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_decays_invalid_type(self):
         tfm = new_transformer()
@@ -1737,6 +1833,8 @@ class TestTransformerEqualizer(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_frequency_invalid(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -1771,6 +1869,8 @@ class TestTransformerFade(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_fade_in_valid(self):
         tfm = new_transformer()
         tfm.fade(fade_in_len=1.2)
@@ -1782,6 +1882,8 @@ class TestTransformerFade(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_fade_in_invalid(self):
         tfm = new_transformer()
@@ -1800,6 +1902,8 @@ class TestTransformerFade(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
     def test_fade_out_invalid(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
@@ -1816,6 +1920,8 @@ class TestTransformerFade(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_fade_shape_invalid(self):
         tfm = new_transformer()
@@ -1843,6 +1949,8 @@ class TestTransformerFir(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_invalid_coeffs_nonlist(self):
         tfm = new_transformer()
@@ -1875,6 +1983,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_delay_valid(self):
         tfm = new_transformer()
@@ -1890,6 +1999,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_delay_invalid(self):
         tfm = new_transformer()
@@ -1910,6 +2020,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_depth_invalid(self):
         tfm = new_transformer()
@@ -1950,6 +2061,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_width_invalid(self):
         tfm = new_transformer()
@@ -1970,6 +2082,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_speed_invalid(self):
         tfm = new_transformer()
@@ -1990,6 +2103,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_shape_invalid(self):
         tfm = new_transformer()
@@ -2010,6 +2124,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_phase_invalid(self):
         tfm = new_transformer()
@@ -2030,6 +2145,7 @@ class TestTransformerFlanger(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_flanger_interp_invalid(self):
         tfm = new_transformer()
@@ -2054,6 +2170,7 @@ class TestTransformerGain(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_valid(self):
         tfm = new_transformer()
@@ -2066,6 +2183,7 @@ class TestTransformerGain(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_invalid(self):
         tfm = new_transformer()
@@ -2083,6 +2201,7 @@ class TestTransformerGain(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_normalize_invalid(self):
         tfm = new_transformer()
@@ -2100,6 +2219,7 @@ class TestTransformerGain(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_limiter_invalid(self):
         tfm = new_transformer()
@@ -2117,6 +2237,7 @@ class TestTransformerGain(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_balance_invalid(self):
         tfm = new_transformer()
@@ -2141,6 +2262,7 @@ class TestTransformerHighpass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_one_pole(self):
         tfm = new_transformer()
@@ -2157,6 +2279,7 @@ class TestTransformerHighpass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_frequency_invalid(self):
         tfm = new_transformer()
@@ -2195,6 +2318,7 @@ class TestTransformerHilbert(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_num_taps_valid(self):
         tfm = new_transformer()
@@ -2211,6 +2335,7 @@ class TestTransformerHilbert(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_num_taps_invalid(self):
         tfm = new_transformer()
@@ -2240,6 +2365,7 @@ class TestTransformerLowpass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_one_pole(self):
         tfm = new_transformer()
@@ -2256,6 +2382,7 @@ class TestTransformerLowpass(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_frequency_invalid(self):
         tfm = new_transformer()
@@ -2290,6 +2417,7 @@ class TestTransformerLoudness(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_valid(self):
         tfm = new_transformer()
@@ -2302,6 +2430,7 @@ class TestTransformerLoudness(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_invalid(self):
         tfm = new_transformer()
@@ -2319,6 +2448,7 @@ class TestTransformerLoudness(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_reference_level_invalid(self):
         tfm = new_transformer()
@@ -2354,6 +2484,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_n_bands_valid(self):
         tfm = new_transformer()
@@ -2376,6 +2507,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_n_bands_invalid(self):
         tfm = new_transformer()
@@ -2400,6 +2532,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_crossover_frequencies_invalid(self):
         tfm = new_transformer()
@@ -2429,6 +2562,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_attack_time_invalid_type(self):
         tfm = new_transformer()
@@ -2468,6 +2602,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_decay_time_invalid_type(self):
         tfm = new_transformer()
@@ -2507,6 +2642,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_soft_knee_none(self):
         tfm = new_transformer()
@@ -2526,6 +2662,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_soft_knee_db_invalid_type(self):
         tfm = new_transformer()
@@ -2564,6 +2701,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_tf_points_wrong_len(self):
         tfm = new_transformer()
@@ -2636,6 +2774,7 @@ class TestTransformerMcompand(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_len_invalid(self):
         tfm = new_transformer()
@@ -2708,6 +2847,7 @@ class TestTransformerNoisered(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_noise_prof_valid(self):
         tfm = new_transformer()
@@ -2724,6 +2864,7 @@ class TestTransformerNoisered(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_noise_prof_invalid(self):
         tfm = new_transformer()
@@ -2745,6 +2886,7 @@ class TestTransformerNoisered(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_amount_invalid(self):
         tfm = new_transformer()
@@ -2769,6 +2911,7 @@ class TestTransformerNorm(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_db_level_valid(self):
         tfm = new_transformer()
@@ -2781,6 +2924,7 @@ class TestTransformerNorm(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_db_level_invalid(self):
         tfm = new_transformer()
@@ -2805,6 +2949,7 @@ class TestTransformerOops(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE4, OUTPUT_FILE, tfm)
 
 
 class TestTransformerOverdrive(unittest.TestCase):
@@ -2824,6 +2969,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_valid(self):
         tfm = new_transformer()
@@ -2836,6 +2982,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_invalid(self):
         tfm = new_transformer()
@@ -2853,6 +3000,7 @@ class TestTransformerOverdrive(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_colour_invalid(self):
         tfm = new_transformer()
@@ -2877,6 +3025,7 @@ class TestTransformerPad(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_start_duration_valid(self):
         tfm = new_transformer()
@@ -2889,6 +3038,7 @@ class TestTransformerPad(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_start_duration_invalid(self):
         tfm = new_transformer()
@@ -2906,6 +3056,7 @@ class TestTransformerPad(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_end_duration_invalid(self):
         tfm = new_transformer()
@@ -2933,6 +3084,7 @@ class TestTransformerPhaser(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_in_valid(self):
         tfm = new_transformer()
@@ -2947,6 +3099,7 @@ class TestTransformerPhaser(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_in_invalid(self):
         tfm = new_transformer()
@@ -2966,6 +3119,7 @@ class TestTransformerPhaser(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_out_invalid(self):
         tfm = new_transformer()
@@ -2986,6 +3140,7 @@ class TestTransformerPhaser(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_delay_invalid(self):
         tfm = new_transformer()
@@ -3006,6 +3161,7 @@ class TestTransformerPhaser(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_decay_invalid(self):
         tfm = new_transformer()
@@ -3026,6 +3182,7 @@ class TestTransformerPhaser(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_speed_invalid(self):
         tfm = new_transformer()
@@ -3046,6 +3203,7 @@ class TestTransformerPhaser(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_modulation_shape_invalid(self):
         tfm = new_transformer()
@@ -3070,6 +3228,7 @@ class TestTransformerPitch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_n_semitones_valid(self):
         tfm = new_transformer()
@@ -3082,6 +3241,7 @@ class TestTransformerPitch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_n_semitones_warning(self):
         tfm = new_transformer()
@@ -3094,6 +3254,7 @@ class TestTransformerPitch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_n_semitones_invalid(self):
         tfm = new_transformer()
@@ -3111,6 +3272,7 @@ class TestTransformerPitch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_quick_invalid(self):
         tfm = new_transformer()
@@ -3135,6 +3297,8 @@ class TestTransformerRate(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(
+            INPUT_FILE, OUTPUT_FILE, tfm, sample_rate_out=48000)
 
     def test_samplerate_valid(self):
         tfm = new_transformer()
@@ -3147,6 +3311,8 @@ class TestTransformerRate(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(
+            INPUT_FILE, OUTPUT_FILE, tfm, sample_rate_out=1000.5)
 
     def test_samplerate_invalid(self):
         tfm = new_transformer()
@@ -3164,6 +3330,7 @@ class TestTransformerRate(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_quality_invalid(self):
         tfm = new_transformer()
@@ -3184,6 +3351,8 @@ class TestTransformerRemix(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(
+            INPUT_FILE4, OUTPUT_FILE, tfm, channels_out=1)
 
     def test_remix_dictionary_valid(self):
         tfm = new_transformer()
@@ -3196,6 +3365,8 @@ class TestTransformerRemix(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(
+            INPUT_FILE4, OUTPUT_FILE, tfm, channels_out=3)
 
     def test_num_channels_valid(self):
         tfm = new_transformer()
@@ -3208,6 +3379,8 @@ class TestTransformerRemix(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(
+            INPUT_FILE4, OUTPUT_FILE, tfm, channels_out=4)
 
     def test_remix_dictionary_none(self):
         tfm = new_transformer()
@@ -3220,6 +3393,8 @@ class TestTransformerRemix(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(
+            INPUT_FILE4, OUTPUT_FILE, tfm, channels_out=1)
 
     def test_remix_dict_invalid(self):
         tfm = new_transformer()
@@ -3264,6 +3439,7 @@ class TestTransformerRepeat(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_count_valid(self):
         tfm = new_transformer()
@@ -3276,6 +3452,7 @@ class TestTransformerRepeat(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_count_invalid(self):
         tfm = new_transformer()
@@ -3308,6 +3485,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_reverberance_valid(self):
         tfm = new_transformer()
@@ -3323,6 +3501,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_reverberance_invalid(self):
         tfm = new_transformer()
@@ -3343,6 +3522,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_high_freq_damping_invalid(self):
         tfm = new_transformer()
@@ -3363,6 +3543,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_room_scale_invalid(self):
         tfm = new_transformer()
@@ -3383,6 +3564,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_stereo_depth_invalid(self):
         tfm = new_transformer()
@@ -3403,6 +3585,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_pre_delay_invalid(self):
         tfm = new_transformer()
@@ -3423,6 +3606,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_wet_gain_invalid(self):
         tfm = new_transformer()
@@ -3443,6 +3627,7 @@ class TestTransformerReverb(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_wet_only_invalid(self):
         tfm = new_transformer()
@@ -3467,6 +3652,7 @@ class TestTransformerReverse(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
 
 class TestTransformerSilence(unittest.TestCase):
@@ -3489,6 +3675,7 @@ class TestTransformerSilence(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_location_beginning(self):
         tfm = new_transformer()
@@ -3501,6 +3688,7 @@ class TestTransformerSilence(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_location_end(self):
         tfm = new_transformer()
@@ -3515,6 +3703,7 @@ class TestTransformerSilence(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_location_invalid(self):
         tfm = new_transformer()
@@ -3535,6 +3724,7 @@ class TestTransformerSilence(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_silence_threshold_invalid(self):
         tfm = new_transformer()
@@ -3559,6 +3749,7 @@ class TestTransformerSilence(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_min_silence_duration_invalid(self):
         tfm = new_transformer()
@@ -3579,6 +3770,7 @@ class TestTransformerSilence(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_buffer_around_silence_invalid(self):
         tfm = new_transformer()
@@ -3603,6 +3795,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_filter_type_valid_low(self):
         tfm = new_transformer()
@@ -3615,6 +3808,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_filter_type_valid_pass(self):
         tfm = new_transformer()
@@ -3627,6 +3821,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_filter_type_valid_reject(self):
         tfm = new_transformer()
@@ -3639,6 +3834,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_filter_type_invalid(self):
         tfm = new_transformer()
@@ -3656,6 +3852,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_cutoff_freq_valid_list(self):
         tfm = new_transformer()
@@ -3668,6 +3865,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_cutoff_freq_valid_unordered(self):
         tfm = new_transformer()
@@ -3680,6 +3878,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_cutoff_freq_invalid(self):
         tfm = new_transformer()
@@ -3722,6 +3921,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_stop_band_attenuation_invalid(self):
         tfm = new_transformer()
@@ -3745,6 +3945,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_transition_bw_valid_low(self):
         tfm = new_transformer()
@@ -3763,6 +3964,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_transition_bw_valid_pass_float(self):
         tfm = new_transformer()
@@ -3784,6 +3986,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_transition_bw_valid_pass_list(self):
         tfm = new_transformer()
@@ -3806,6 +4009,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_transition_bw_invalid(self):
         tfm = new_transformer()
@@ -3855,6 +4059,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_phase_response_valid_mid(self):
         tfm = new_transformer()
@@ -3873,6 +4078,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_phase_response_valid_high(self):
         tfm = new_transformer()
@@ -3891,6 +4097,7 @@ class TestTransformerSinc(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_phase_response_invalid(self):
         tfm = new_transformer()
@@ -3925,6 +4132,7 @@ class TestTransformerSpeed(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_valid(self):
         tfm = new_transformer()
@@ -3937,6 +4145,7 @@ class TestTransformerSpeed(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_valid_extreme(self):
         tfm = new_transformer()
@@ -3949,6 +4158,7 @@ class TestTransformerSpeed(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_invalid(self):
         tfm = new_transformer()
@@ -4146,6 +4356,7 @@ class TestTransformerSwap(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE4, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE4, OUTPUT_FILE, tfm)
 
 
 class TestTransformerStretch(unittest.TestCase):
@@ -4165,6 +4376,7 @@ class TestTransformerStretch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_valid(self):
         tfm = new_transformer()
@@ -4177,6 +4389,7 @@ class TestTransformerStretch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_extreme(self):
         tfm = new_transformer()
@@ -4189,6 +4402,7 @@ class TestTransformerStretch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_invalid(self):
         tfm = new_transformer()
@@ -4206,6 +4420,7 @@ class TestTransformerStretch(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_window_invalid(self):
         tfm = new_transformer()
@@ -4230,6 +4445,7 @@ class TestTransformerTempo(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_valid(self):
         tfm = new_transformer()
@@ -4242,6 +4458,7 @@ class TestTransformerTempo(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_warning(self):
         tfm = new_transformer()
@@ -4254,6 +4471,7 @@ class TestTransformerTempo(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_factor_invalid(self):
         tfm = new_transformer()
@@ -4271,6 +4489,7 @@ class TestTransformerTempo(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_audio_type_invalid(self):
         tfm = new_transformer()
@@ -4288,6 +4507,7 @@ class TestTransformerTempo(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_quick_invalid(self):
         tfm = new_transformer()
@@ -4312,6 +4532,7 @@ class TestTransformerTreble(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_db_invalid(self):
         tfm = new_transformer()
@@ -4346,6 +4567,7 @@ class TestTransformerTremolo(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_speed_invalid(self):
         tfm = new_transformer()
@@ -4375,6 +4597,7 @@ class TestTransformerTrim(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_end_time(self):
         tfm = new_transformer()
@@ -4391,6 +4614,7 @@ class TestTransformerTrim(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_invalid_start_time(self):
         tfm = new_transformer()
@@ -4429,6 +4653,7 @@ class TestTransformerUpsample(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_invalid_factor_nonnum(self):
         tfm = new_transformer()
@@ -4470,6 +4695,7 @@ class TestTransformerVad(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_end_location(self):
         tfm = new_transformer()
@@ -4496,6 +4722,7 @@ class TestTransformerVad(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_no_normalize(self):
         tfm = new_transformer()
@@ -4519,6 +4746,7 @@ class TestTransformerVad(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_invalid_location(self):
         tfm = new_transformer()
@@ -4573,6 +4801,7 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_limiter_gain(self):
         tfm = new_transformer()
@@ -4589,6 +4818,7 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_limiter_gain_vol_down(self):
         tfm = new_transformer()
@@ -4605,6 +4835,7 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_limiter_gain_vol_down_db(self):
         tfm = new_transformer()
@@ -4621,6 +4852,7 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_limiter_gain_vol_up_db(self):
         tfm = new_transformer()
@@ -4637,6 +4869,7 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_type_power(self):
         tfm = new_transformer()
@@ -4653,6 +4886,7 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_gain_type_db(self):
         tfm = new_transformer()
@@ -4669,6 +4903,7 @@ class TestTransformerVol(unittest.TestCase):
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
         self.assertEqual(expected_res, actual_res)
+        tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
 
     def test_invalid_gain(self):
         tfm = new_transformer()

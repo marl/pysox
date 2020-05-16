@@ -3,6 +3,7 @@ from .log import logger
 
 import subprocess
 from subprocess import CalledProcessError
+import numpy as np
 
 from . import NO_SOX
 
@@ -14,7 +15,7 @@ ENCODING_VALS = [
 ]
 
 
-def sox(args):
+def sox(args, src_array=None, encoding_out=None):
     '''Pass an argument list to SoX.
 
     Parameters
@@ -22,11 +23,17 @@ def sox(args):
     args : iterable
         Argument list for SoX. The first item can, but does not
         need to, be 'sox'.
+    src_array : np.ndarray, or None
+        If src_array is not None, then we make sure it's a numpy 
+        array and pass it into stdin.
 
     Returns:
     --------
     status : bool
         True on success.
+    out_array : np.ndarray, or None
+        Returns a np.ndarray if src_array was an np.ndarray. 
+        Otherwise, returns None.
 
     '''
     if args[0].lower() != "sox":
@@ -37,15 +44,28 @@ def sox(args):
     try:
         logger.info("Executing: %s", ' '.join(args))
 
-        process_handle = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        if src_array is not None and isinstance(src_array, np.ndarray):
+            process_handle = subprocess.Popen(
+                args, 
+                stdin=subprocess.PIPE, 
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            out, err = process_handle.communicate(src_array.T.tobytes(order='F'))
+            out = np.fromstring(out, dtype=encoding_out)
+            err = err.decode("utf-8")
+            status = process_handle.returncode
+        else:
+            process_handle = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
 
-        out, err = process_handle.communicate()
-        out = out.decode("utf-8")
-        err = err.decode("utf-8")
+            out, err = process_handle.communicate()
+            out = out.decode("utf-8")
+            err = err.decode("utf-8")
 
-        status = process_handle.returncode
+            status = process_handle.returncode
+        
         return status, out, err
 
     except OSError as error_msg:
