@@ -15,6 +15,7 @@ addons:
 # command to install dependencies
 install:
   - pip install coveralls
+  - pip install soundfile
   - pip install -e .
 
 # command to run tests
