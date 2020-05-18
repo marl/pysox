@@ -430,6 +430,10 @@ class TestTransformerBuild(unittest.TestCase):
         status = self.tfm.build(INPUT_FILE, OUTPUT_FILE, ['norm'])
         self.assertTrue(status)
 
+        INPUT_ARRAY, RATE, = sf.read(INPUT_FILE)
+        status = self.tfm.build_array(INPUT_ARRAY, RATE, extra_args=['norm'])
+        self.assertTrue(status)
+
     def test_return_outputs(self):
         status, out, err = self.tfm.build(
             INPUT_FILE, OUTPUT_FILE, return_output=True)
@@ -455,11 +459,19 @@ class TestTransformerBuild(unittest.TestCase):
     def test_extra_args_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.build(INPUT_FILE, OUTPUT_FILE, extra_args=0)
+        
+        with self.assertRaises(ValueError):
+            INPUT_ARRAY, RATE, = sf.read(INPUT_FILE)
+            self.tfm.build_array(INPUT_ARRAY, RATE, extra_args=0)
 
     def test_failed_sox(self):
         self.tfm.effects = ['channels', '-1']
         with self.assertRaises(SoxError):
             self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        
+        with self.assertRaises(SoxError):
+            INPUT_ARRAY, RATE, = sf.read(INPUT_FILE)
+            self.tfm.build_array(INPUT_ARRAY, RATE)
 
 
 class TestTransformerClearEffects(unittest.TestCase):
