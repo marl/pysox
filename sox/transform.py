@@ -466,24 +466,36 @@ class Transformer(object):
                     bits_out=None, encoding_out=None, extra_args=None,
                     return_output=True):
         '''Builds an output numpy array by executing the current set of 
-        commands.
+        commands. Returns a tuple containing the status, the output array,
+        and the stderr: (status, output_array, stderr).
 
         Parameters
         ----------
         input_array : np.ndarray
             Input audio as a numpy array - (samples, channels).
-        sample_rate : int
+        sample_rate_in : int
             Sample rate of audio. Since the data is given as a numpy 
             array, we need this at build to set the input format correctly.
+        sample_rate_out : int, default=None
+            Expected sample rate of output audio. If None, this is set to
+            sample_rate_in.
+        channels_in : int, default=None
+            Number of channels in input. If None, defaults to number of channels
+            in input_array.
+        channels_out : int, default=None
+            Expected number of channels in output audio. If None, this is set 
+            to channels_in.
+        bits_in : int, default=None
+            Bitdepth of input audio. If None, inferred at runtime by sox. 
+        bits_out : int, default=None
+            Expected bitdepth of output audio. If None, inferred by sox.
+        encoding_out : str or None, default=None
+            str determining expected encoding of output audio. Must be one of
+            's8', 's16', 'f32', 'f64'.
         extra_args : list or None, default=None
             If a list is given, these additional arguments are passed to SoX
             at the end of the list of effects.
             Don't use this argument unless you know exactly what you're doing!
-        return_output : bool, default=False
-            If True, returns the status and information sent to stderr and
-            stdout as a tuple (status, stdout, stderr).
-            Otherwise returns True on success.
-
         '''
         output_filepath = '-'
         input_filepath = '-'
@@ -543,10 +555,7 @@ class Transformer(object):
             if out is not None:
                 logger.info("[SoX] {}".format(out))
 
-            if return_output:
-                return status, out, err
-            else:
-                return True
+            return status, out, err
 
     def preview(self, input_filepath):
         '''Play a preview of the output with the current set of effects

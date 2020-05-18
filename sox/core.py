@@ -26,14 +26,21 @@ def sox(args, src_array=None, encoding_out=None):
     src_array : np.ndarray, or None
         If src_array is not None, then we make sure it's a numpy 
         array and pass it into stdin.
+    encoding_out : np.dtype or None, default=None
+        dtype of output audio, if src_array is not None. Used to
+        decode the audio to a numpy array from the string output
+        on stdout by sox.
 
     Returns:
     --------
     status : bool
         True on success.
-    out_array : np.ndarray, or None
+    out : str, np.ndarray, or None
         Returns a np.ndarray if src_array was an np.ndarray. 
-        Otherwise, returns None.
+        Returns the stdout produced by sox if src_array is None.
+        Otherwise, returns None if there's an error.
+    err : str, or None
+        Returns stderr as a string.
 
     '''
     if args[0].lower() != "sox":
