@@ -15,7 +15,7 @@ ENCODING_VALS = [
 ]
 
 
-def sox(args, src_array=None, encoding_out=None):
+def sox(args, src_array=None, decode_out_with_utf=True):
     '''Pass an argument list to SoX.
 
     Parameters
@@ -26,10 +26,9 @@ def sox(args, src_array=None, encoding_out=None):
     src_array : np.ndarray, or None
         If src_array is not None, then we make sure it's a numpy 
         array and pass it into stdin.
-    encoding_out : np.dtype or None, default=None
-        dtype of output audio, if src_array is not None. Used to
-        decode the audio to a numpy array from the string output
-        on stdout by sox.
+    decode_out_with_utf : bool, default=True
+        Whether or not sox is outputting a bytestring that should be
+        decoded with utf-8.
 
     Returns:
     --------
@@ -51,27 +50,32 @@ def sox(args, src_array=None, encoding_out=None):
     try:
         logger.info("Executing: %s", ' '.join(args))
 
-        if src_array is not None and isinstance(src_array, np.ndarray):
+        if src_array is None:
+            process_handle = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+
+            out, err = process_handle.communicate()
+            if decode_out_with_utf:
+                out = out.decode("utf-8")
+            err = err.decode("utf-8")
+
+            status = process_handle.returncode
+        elif isinstance(src_array, np.ndarray):
             process_handle = subprocess.Popen(
                 args, 
                 stdin=subprocess.PIPE, 
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
+            # We do order "F" for Fortran formatting of the numpy array, which is
+            # sox expects. When we reshape stdout later, we need to use the same
+            # order, otherwise tests fail.
             out, err = process_handle.communicate(src_array.T.tobytes(order='F'))
-            out = np.fromstring(out, dtype=encoding_out)
             err = err.decode("utf-8")
             status = process_handle.returncode
         else:
-            process_handle = subprocess.Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-
-            out, err = process_handle.communicate()
-            out = out.decode("utf-8")
-            err = err.decode("utf-8")
-
-            status = process_handle.returncode
+            raise TypeError("src_array must be an np.ndarray!")
         
         return status, out, err
 

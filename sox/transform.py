@@ -141,7 +141,8 @@ class Transformer(object):
         return self
 
     def set_input_format(self, file_type=None, rate=None, bits=None,
-                         channels=None, encoding=None, ignore_length=False):
+                         channels=None, encoding=None, ignore_length=False,
+                         return_only=False):
         '''Sets input file format arguments. This is primarily useful when
         dealing with audio files without a file extension. Overwrites any
         previously set input file arguments.
@@ -203,6 +204,14 @@ class Transformer(object):
             If True, overrides an (incorrect) audio length given in an audio
             file’s header. If this option is given then SoX will keep reading
             audio until it reaches the end of the input file.
+        return_only : bool, default=False
+            If True, then self.input_format will not be set, but the constructed
+            list will be returned.
+
+        Returns:
+        --------
+        input_format : list
+            List of arguments that determine the input format, passed to sox.
 
         '''
         if file_type not in VALID_FORMATS + [None]:
@@ -256,12 +265,13 @@ class Transformer(object):
         if ignore_length:
             input_format.append('--ignore-length')
 
-        self.input_format = input_format
-        return self
+        if not return_only:
+            self.input_format = input_format
+        return input_format
 
     def set_output_format(self, file_type=None, rate=None, bits=None,
                           channels=None, encoding=None, comments=None,
-                          append_comments=True):
+                          append_comments=True, return_only=False):
         '''Sets output file format arguments. These arguments will overwrite
         any format related arguments supplied by other effects (e.g. rate).
 
@@ -324,6 +334,15 @@ class Transformer(object):
         append_comments : bool, default=True
             If True, comment strings are appended to SoX's default comments. If
             False, the supplied comment replaces the existing comment.
+        return_only : bool, default=False
+            If True, then self.output_format will not be set, but the constructed
+            list will be returned.
+
+        Returns:
+        --------
+        output_format : list
+            List of arguments that determine the output format, passed to sox.
+
 
         '''
         if file_type not in VALID_FORMATS + [None]:
@@ -383,8 +402,9 @@ class Transformer(object):
             else:
                 output_format.extend(['--comment', comments])
 
-        self.output_format = output_format
-        return self
+        if not return_only:
+            self.output_format = output_format
+        return output_format
 
     def clear_effects(self):
         '''Remove all effects processes.
@@ -394,18 +414,39 @@ class Transformer(object):
         self.effects_log = list()
         return self
 
-    def build(self, input_filepath, output_filepath, extra_args=None,
-              return_output=False):
-        '''Builds the output_file by executing the current set of commands.
+    def build(self, input_filepath_or_array, output_filepath, 
+              sample_rate_in=None, sample_rate_out=None,
+              channels_out=None, bits_out=None, encoding_out=None, 
+              extra_args=None, return_output=False):
+        '''Builds the output file or output numpy array by executing the 
+        current set of commands. One can do everything in memory by passing 
+        in a numpy array as input_filepath_or_array and '-' for the 
+        output_filepath. When this is done, the numpy array can be collected
+        as the second element of the returned tuple (status, out, err).
 
         Parameters
         ----------
-        input_filepath : str
-            Path to input audio file.
-        output_filepath : str or None
-            Path to desired output file. If a file already exists at the given
-            path, the file will be overwritten.
-            If None, no file will be created.
+        input_filepath_or_array : str or np.ndarray
+            Either path to input audio file or a numpy array.
+        output_filepath_or_array : str or None
+            Path to desired output file. If a file already exists at 
+            the given path, the file will be overwritten.
+            If None, no file will be created. If '-', then the output
+            will be on stdout.
+        sample_rate_in : int
+            Sample rate of audio. Since the data is given as a numpy 
+            array, we need this at build to set the input format correctly.
+        sample_rate_out : int, default=None
+            Expected sample rate of output audio. If None, this is set to
+            sample_rate_in.
+        channels_out : int, default=None
+            Expected number of channels in output audio. If None, this is set 
+            to the number of channels in input_array. 
+        bits_out : int, default=None
+            Expected bitdepth of output audio. If None, inferred by sox.
+        encoding_out : str or None, default=None
+            str determining expected encoding of output audio. Must be one of
+            's8', 's16', 'f32', 'f64'.
         extra_args : list or None, default=None
             If a list is given, these additional arguments are passed to SoX
             at the end of the list of effects.
@@ -414,25 +455,79 @@ class Transformer(object):
             If True, returns the status and information sent to stderr and
             stdout as a tuple (status, stdout, stderr).
             Otherwise returns True on success.
+        
+        Returns:
+        --------
+        status : bool
+            True on success.
+        out : str, np.ndarray, or None
+            Returns an np.ndarray if src_array was an np.ndarray. 
+            Returns the stdout produced by sox if src_array is None.
+            Otherwise, returns None if there's an error. Only returns
+            if return_output is True.
+        err : str, or None
+            Returns stderr as a string. Only returns if return_output
+            is True.
 
         '''
-        file_info.validate_input_file(input_filepath)
+        # Default encoding, gets overridden if input_filepath_or_array 
+        # is np.ndarray. Only used if output_filepath = '-'.
+        encoding = np.int16
+        channels_in = None
+        decode_out_with_utf = True
 
         if output_filepath is not None:
-            file_info.validate_output_file(output_filepath)
+            if output_filepath != '-':
+                file_info.validate_output_file(output_filepath)
         else:
             output_filepath = '-n'
 
-        if input_filepath == output_filepath:
-            raise ValueError(
-                "input_filepath must be different from output_filepath."
+        if isinstance(input_filepath_or_array, str):
+            input_filepath = input_filepath_or_array
+            file_info.validate_input_file(input_filepath)
+            if input_filepath == output_filepath:
+                raise ValueError(
+                    "input_filepath must be different from output_filepath."
+                )
+            input_format = self.input_format
+            src_array = None
+        elif isinstance(input_filepath_or_array, np.ndarray):
+            input_filepath = '-'
+            src_array = input_filepath_or_array
+
+            # Set relevant input formats
+            channels_in = (
+                src_array.shape[-1] if len(src_array.shape) > 1 else 1
             )
+            encoding = src_array.dtype.type
+            input_format = self.set_input_format(
+                rate=sample_rate_in, channels=channels_in,
+                file_type=ENCODINGS_MAPPING[encoding],
+                return_only=True,
+            )
+        
+        if output_filepath == '-':
+            if channels_out is None:
+                channels_out = channels_in
+            if sample_rate_out is None:
+                sample_rate_out = sample_rate_in
+            if encoding_out is None:
+                encoding_out = encoding
+            output_format = self.set_output_format(
+                rate=sample_rate_out, channels=channels_out,
+                file_type=ENCODINGS_MAPPING[encoding_out], 
+                bits=bits_out, return_only=True,
+            )
+            return_output = True
+            decode_out_with_utf = False
+        else:
+            output_format = self.output_format
 
         args = []
         args.extend(self.globals)
-        args.extend(self.input_format)
+        args.extend(input_format)
         args.append(input_filepath)
-        args.extend(self.output_format)
+        args.extend(output_format)
         args.append(output_filepath)
         args.extend(self.effects)
 
@@ -441,7 +536,16 @@ class Transformer(object):
                 raise ValueError("extra_args must be a list.")
             args.extend(extra_args)
 
-        status, out, err = sox(args)
+        status, out, err = sox(args, src_array, decode_out_with_utf)
+        if output_filepath == '-':
+            if channels_out is None and input_filepath != '-':
+                # infer channels out from input_filepath
+                channels_out = file_info.channels(input_filepath)
+            out = np.fromstring(out, dtype=encoding_out)
+            if channels_out > 1:
+                out = out.reshape(
+                    (channels_out, int(len(out) / channels_out)), order='F'
+                ).T
 
         if status != 0:
             raise SoxError(
@@ -460,102 +564,6 @@ class Transformer(object):
                 return status, out, err
             else:
                 return True
-
-    def build_array(self, input_array, sample_rate_in, sample_rate_out=None,
-                    channels_in=None, channels_out=None, bits_in=None, 
-                    bits_out=None, encoding_out=None, extra_args=None,
-                    return_output=True):
-        '''Builds an output numpy array by executing the current set of 
-        commands. Returns a tuple containing the status, the output array,
-        and the stderr: (status, output_array, stderr).
-
-        Parameters
-        ----------
-        input_array : np.ndarray
-            Input audio as a numpy array - (samples, channels).
-        sample_rate_in : int
-            Sample rate of audio. Since the data is given as a numpy 
-            array, we need this at build to set the input format correctly.
-        sample_rate_out : int, default=None
-            Expected sample rate of output audio. If None, this is set to
-            sample_rate_in.
-        channels_in : int, default=None
-            Number of channels in input. If None, defaults to number of channels
-            in input_array.
-        channels_out : int, default=None
-            Expected number of channels in output audio. If None, this is set 
-            to channels_in.
-        bits_in : int, default=None
-            Bitdepth of input audio. If None, inferred at runtime by sox. 
-        bits_out : int, default=None
-            Expected bitdepth of output audio. If None, inferred by sox.
-        encoding_out : str or None, default=None
-            str determining expected encoding of output audio. Must be one of
-            's8', 's16', 'f32', 'f64'.
-        extra_args : list or None, default=None
-            If a list is given, these additional arguments are passed to SoX
-            at the end of the list of effects.
-            Don't use this argument unless you know exactly what you're doing!
-        '''
-        output_filepath = '-'
-        input_filepath = '-'
-
-        if channels_in is None:
-            channels_in = (
-                input_array.shape[-1] if len(input_array.shape) > 1 else 1
-            )
-        if channels_out is None:
-            channels_out = channels_in
-        
-        if sample_rate_out is None:
-            sample_rate_out = sample_rate_in
-
-        encoding = input_array.dtype.type
-        if encoding_out is None:
-            encoding_out = encoding
-
-        self.set_input_format(
-            rate=sample_rate_in, channels=channels_in,
-            file_type=ENCODINGS_MAPPING[encoding], bits=bits_in,
-        )
-        self.set_output_format(
-            rate=sample_rate_out, channels=channels_out,
-            file_type=ENCODINGS_MAPPING[encoding_out], bits=bits_out,
-        )
-
-        args = []
-        args.extend(self.globals)
-        args.extend(self.input_format)
-        args.append(input_filepath)
-        args.extend(self.output_format)
-        args.append(output_filepath)
-        args.extend(self.effects)
-
-        if extra_args is not None:
-            if not isinstance(extra_args, list):
-                raise ValueError("extra_args must be a list.")
-            args.extend(extra_args)
-        
-        status, out, err = sox(args, input_array, encoding_out)
-        if channels_out > 1:
-            out = out.reshape(
-                (channels_out, int(len(out) / channels_out)), order='F'
-            ).T
-
-        if status != 0:
-            raise SoxError(
-                "Stdout: {}\nStderr: {}".format(out, err)
-            )
-        else:
-            logger.info(
-                "Created %s with effects: %s",
-                output_filepath,
-                " ".join(self.effects_log)
-            )
-            if out is not None:
-                logger.info("[SoX] {}".format(out))
-
-            return status, out, err
 
     def preview(self, input_filepath):
         '''Play a preview of the output with the current set of effects

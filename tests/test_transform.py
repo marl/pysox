@@ -15,6 +15,7 @@ SPACEY_FILE = relpath("data/annoying filename (derp).wav")
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE4 = relpath('data/input4.wav')
 OUTPUT_FILE = relpath('data/output.wav')
+OUTPUT_FILE_ALT = relpath('data/output_alt.wav')
 NOISE_PROF_FILE = relpath('data/noise.prof')
 
 
@@ -26,7 +27,17 @@ def tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm,
     INPUT_ARRAY, RATE = sf.read(INPUT_FILE, dtype=dtype)
     ACTUAL_OUTPUT, _ = sf.read(OUTPUT_FILE, dtype=dtype)
 
-    _, EST_ARRAY, _ = tfm.build_array(INPUT_ARRAY, RATE, **kwargs)
+    # array in, array out
+    _, EST_ARRAY, _ = tfm.build(INPUT_ARRAY, '-', RATE, **kwargs)
+    assert np.allclose(ACTUAL_OUTPUT, EST_ARRAY.astype(dtype))
+
+    # file in, array out
+    _, EST_ARRAY, _ = tfm.build(INPUT_FILE, '-', RATE, **kwargs)
+    assert np.allclose(ACTUAL_OUTPUT, EST_ARRAY.astype(dtype))
+
+    # array in, file out
+    tfm.build(INPUT_ARRAY, OUTPUT_FILE_ALT, RATE, **kwargs)
+    EST_ARRAY, _ = sf.read(OUTPUT_FILE_ALT, dtype=dtype)
     assert np.allclose(ACTUAL_OUTPUT, EST_ARRAY.astype(dtype))
 
 class TestTransformDefault(unittest.TestCase):
@@ -427,11 +438,7 @@ class TestTransformerBuild(unittest.TestCase):
         self.assertTrue(status)
 
     def test_extra_arg(self):
-        status = self.tfm.build(INPUT_FILE, OUTPUT_FILE, ['norm'])
-        self.assertTrue(status)
-
-        INPUT_ARRAY, RATE, = sf.read(INPUT_FILE)
-        status = self.tfm.build_array(INPUT_ARRAY, RATE, extra_args=['norm'])
+        status = self.tfm.build(INPUT_FILE, OUTPUT_FILE, extra_args=['norm'])
         self.assertTrue(status)
 
     def test_return_outputs(self):
@@ -443,7 +450,7 @@ class TestTransformerBuild(unittest.TestCase):
 
     def test_return_outputs_err(self):
         status, out, err = self.tfm.build(
-            INPUT_FILE, OUTPUT_FILE, ['stats'], return_output=True)
+            INPUT_FILE, OUTPUT_FILE, extra_args=['stats'], return_output=True)
         self.assertEqual(status, 0)
         self.assertEqual(out, '')
         self.assertNotEqual(err, '')
@@ -460,19 +467,10 @@ class TestTransformerBuild(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tfm.build(INPUT_FILE, OUTPUT_FILE, extra_args=0)
         
-        with self.assertRaises(ValueError):
-            INPUT_ARRAY, RATE, = sf.read(INPUT_FILE)
-            self.tfm.build_array(INPUT_ARRAY, RATE, extra_args=0)
-
     def test_failed_sox(self):
         self.tfm.effects = ['channels', '-1']
         with self.assertRaises(SoxError):
             self.tfm.build(INPUT_FILE, OUTPUT_FILE)
-        
-        with self.assertRaises(SoxError):
-            INPUT_ARRAY, RATE, = sf.read(INPUT_FILE)
-            self.tfm.build_array(INPUT_ARRAY, RATE)
-
 
 class TestTransformerClearEffects(unittest.TestCase):
 

@@ -1,4 +1,5 @@
 tests/data/output.wav
+tests/data/output_alt.wav
 *.DS_Store
 
 # Byte-compiled / optimized / DLL files
