@@ -24,7 +24,7 @@ def bitdepth(input_filepath):
         Number of bits per sample.
         Returns None if not applicable.
     '''
-    
+
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'b')
     if output == '0':
@@ -49,7 +49,7 @@ def bitrate(input_filepath):
         Bit rate, expressed in bytes per second.
         Returns None if not applicable.
     '''
-    
+
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'B')
     # The characters below stand for kilo, Mega, Giga, etc.
@@ -329,7 +329,7 @@ def file_extension(filepath):
     extension : str
         The file's extension
     '''
-    return os.path.splitext(filepath)[1][1:]
+    return os.path.splitext(filepath)[1][1:].lower()
 
 
 def info(filepath):
