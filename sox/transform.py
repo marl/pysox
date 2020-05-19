@@ -475,13 +475,10 @@ class Transformer(object):
         encoding = np.int16
         channels_in = None
         decode_out_with_utf = True
+        input_format = self.input_format
+        output_format = self.output_format
 
-        if output_filepath is not None:
-            if output_filepath != '-':
-                file_info.validate_output_file(output_filepath)
-        else:
-            output_filepath = '-n'
-
+        # Type-check for input
         if isinstance(input_filepath_or_array, str):
             input_filepath = input_filepath_or_array
             file_info.validate_input_file(input_filepath)
@@ -489,7 +486,6 @@ class Transformer(object):
                 raise ValueError(
                     "input_filepath must be different from output_filepath."
                 )
-            input_format = self.input_format
             src_array = None
         elif isinstance(input_filepath_or_array, np.ndarray):
             input_filepath = '-'
@@ -505,8 +501,15 @@ class Transformer(object):
                 file_type=ENCODINGS_MAPPING[encoding],
                 return_only=True,
             )
-        
-        if output_filepath == '-':
+        else:
+            raise TypeError(
+                "input_filepath_or_array must be either a numpy array or a "
+                "path to a file!")
+
+        # Type-check for output and set things accordingly
+        if output_filepath is None:
+            output_filepath = '-n'
+        elif output_filepath == '-':
             if channels_out is None:
                 channels_out = channels_in
             if sample_rate_out is None:
@@ -521,7 +524,7 @@ class Transformer(object):
             return_output = True
             decode_out_with_utf = False
         else:
-            output_format = self.output_format
+            file_info.validate_output_file(output_filepath)
 
         args = []
         args.extend(self.globals)

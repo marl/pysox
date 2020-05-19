@@ -458,6 +458,10 @@ class TestTransformerBuild(unittest.TestCase):
     def test_invalid(self):
         with self.assertRaises(IOError):
             self.tfm.build('blah/asdf.wav', OUTPUT_FILE)
+    
+    def test_invalid_input_type(self):
+        with self.assertRaises(TypeError):
+            self.tfm.build({'not a string or numpy array'}, OUTPUT_FILE)
 
     def test_input_output_equal(self):
         with self.assertRaises(ValueError):
