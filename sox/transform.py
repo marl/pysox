@@ -1814,7 +1814,7 @@ class Transformer(object):
                 raise ValueError(
                     "Tuple values in tf_points lists must be <= 0 (dB)."
                 )
-            if len(tf_points) > len(set([p[0] for p in tfp])):
+            if len(tfp) > len(set([p[0] for p in tfp])):
                 raise ValueError("Found duplicate x-value in tf_points list.")
 
         if not isinstance(gain, list) or len(gain) != n_bands:

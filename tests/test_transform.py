@@ -2565,6 +2565,35 @@ class TestTransformerMcompand(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
+    def test_tf_points_valid2(self):
+        tfm = new_transformer()
+        tfm.mcompand(
+            n_bands=3,
+            crossover_frequencies=[6500, 8000],
+            attack_time=[0.001, 0.001, 0.001],
+            decay_time=[0.020, 0.020, 0.020],
+            soft_knee_db=[None, 2.0, None],
+            tf_points=[[(-40, -40), (0, 0)],
+                [(-40, -40), (-30, -38), (-20, -36), (0, -34)],
+                [(-40, -40), (0, 0)]],
+            gain=[None, None, None])
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '0.001000,0.020000 -40.000000,-40.000000,0.000000,0.000000',
+            '6500.000000',
+            ('0.001000,0.020000 2.000000:-40.000000,-40.000000,-30.000000,' +
+             '-38.000000,-20.000000,-36.000000,0.000000,-34.000000'),
+            '8000.000000',
+            '0.001000,0.020000 -40.000000,-40.000000,0.000000,0.000000'
+        ]
+
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
     def test_tf_points_wrong_len(self):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
