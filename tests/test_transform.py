@@ -473,6 +473,39 @@ class TestTransformerBuild(unittest.TestCase):
         with self.assertRaises(SoxError):
             self.tfm.build(INPUT_FILE, OUTPUT_FILE)
 
+    def test_two_inputs(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build(
+                input_filepath=INPUT_FILE, input_array=np.array([1, 2]))
+
+    def test_input_array_not_array(self):
+        with self.assertRaises(TypeError):
+            self.tfm.build(input_array=[1, 2, 3])
+
+    def test_input_array_missing_sr(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build(input_array=np.array([1, 2, 3]))
+
+    def test_no_input(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build()
+
+    def test_bits8(self):
+        self.tfm.set_output_format(file_type='wav', bits=8)
+        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+
+    def test_bits16(self):
+        self.tfm.set_output_format(file_type='wav', bits=16)
+        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+
+    def test_bits32(self):
+        self.tfm.set_output_format(file_type='wav', bits=32)
+        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+
+    def test_bits64(self):
+        self.tfm.set_output_format(file_type='wav', bits=64)
+        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+
 class TestTransformerClearEffects(unittest.TestCase):
 
     def test_clear(self):

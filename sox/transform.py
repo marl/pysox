@@ -523,13 +523,12 @@ class Transformer(object):
                 )
 
             output_filepath = '-'
-            sample_rate_out = sample_rate_in
             channels_out = channels_in
             encoding_out = (np.int16 if encoding is None else encoding)
             n_bits = np.dtype(encoding_out).itemsize * 8
             if output_format == []:
                 output_format = self._output_format_args(
-                    'raw', sample_rate_out, n_bits,
+                    'raw', sample_rate_in, n_bits,
                     channels_out, None, None, True
                 )
             else:
@@ -554,12 +553,6 @@ class Transformer(object):
                         encoding_out = np.float64
                     else:
                         raise ValueError("invalid n_bits {}".format(n_bits))
-
-                rate_idx = [
-                    i for i, f in enumerate(output_filepath) if f == '-r'
-                ]
-                if len(rate_idx) == 1:
-                    sample_rate_out = int(output_filepath[rate_idx[0] + 1])
 
             array_output = True
 
