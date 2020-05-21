@@ -3,6 +3,7 @@ from .log import logger
 
 import subprocess
 from subprocess import CalledProcessError
+import numpy as np
 
 from . import NO_SOX
 
@@ -14,7 +15,7 @@ ENCODING_VALS = [
 ]
 
 
-def sox(args):
+def sox(args, src_array=None, decode_out_with_utf=True):
     '''Pass an argument list to SoX.
 
     Parameters
@@ -22,11 +23,23 @@ def sox(args):
     args : iterable
         Argument list for SoX. The first item can, but does not
         need to, be 'sox'.
+    src_array : np.ndarray, or None
+        If src_array is not None, then we make sure it's a numpy 
+        array and pass it into stdin.
+    decode_out_with_utf : bool, default=True
+        Whether or not sox is outputting a bytestring that should be
+        decoded with utf-8.
 
     Returns:
     --------
     status : bool
         True on success.
+    out : str, np.ndarray, or None
+        Returns a np.ndarray if src_array was an np.ndarray. 
+        Returns the stdout produced by sox if src_array is None.
+        Otherwise, returns None if there's an error.
+    err : str, or None
+        Returns stderr as a string.
 
     '''
     if args[0].lower() != "sox":
@@ -37,15 +50,33 @@ def sox(args):
     try:
         logger.info("Executing: %s", ' '.join(args))
 
-        process_handle = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        if src_array is None:
+            process_handle = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
 
-        out, err = process_handle.communicate()
-        out = out.decode("utf-8")
-        err = err.decode("utf-8")
+            out, err = process_handle.communicate()
+            if decode_out_with_utf:
+                out = out.decode("utf-8")
+            err = err.decode("utf-8")
 
-        status = process_handle.returncode
+            status = process_handle.returncode
+        elif isinstance(src_array, np.ndarray):
+            process_handle = subprocess.Popen(
+                args, 
+                stdin=subprocess.PIPE, 
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            # We do order "F" for Fortran formatting of the numpy array, which is
+            # sox expects. When we reshape stdout later, we need to use the same
+            # order, otherwise tests fail.
+            out, err = process_handle.communicate(src_array.T.tobytes(order='F'))
+            err = err.decode("utf-8")
+            status = process_handle.returncode
+        else:
+            raise TypeError("src_array must be an np.ndarray!")
+        
         return status, out, err
 
     except OSError as error_msg:
