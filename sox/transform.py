@@ -426,10 +426,10 @@ class Transformer(object):
               input_array=None, sample_rate_in=None,
               extra_args=None, return_output=False):
         '''Builds the output file or output numpy array by executing the
-        current set of commands. One can do everything in memory by passing
-        in a numpy array as input_filepath_or_array and '-' for the
-        output_filepath. When this is done, the numpy array can be collected
-        as the second element of the returned tuple (status, out, err).
+        current set of commands. This function returns either the status
+        of the command (when output_filepath is specified and return_output
+        is False), or it returns a triple of (status, out, err) when
+        output_filepath is None or return_output is True.
 
         Parameters
         ----------
