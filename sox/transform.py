@@ -486,7 +486,10 @@ class Transformer(object):
 
         file in, file out - equivalent usage
 
-        >>> status = tfm.build(input_filepath='path/to/input.wav', output_filepath='path/to/output.mp3')
+        >>> status = tfm.build(
+                input_filepath='path/to/input.wav',
+                output_filepath='path/to/output.mp3'
+            )
 
         file in, array out
 
@@ -494,7 +497,10 @@ class Transformer(object):
 
         array in, file out
 
-        >>> status = tfm.build(input_array=y, sample_rate_in=sample_rate, output_filepath='path/to/output.mp3')
+        >>> status = tfm.build(
+                input_array=y, sample_rate_in=sample_rate,
+                output_filepath='path/to/output.mp3'
+            )
 
         array in, array out
 
