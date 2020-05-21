@@ -24,3 +24,14 @@ v1.3.0
 - added `noiseprof` and `noisered` effects
 - added `vol` effect
 - fixed `Combiner.preview()`
+
+v1.4.0
+~~~~~~
+- refactored `.build()` function to support in-memory array inputs and outputs
+- the call to subprocess calls the binary directly (shell=False)
+- file_info methods return None instead of 0 when the value is not available
+- fixed bug in `file_info.bitrate()`, which was returning bitdepth
+- added `file_info.bitdepth()`
+- added Windows support for `soxi`
+- added configurable logging
+- `.trim()` can be called with only the start time specificed
