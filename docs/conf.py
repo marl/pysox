@@ -70,7 +70,7 @@ else:
     from importlib.machinery import SourceFileLoader
 
     pysox_version = SourceFileLoader('sox.version',
-                                     '../librosa/version.py').load_module()
+                                     '../sox/version.py').load_module()
 
 # The short X.Y version.
 version = pysox_version.short_version
