@@ -285,8 +285,8 @@ def validate_output_file(output_filepath):
     output_filepath : str
         The output filepath.
 
-    Returns:
-    --------
+    Returns
+    -------
     output_filepath : str
         The output filepath.
 
@@ -326,8 +326,8 @@ def file_extension(filepath):
     filepath : str
         File path.
 
-    Returns:
-    --------
+    Returns
+    -------
     extension : str
         The file's extension
     '''
@@ -342,8 +342,8 @@ def info(filepath):
     filepath : str
         File path.
 
-    Returns:
-    --------
+    Returns
+    -------
     info_dictionary : dict
         Dictionary of file information. Fields are:
             * channels

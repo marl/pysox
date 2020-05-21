@@ -34,6 +34,7 @@ class Combiner(Transformer):
     Inherits all methods from the Transformer class, thus any effects can be
     applied after combining.
     '''
+
     def __init__(self):
         super(Combiner, self).__init__()
 

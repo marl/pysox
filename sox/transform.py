@@ -264,8 +264,8 @@ class Transformer(object):
             file’s header. If this option is given then SoX will keep reading
             audio until it reaches the end of the input file.
 
-        Returns:
-        --------
+        Returns
+        -------
         input_format : list
             List of arguments that determine the input format, passed to sox.
 
@@ -403,8 +403,8 @@ class Transformer(object):
             If True, comment strings are appended to SoX's default comments. If
             False, the supplied comment replaces the existing comment.
 
-        Returns:
-        --------
+        Returns
+        -------
         output_format : list
             List of arguments that determine the output format, passed to sox.
 
@@ -458,8 +458,8 @@ class Transformer(object):
             If output_filepath is None, return_output=True by default.
             If False, returns True on success.
 
-        Returns:
-        --------
+        Returns
+        -------
         status : bool
             True on success.
         out : str, np.ndarray, or None
