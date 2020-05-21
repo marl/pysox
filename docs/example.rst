@@ -4,6 +4,7 @@ Transformer Example
 ===================
 
 Transform audio files
+
 .. code-block:: python
     :linenos:
 
@@ -25,7 +26,8 @@ Transform audio files
     tfm.effects_log
     > ['trim', 'compand', 'fade']
 
-Transform in-memory arrays:
+Transform in-memory arrays
+
 .. code-block:: python
     :linenos:
 

@@ -473,40 +473,31 @@ class Transformer(object):
 
         Examples
         --------
-        file in, file out - basic usage
 
+        >>> import numpy as np
         >>> import sox
         >>> tfm = sox.Transformer()
+        >>> sample_rate = 44100
+        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+
+        file in, file out - basic usage
+
         >>> status = tfm.build('path/to/input.wav', 'path/to/output.mp3')
 
         file in, file out - equivalent usage
 
-        >>> import sox
-        >>> tfm = sox.Transformer()
         >>> status = tfm.build(input_filepath='path/to/input.wav', output_filepath='path/to/output.mp3')
 
         file in, array out
 
-        >>> import sox
-        >>> tfm = sox.Transformer()
         >>> status, array_out, err = tfm.build(input_filepath='path/to/input.wav')
 
         array in, file out
 
-        >>> import numpy as np
-        >>> import sox
-        >>> sample_rate = 44100
-        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
-        >>> tfm = sox.Transformer()
         >>> status = tfm.build(input_array=y, sample_rate_in=sample_rate, output_filepath='path/to/output.mp3')
 
         array in, array out
 
-        >>> import numpy as np
-        >>> import sox
-        >>> sample_rate = 44100
-        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
-        >>> tfm = sox.Transformer()
         >>> status, array_out, err = tfm.build(input_array=y, sample_rate_in=sample_rate)
 
         '''
