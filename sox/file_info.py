@@ -285,11 +285,6 @@ def validate_output_file(output_filepath):
     output_filepath : str
         The output filepath.
 
-    Returns
-    -------
-    output_filepath : str
-        The output filepath.
-
     '''
     if output_filepath == '-n':
         return

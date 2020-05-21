@@ -67,6 +67,11 @@ class Combiner(Transformer):
             are applied to the input files in order.
             If None, input files will be combined at their original volumes.
 
+        Returns
+        -------
+        status : bool
+            True on success.
+
         '''
         file_info.validate_input_file_list(input_filepath_list)
         file_info.validate_output_file(output_filepath)

@@ -215,7 +215,7 @@ def is_number(var):
 
     Returns
     -------
-    bool
+    is_number : bool
         True if var is numeric, False otherwise.
     '''
     try:
@@ -237,7 +237,7 @@ def all_equal(list_of_things):
 
     Returns
     -------
-    bool
+    all_equal : bool
         True if all list elements are the same.
     '''
     return len(set(list_of_things)) <= 1

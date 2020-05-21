@@ -417,7 +417,6 @@ class Transformer(object):
 
     def clear_effects(self):
         '''Remove all effects processes.
-
         '''
         self.effects = list()
         self.effects_log = list()
@@ -463,13 +462,52 @@ class Transformer(object):
         status : bool
             True on success.
         out : str, np.ndarray, or None
-            Returns an np.ndarray if output_filepath is None.
-            Returns the stdout produced by sox if src_array is None.
-            Otherwise, returns None if there's an error. Only returns
-            if return_output is True.
+            If output_filepath is None returns the output audio as a np.ndarray
+            If output_filepath is not None and return_output is True, returns
+            the stdout produced by sox.
+            Otherwise, this output is not returned.
         err : str, or None
-            Returns stderr as a string. Only returns if return_output
-            is True.
+            If output_filepath is None or return_output is True, returns the
+            stderr as a string.
+            Otherwise, this output is not returned.
+
+        Examples
+        --------
+        file in, file out - basic usage
+
+        >>> import sox
+        >>> tfm = sox.Transformer()
+        >>> status = tfm.build('path/to/input.wav', 'path/to/output.mp3')
+
+        file in, file out - equivalent usage
+
+        >>> import sox
+        >>> tfm = sox.Transformer()
+        >>> status = tfm.build(input_filepath='path/to/input.wav', output_filepath='path/to/output.mp3')
+
+        file in, array out
+
+        >>> import sox
+        >>> tfm = sox.Transformer()
+        >>> status, array_out, err = tfm.build(input_filepath='path/to/input.wav')
+
+        array in, file out
+
+        >>> import numpy as np
+        >>> import sox
+        >>> sample_rate = 44100
+        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+        >>> tfm = sox.Transformer()
+        >>> status = tfm.build(input_array=y, sample_rate_in=sample_rate, output_filepath='path/to/output.mp3')
+
+        array in, array out
+
+        >>> import numpy as np
+        >>> import sox
+        >>> sample_rate = 44100
+        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+        >>> tfm = sox.Transformer()
+        >>> status, array_out, err = tfm.build(input_array=y, sample_rate_in=sample_rate)
 
         '''
         if input_filepath is not None and input_array is not None:
