@@ -24,18 +24,18 @@ def sox(args, src_array=None, decode_out_with_utf=True):
         Argument list for SoX. The first item can, but does not
         need to, be 'sox'.
     src_array : np.ndarray, or None
-        If src_array is not None, then we make sure it's a numpy 
+        If src_array is not None, then we make sure it's a numpy
         array and pass it into stdin.
     decode_out_with_utf : bool, default=True
         Whether or not sox is outputting a bytestring that should be
         decoded with utf-8.
 
-    Returns:
-    --------
+    Returns
+    -------
     status : bool
         True on success.
     out : str, np.ndarray, or None
-        Returns a np.ndarray if src_array was an np.ndarray. 
+        Returns a np.ndarray if src_array was an np.ndarray.
         Returns the stdout produced by sox if src_array is None.
         Otherwise, returns None if there's an error.
     err : str, or None
@@ -63,8 +63,8 @@ def sox(args, src_array=None, decode_out_with_utf=True):
             status = process_handle.returncode
         elif isinstance(src_array, np.ndarray):
             process_handle = subprocess.Popen(
-                args, 
-                stdin=subprocess.PIPE, 
+                args,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
@@ -76,7 +76,7 @@ def sox(args, src_array=None, decode_out_with_utf=True):
             status = process_handle.returncode
         else:
             raise TypeError("src_array must be an np.ndarray!")
-        
+
         return status, out, err
 
     except OSError as error_msg:
@@ -97,8 +97,8 @@ def _get_valid_formats():
     ''' Calls SoX help for a lists of audio formats available with the current
     install of SoX.
 
-    Returns:
-    --------
+    Returns
+    -------
     formats : list
         List of audio file extensions that SoX can process.
 
@@ -166,8 +166,8 @@ def play(args):
         Argument list for play. The first item can, but does not
         need to, be 'play'.
 
-    Returns:
-    --------
+    Returns
+    -------
     status : bool
         True on success.
 
@@ -213,9 +213,9 @@ def is_number(var):
     ----------
     var : object
 
-    Returns:
-    --------
-    bool
+    Returns
+    -------
+    is_number : bool
         True if var is numeric, False otherwise.
     '''
     try:
@@ -235,9 +235,9 @@ def all_equal(list_of_things):
     list_of_things : list
         list of objects
 
-    Returns:
-    --------
-    bool
+    Returns
+    -------
+    all_equal : bool
         True if all list elements are the same.
     '''
     return len(set(list_of_things)) <= 1

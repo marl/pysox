@@ -264,8 +264,8 @@ class Transformer(object):
             file’s header. If this option is given then SoX will keep reading
             audio until it reaches the end of the input file.
 
-        Returns:
-        --------
+        Returns
+        -------
         input_format : list
             List of arguments that determine the input format, passed to sox.
 
@@ -403,8 +403,8 @@ class Transformer(object):
             If True, comment strings are appended to SoX's default comments. If
             False, the supplied comment replaces the existing comment.
 
-        Returns:
-        --------
+        Returns
+        -------
         output_format : list
             List of arguments that determine the output format, passed to sox.
 
@@ -417,7 +417,6 @@ class Transformer(object):
 
     def clear_effects(self):
         '''Remove all effects processes.
-
         '''
         self.effects = list()
         self.effects_log = list()
@@ -427,10 +426,10 @@ class Transformer(object):
               input_array=None, sample_rate_in=None,
               extra_args=None, return_output=False):
         '''Builds the output file or output numpy array by executing the
-        current set of commands. One can do everything in memory by passing
-        in a numpy array as input_filepath_or_array and '-' for the
-        output_filepath. When this is done, the numpy array can be collected
-        as the second element of the returned tuple (status, out, err).
+        current set of commands. This function returns either the status
+        of the command (when output_filepath is specified and return_output
+        is False), or it returns a triple of (status, out, err) when
+        output_filepath is None or return_output is True.
 
         Parameters
         ----------
@@ -458,18 +457,54 @@ class Transformer(object):
             If output_filepath is None, return_output=True by default.
             If False, returns True on success.
 
-        Returns:
-        --------
+        Returns
+        -------
         status : bool
             True on success.
         out : str, np.ndarray, or None
-            Returns an np.ndarray if output_filepath is None.
-            Returns the stdout produced by sox if src_array is None.
-            Otherwise, returns None if there's an error. Only returns
-            if return_output is True.
+            If output_filepath is None returns the output audio as a np.ndarray
+            If output_filepath is not None and return_output is True, returns
+            the stdout produced by sox.
+            Otherwise, this output is not returned.
         err : str, or None
-            Returns stderr as a string. Only returns if return_output
-            is True.
+            If output_filepath is None or return_output is True, returns the
+            stderr as a string.
+            Otherwise, this output is not returned.
+
+        Examples
+        --------
+
+        >>> import numpy as np
+        >>> import sox
+        >>> tfm = sox.Transformer()
+        >>> sample_rate = 44100
+        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+
+        file in, file out - basic usage
+
+        >>> status = tfm.build('path/to/input.wav', 'path/to/output.mp3')
+
+        file in, file out - equivalent usage
+
+        >>> status = tfm.build(
+                input_filepath='path/to/input.wav',
+                output_filepath='path/to/output.mp3'
+            )
+
+        file in, array out
+
+        >>> status, array_out, err = tfm.build(input_filepath='path/to/input.wav')
+
+        array in, file out
+
+        >>> status = tfm.build(
+                input_array=y, sample_rate_in=sample_rate,
+                output_filepath='path/to/output.mp3'
+            )
+
+        array in, array out
+
+        >>> status, array_out, err = tfm.build(input_array=y, sample_rate_in=sample_rate)
 
         '''
         if input_filepath is not None and input_array is not None:
