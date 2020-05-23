@@ -99,7 +99,7 @@ y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
 tfm = sox.Transformer()
 # shift the pitch up by 2 semitones
 tfm.pitch(2)
-# compute transformation in-memory
+# transform an in-memory array and return an array
 y_out = tfm.build_array(input_array=y, sample_rate_in=sample_rate)
 # instead, save output to a file
 tfm.build_file(
