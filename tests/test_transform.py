@@ -799,6 +799,11 @@ class TestTransformerBuildArray(unittest.TestCase):
         arr_out = self.tfm.build_array(INPUT_FILE)
         self.assertEqual(arr_out.dtype, np.float64)
 
+    def test_bits_invalid(self):
+        self.tfm.set_output_format(bits=17)
+        with self.assertRaises(ValueError):
+            self.tfm.build_array(INPUT_FILE)
+
 
 class TestTransformerClearEffects(unittest.TestCase):
 
