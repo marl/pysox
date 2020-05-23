@@ -720,25 +720,85 @@ class TestTransformerBuild(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tfm.build(input_array=np.array([1, 2, 3]))
 
+    def test_no_output_file(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build(INPUT_FILE)
+
     def test_no_input(self):
         with self.assertRaises(ValueError):
             self.tfm.build()
 
+
+class TestTransformerBuildArray(unittest.TestCase):
+    def setUp(self):
+        self.tfm = new_transformer()
+
+    def test_valid(self):
+        arr_out = self.tfm.build_array(INPUT_FILE)
+        self.assertTrue(isinstance(arr_out, np.ndarray))
+
+    def test_valid_spacey(self):
+        arr_out = self.tfm.build_array(SPACEY_FILE)
+        self.assertTrue(isinstance(arr_out, np.ndarray))
+
+    def test_extra_arg(self):
+        arr_out = self.tfm.build_array(INPUT_FILE, extra_args=['norm'])
+        self.assertTrue(isinstance(arr_out, np.ndarray))
+
+    def test_invalid(self):
+        with self.assertRaises(IOError):
+            self.tfm.build_array('blah/asdf.wav')
+
+    def test_invalid_input_type(self):
+        with self.assertRaises(TypeError):
+            self.tfm.build_array({'not a string or numpy array'})
+
+    def test_extra_args_invalid(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build_array(INPUT_FILE, extra_args=0)
+
+    def test_failed_sox(self):
+        self.tfm.effects = ['channels', '-1']
+        with self.assertRaises(SoxError):
+            self.tfm.build_array(INPUT_FILE)
+
+    def test_two_inputs(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build_array(
+                input_filepath=INPUT_FILE, input_array=np.array([1, 2]))
+
+    def test_input_array_not_array(self):
+        with self.assertRaises(TypeError):
+            self.tfm.build_array(input_array=[1, 2, 3])
+
+    def test_input_array_missing_sr(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build_array(input_array=np.array([1, 2, 3]))
+
+    def test_no_input(self):
+        with self.assertRaises(ValueError):
+            self.tfm.build_array()
+
     def test_bits8(self):
-        self.tfm.set_output_format(file_type='wav', bits=8)
-        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        self.tfm.set_output_format(bits=8)
+        arr_out = self.tfm.build_array(INPUT_FILE)
+        self.assertEqual(arr_out.dtype, np.int8)
 
     def test_bits16(self):
-        self.tfm.set_output_format(file_type='wav', bits=16)
-        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        self.tfm.set_output_format(bits=16)
+        arr_out = self.tfm.build_array(INPUT_FILE)
+        self.assertEqual(arr_out.dtype, np.int16)
 
     def test_bits32(self):
-        self.tfm.set_output_format(file_type='wav', bits=32)
-        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        self.tfm.set_output_format(bits=32)
+        arr_out = self.tfm.build_array(INPUT_FILE)
+        self.assertEqual(arr_out.dtype, np.float32)
 
     def test_bits64(self):
-        self.tfm.set_output_format(file_type='wav', bits=64)
-        self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        self.tfm.set_output_format(bits=64)
+        arr_out = self.tfm.build_array(INPUT_FILE)
+        self.assertEqual(arr_out.dtype, np.float64)
+
 
 class TestTransformerClearEffects(unittest.TestCase):
 

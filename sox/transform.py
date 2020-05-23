@@ -814,7 +814,8 @@ class Transformer(object):
             output_format['channels'] = self.output_format['channels']
 
         if self.output_format.get('bits') is not None:
-            output_format['bits'] = self.output_format['bits']
+            n_bits = self.output_format['bits']
+            output_format['bits'] = n_bits
 
         if n_bits == 8:
             encoding_out = np.int8
