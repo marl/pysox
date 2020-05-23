@@ -79,7 +79,8 @@ class Combiner(Transformer):
         _validate_volumes(input_volumes)
 
         input_format_list = _build_input_format_list(
-            input_filepath_list, input_volumes, self.input_format
+            input_filepath_list, input_volumes,
+            self.input_format
         )
 
         try:
@@ -94,7 +95,7 @@ class Combiner(Transformer):
         input_args = _build_input_args(input_filepath_list, input_format_list)
         args.extend(input_args)
 
-        args.extend(self.output_format)
+        args.extend(self._output_format_args(self.output_format))
         args.append(output_filepath)
         args.extend(self.effects)
 

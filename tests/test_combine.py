@@ -31,7 +31,7 @@ class TestCombineDefault(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_output_format(self):
-        expected = []
+        expected = {}
         actual = self.cbn.output_format
         self.assertEqual(expected, actual)
 
@@ -66,6 +66,15 @@ class TestCombineDefault(unittest.TestCase):
             cbn.build(
                 [INPUT_FILE_INVALID, INPUT_WAV], OUTPUT_FILE, 'concatenate'
             )
+
+    def test_build_with_output_format(self):
+        expected_result = True
+        cbn = new_combiner()
+        cbn.set_output_format(rate=8000)
+        actual_result = self.cbn.build(
+            [INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'concatenate'
+        )
+        self.assertEqual(expected_result, actual_result)
 
 
 class TestCombineTypes(unittest.TestCase):

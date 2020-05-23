@@ -32,13 +32,13 @@ def tfm_assert_array_to_file_output(input_file, output_file, tfm,
 
     if not skip_array_tests:
         # array in, array out
-        _, est_array, _ = tfm.build(
+        est_array = tfm.build_array(
             input_array=input_array, sample_rate_in=rate, **kwargs
         )
         assert np.allclose(actual_output, est_array.astype(dtype_out))
 
         # file in, array out
-        _, est_array, _ = tfm.build(
+        est_array = tfm.build_array(
             input_filepath=input_file, sample_rate_in=rate, **kwargs
         )
         assert np.allclose(actual_output, est_array.astype(dtype_out))
@@ -49,6 +49,9 @@ def tfm_assert_array_to_file_output(input_file, output_file, tfm,
                   sample_rate_in=rate, **kwargs)
         est_array, _ = sf.read(OUTPUT_FILE_ALT, dtype=dtype_out)
         assert np.allclose(actual_output, est_array.astype(dtype_out))
+        # test alias
+        tfm.build_file(input_array=input_array, output_filepath=OUTPUT_FILE_ALT,
+                       sample_rate_in=rate, **kwargs)
 
 
 class TestTransformDefault(unittest.TestCase):
@@ -61,12 +64,12 @@ class TestTransformDefault(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_input_format(self):
-        expected = []
+        expected = {}
         actual = self.transformer.input_format
         self.assertEqual(expected, actual)
 
     def test_output_format(self):
-        expected = []
+        expected = {}
         actual = self.transformer.output_format
         self.assertEqual(expected, actual)
 
@@ -173,8 +176,12 @@ class TestTransformSetInputFormat(unittest.TestCase):
 
     def test_defaults(self):
         actual = self.tfm.input_format
-        expected = []
+        expected = {}
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = []
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -183,8 +190,19 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_file_type(self):
         self.tfm.set_input_format(file_type='wav')
         actual = self.tfm.input_format
-        expected = ['-t', 'wav']
+        expected = {
+            'file_type': 'wav',
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'ignore_length': False
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = ['-t', 'wav']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -193,12 +211,25 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_file_type_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(file_type='blurg')
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'file_type': 'blurg'})
 
     def test_rate(self):
         self.tfm.set_input_format(rate=44100)
         actual = self.tfm.input_format
-        expected = ['-r', '44100.000000']
+        expected = {
+            'file_type': None,
+            'rate': 44100,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'ignore_length': False
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = ['-r', '44100.000000']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -207,8 +238,19 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_rate_scinotation(self):
         self.tfm.set_input_format(rate=1.0e3)
         actual = self.tfm.input_format
-        expected = ['-r', '1000.000000']
+        expected = {
+            'file_type': None,
+            'rate': 1.0e3,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'ignore_length': False
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = ['-r', '1000.000000']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -217,16 +259,31 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_rate_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(rate='a')
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'rate': 'a'})
 
     def test_rate_invalid2(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(rate=0)
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'rate': 0})
 
     def test_bits(self):
         self.tfm.set_input_format(bits=32)
         actual = self.tfm.input_format
-        expected = ['-b', '32']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': 32,
+            'channels': None,
+            'encoding': None,
+            'ignore_length': False
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = ['-b', '32']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -235,16 +292,31 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_bits_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(bits='a')
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'bits': 'a'})
 
     def test_bits_invalid2(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(bits=-4)
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'bits': -4})
 
     def test_channels(self):
         self.tfm.set_input_format(channels=2)
         actual = self.tfm.input_format
-        expected = ['-c', '2']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': 2,
+            'encoding': None,
+            'ignore_length': False
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = ['-c', '2']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -253,15 +325,31 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_channels_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(channels='a')
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'channels': 'a'})
 
     def test_channels_invalid2(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(channels=-2)
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'channels': -2})
 
     def test_encoding(self):
         self.tfm.set_input_format(encoding='signed-integer')
         actual = self.tfm.input_format
-        expected = ['-e', 'signed-integer']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': 'signed-integer',
+            'ignore_length': False
+        }
+        self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = ['-e', 'signed-integer']
+        self.assertEqual(expected_args, actual_args)
         self.assertEqual(expected, actual)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -271,12 +359,25 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_encoding_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(encoding='16-bit-signed-integer')
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'encoding': '16-bit-signed-integer'})
 
     def test_ignore_length(self):
         self.tfm.set_input_format(ignore_length=True)
         actual = self.tfm.input_format
-        expected = ['--ignore-length']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'ignore_length': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._input_format_args(self.tfm.input_format)
+        expected_args = ['--ignore-length']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -285,6 +386,8 @@ class TestTransformSetInputFormat(unittest.TestCase):
     def test_ignore_length_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_input_format(ignore_length=None)
+        with self.assertRaises(ValueError):
+            self.tfm._input_format_args({'ignore_length': None})
 
 
 class TestTransformSetOutputFormat(unittest.TestCase):
@@ -294,8 +397,12 @@ class TestTransformSetOutputFormat(unittest.TestCase):
 
     def test_defaults(self):
         actual = self.tfm.output_format
-        expected = []
+        expected = {}
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = []
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -304,8 +411,20 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_file_type(self):
         self.tfm.set_output_format(file_type='wav')
         actual = self.tfm.output_format
-        expected = ['-t', 'wav']
+        expected = {
+            'file_type': 'wav',
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'comments': None,
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-t', 'wav']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -314,8 +433,20 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_file_type_null_output(self):
         self.tfm.set_output_format(file_type='wav')
         actual = self.tfm.output_format
-        expected = ['-t', 'wav']
+        expected = {
+            'file_type': 'wav',
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'comments': None,
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-t', 'wav']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, '-n')
         expected_result = True
@@ -324,12 +455,26 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_file_type_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(file_type='blurg')
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'file_type': 'blurg'})
 
     def test_rate(self):
         self.tfm.set_output_format(rate=44100)
         actual = self.tfm.output_format
-        expected = ['-r', '44100.000000']
+        expected = {
+            'file_type': None,
+            'rate': 44100,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'comments': None,
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-r', '44100.000000']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -338,8 +483,20 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_rate_scinotation(self):
         self.tfm.set_output_format(rate=1.0e3)
         actual = self.tfm.output_format
-        expected = ['-r', '1000.000000']
+        expected = {
+            'file_type': None,
+            'rate': 1.0e3,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'comments': None,
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-r', '1000.000000']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -348,16 +505,32 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_rate_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(rate='a')
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'rate': 'a'})
 
     def test_rate_invalid2(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(rate=0)
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'rate': 0})
 
     def test_bits(self):
         self.tfm.set_output_format(bits=32)
         actual = self.tfm.output_format
-        expected = ['-b', '32']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': 32,
+            'channels': None,
+            'encoding': None,
+            'comments': None,
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-b', '32']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -366,16 +539,32 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_bits_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(bits='a')
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'bits': 'a'})
 
     def test_bits_invalid2(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(bits=-4)
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'bits': -4})
 
     def test_channels(self):
         self.tfm.set_output_format(channels=2)
         actual = self.tfm.output_format
-        expected = ['-c', '2']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': 2,
+            'encoding': None,
+            'comments': None,
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-c', '2']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -384,16 +573,32 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_channels_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(channels='a')
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'channels': 'a'})
 
     def test_channels_invalid2(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(channels=-2)
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'channels': -2})
 
     def test_encoding(self):
         self.tfm.set_output_format(encoding='signed-integer')
         actual = self.tfm.output_format
-        expected = ['-e', 'signed-integer']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': 'signed-integer',
+            'comments': None,
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-e', 'signed-integer']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -402,12 +607,26 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_encoding_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(encoding='16-bit-signed-integer')
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'encoding': '16-bit-signed-integer'})
 
     def test_comments(self):
         self.tfm.set_output_format(comments='asdf')
         actual = self.tfm.output_format
-        expected = ['--add-comment', 'asdf']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'comments': 'asdf',
+            'append_comments': True
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['--add-comment', 'asdf']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -416,12 +635,26 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_comments_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(comments=2)
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'comments': 2})
 
     def test_append_comments(self):
         self.tfm.set_output_format(comments='asdf', append_comments=False)
         actual = self.tfm.output_format
-        expected = ['--comment', 'asdf']
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'comments': 'asdf',
+            'append_comments': False
+        }
         self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['--comment', 'asdf']
+        self.assertEqual(expected_args, actual_args)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_result = True
@@ -430,7 +663,8 @@ class TestTransformSetOutputFormat(unittest.TestCase):
     def test_append_comments_invalid(self):
         with self.assertRaises(ValueError):
             self.tfm.set_output_format(append_comments=None)
-
+        with self.assertRaises(ValueError):
+            self.tfm._output_format_args({'append_comments': None})
 
 class TestTransformerBuild(unittest.TestCase):
     def setUp(self):
@@ -1323,7 +1557,7 @@ class TestTransformerConvert(unittest.TestCase):
         tfm.convert()
 
         actual_args = tfm.output_format
-        expected_args = []
+        expected_args = {}
         self.assertEqual(expected_args, actual_args)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
@@ -1365,9 +1599,9 @@ class TestTransformerConvert(unittest.TestCase):
         tfm = new_transformer()
         tfm.convert(n_channels=3)
 
-        actual_args = tfm.output_format
-        expected_args = ['-c', '3']
-        self.assertEqual(expected_args, actual_args)
+        actual = tfm.output_format
+        expected = {'channels': 3}
+        self.assertEqual(expected, actual)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
@@ -1395,9 +1629,9 @@ class TestTransformerConvert(unittest.TestCase):
         tfm = new_transformer()
         tfm.convert(bitdepth=8)
 
-        actual_args = tfm.output_format
-        expected_args = ['-b', '8']
-        self.assertEqual(expected_args, actual_args)
+        actual = tfm.output_format
+        expected = {'bits': 8}
+        self.assertEqual(expected, actual)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
@@ -1418,9 +1652,9 @@ class TestTransformerConvert(unittest.TestCase):
         tfm = new_transformer()
         tfm.convert(bitdepth=16)
 
-        actual_args = tfm.output_format
-        expected_args = ['-b', '16']
-        self.assertEqual(expected_args, actual_args)
+        actual = tfm.output_format
+        expected = {'bits': 16}
+        self.assertEqual(expected, actual)
 
         actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
         expected_res = True
