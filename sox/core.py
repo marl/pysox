@@ -1,4 +1,6 @@
 '''Base module for calling SoX '''
+from typing_extensions import Literal
+
 from .log import logger
 
 import subprocess
@@ -13,6 +15,11 @@ ENCODING_VALS = [
     'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
     'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
 ]
+EncodingValue = Literal[
+    'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
+    'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
+]
+
 
 
 def sox(args, src_array=None, decode_out_with_utf=True):
