@@ -6,13 +6,16 @@ This module requires that SoX is installed.
 '''
 
 from __future__ import print_function
+
+from typing import List, Optional, Literal, Dict
+
 from .log import logger
 
 import random
 import os
 import numpy as np
 
-from .core import ENCODING_VALS
+from .core import ENCODING_VALS, EncodingValue
 from .core import is_number
 from .core import play
 from .core import sox
@@ -30,8 +33,10 @@ ENCODINGS_MAPPING = {
     np.float64: 'f64',
 }
 
+GainType = Literal['amplitude', 'power', 'db']
 
-class Transformer(object):
+
+class Transformer:
     '''Audio file transformer.
     Class which allows multiple effects to be chained to create an output
     file, saved to output_filepath.
@@ -67,17 +72,20 @@ class Transformer(object):
             Global arguments that will be passed to SoX.
 
         '''
-        self.input_format = {}
-        self.output_format = {}
+        self.input_format: Dict = {}
+        self.output_format: Dict = {}
 
-        self.effects = []
-        self.effects_log = []
+        self.effects: List[str] = []
+        self.effects_log: List[str] = []
 
-        self.globals = []
+        self.globals: List[str] = []
         self.set_globals()
 
-    def set_globals(self, dither=False, guard=False, multithread=False,
-                    replay_gain=False, verbosity=2):
+    def set_globals(self, dither: bool = False,
+                    guard: bool = False,
+                    multithread: bool = False,
+                    replay_gain: bool = False,
+                    verbosity: int = 2):
         '''Sets SoX's global arguments.
         Overwrites any previously set global arguments.
         If this function is not explicity called, globals are set to this
@@ -221,8 +229,13 @@ class Transformer(object):
 
         return input_format_args
 
-    def set_input_format(self, file_type=None, rate=None, bits=None,
-                         channels=None, encoding=None, ignore_length=False):
+    def set_input_format(self,
+                         file_type: Optional[str] = None,
+                         rate: Optional[float] = None,
+                         bits: Optional[int] = None,
+                         channels: Optional[int] = None,
+                         encoding: Optional[EncodingValue] = None,
+                         ignore_length: bool = False):
         '''Sets input file format arguments. This is primarily useful when
         dealing with audio files without a file extension. Overwrites any
         previously set input file arguments.
@@ -379,9 +392,14 @@ class Transformer(object):
 
         return output_format_args
 
-    def set_output_format(self, file_type=None, rate=None, bits=None,
-                          channels=None, encoding=None, comments=None,
-                          append_comments=True):
+    def set_output_format(self,
+                          file_type:Optional[str]=None,
+                          rate: Optional[float]=None,
+                          bits: Optional[int]=None,
+                          channels: Optional[int]=None,
+                          encoding: Optional[EncodingValue]=None,
+                          comments: Optional[str]=None,
+                          append_comments: bool=True):
         '''Sets output file format arguments. These arguments will overwrite
         any format related arguments supplied by other effects (e.g. rate).
 
@@ -2110,7 +2128,7 @@ class Transformer(object):
                  attack_time=[0.005, 0.000625], decay_time=[0.1, 0.0125],
                  soft_knee_db=[6.0, None],
                  tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)],
-                 [(-47, -40), (-34, -34), (-15, -33), (0, 0)]],
+                            [(-47, -40), (-34, -34), (-15, -33), (0, 0)]],
                  gain=[None, None]):
 
         '''The multi-band compander is similar to the single-band compander but
@@ -3522,7 +3540,9 @@ class Transformer(object):
 
         return self
 
-    def vol(self, gain, gain_type='amplitude', limiter_gain=None):
+    def vol(self, gain: float,
+            gain_type='amplitude',
+            limiter_gain: Optional[float] = None):
         '''Apply an amplification or an attenuation to the audio signal.
 
         Parameters
