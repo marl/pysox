@@ -7,7 +7,8 @@ This module requires that SoX is installed.
 
 from __future__ import print_function
 
-from typing import List, Optional, Literal, Dict
+from pathlib import Path
+from typing import List, Optional, Literal, Dict, Union, Tuple
 
 from .log import logger
 
@@ -393,13 +394,13 @@ class Transformer:
         return output_format_args
 
     def set_output_format(self,
-                          file_type:Optional[str]=None,
-                          rate: Optional[float]=None,
-                          bits: Optional[int]=None,
-                          channels: Optional[int]=None,
-                          encoding: Optional[EncodingValue]=None,
-                          comments: Optional[str]=None,
-                          append_comments: bool=True):
+                          file_type: Optional[str] = None,
+                          rate: Optional[float] = None,
+                          bits: Optional[int] = None,
+                          channels: Optional[int] = None,
+                          encoding: Optional[EncodingValue] = None,
+                          comments: Optional[str] = None,
+                          append_comments: bool = True):
         '''Sets output file format arguments. These arguments will overwrite
         any format related arguments supplied by other effects (e.g. rate).
 
@@ -536,9 +537,13 @@ class Transformer:
             )
         return input_format, input_filepath
 
-    def build(self, input_filepath=None, output_filepath=None,
-              input_array=None, sample_rate_in=None,
-              extra_args=None, return_output=False):
+    def build(self,
+              input_filepath: Optional[Union[str, Path]] = None,
+              output_filepath: Optional[Union[str, Path]] = None,
+              input_array: Optional[np.ndarray] = None,
+              sample_rate_in: Optional[np.ndarray] = None,
+              extra_args: List[str] = None,
+              return_output: bool = False):
         '''Given an input file or array, creates an output_file on disk by
         executing the current set of commands. This function returns True on
         success. If return_output is True, this function returns a triple of
@@ -652,9 +657,13 @@ class Transformer:
 
         return True
 
-    def build_file(self, input_filepath=None, output_filepath=None,
-                   input_array=None, sample_rate_in=None,
-                   extra_args=None, return_output=False):
+    def build_file(self,
+                   input_filepath: Optional[Union[str, Path]] = None,
+                   output_filepath: Optional[Union[str, Path]] = None,
+                   input_array: Optional[np.ndarray] = None,
+                   sample_rate_in: Optional[np.ndarray] = None,
+                   extra_args: List[str] = None,
+                   return_output: bool = False):
         '''An alias for build.
         Given an input file or array, creates an output_file on disk by
         executing the current set of commands. This function returns True on
@@ -730,8 +739,11 @@ class Transformer:
             extra_args, return_output
         )
 
-    def build_array(self, input_filepath=None, input_array=None,
-                    sample_rate_in=None, extra_args=None):
+    def build_array(self,
+                    input_filepath: Optional[Union[str, Path]] = None,
+                    input_array: Optional[np.ndarray] = None,
+                    sample_rate_in: Optional[int] = None,
+                    extra_args: List[str] = None) -> np.ndarray:
         '''Given an input file or array, returns the ouput as a numpy array
         by executing the current set of commands. By default the array will
         have the same sample rate as the input file unless otherwise specified
@@ -880,7 +892,7 @@ class Transformer:
 
         return out
 
-    def preview(self, input_filepath):
+    def preview(self, input_filepath: Union[str, Path]):
         '''Play a preview of the output with the current set of effects
 
         Parameters
@@ -897,7 +909,7 @@ class Transformer:
 
         play(args)
 
-    def allpass(self, frequency, width_q=2.0):
+    def allpass(self, frequency: float, width_q: float = 2.0):
         '''Apply a two-pole all-pass filter. An all-pass filter changes the
         audio’s frequency to phase relationship without changing its frequency
         to amplitude relationship. The filter is described in detail in at
@@ -929,7 +941,8 @@ class Transformer:
         self.effects_log.append('allpass')
         return self
 
-    def bandpass(self, frequency, width_q=2.0, constant_skirt=False):
+    def bandpass(self, frequency: float, width_q: float = 2.0,
+                 constant_skirt: bool = False):
         '''Apply a two-pole Butterworth band-pass filter with the given central
         frequency, and (3dB-point) band-width. The filter rolls off at 6dB per
         octave (20dB per decade) and is described in detail in
@@ -970,7 +983,8 @@ class Transformer:
         self.effects_log.append('bandpass')
         return self
 
-    def bandreject(self, frequency, width_q=2.0):
+    def bandreject(self, frequency: float, width_q: float = 2.0,
+                   constant_skirt: bool = False):
         '''Apply a two-pole Butterworth band-reject filter with the given
         central frequency, and (3dB-point) band-width. The filter rolls off at
         6dB per octave (20dB per decade) and is described in detail in
@@ -997,15 +1011,23 @@ class Transformer:
         if not is_number(width_q) or width_q <= 0:
             raise ValueError("width_q must be a positive number.")
 
-        effect_args = [
-            'bandreject', '{:f}'.format(frequency), '{:f}q'.format(width_q)
-        ]
+        if not isinstance(constant_skirt, bool):
+            raise ValueError("constant_skirt must be a boolean.")
+
+        effect_args = ['bandreject']
+
+        if constant_skirt:
+            effect_args.append('-c')
+
+        effect_args.extend(['{:f}'.format(frequency), '{:f}q'.format(width_q)])
 
         self.effects.extend(effect_args)
         self.effects_log.append('bandreject')
         return self
 
-    def bass(self, gain_db, frequency=100.0, slope=0.5):
+    def bass(self, gain_db: float,
+             frequency: float = 100.0,
+             slope: float = 0.5):
         '''Boost or cut the bass (lower) frequencies of the audio using a
         two-pole shelving filter with a response similar to that of a standard
         hi-fi’s tone-controls. This is also known as shelving equalisation.
@@ -1047,8 +1069,13 @@ class Transformer:
         self.effects_log.append('bass')
         return self
 
-    def bend(self, n_bends, start_times, end_times, cents, frame_rate=25,
-             oversample_rate=16):
+    def bend(self,
+             n_bends: int,
+             start_times: List[float],
+             end_times: List[float],
+             cents: List[float],
+             frame_rate: int = 25,
+             oversample_rate: int = 16):
         '''Changes pitch by specified amounts at specified times.
         The pitch-bending algorithm utilises the Discrete Fourier Transform
         (DFT) at a particular frame rate and over-sampling rate.
@@ -1141,7 +1168,7 @@ class Transformer:
         self.effects_log.append('bend')
         return self
 
-    def biquad(self, b, a):
+    def biquad(self, b: List[float], a: List[float]):
         '''Apply a biquad IIR filter with the given coefficients.
 
         Parameters
@@ -1184,7 +1211,7 @@ class Transformer:
         self.effects_log.append('biquad')
         return self
 
-    def channels(self, n_channels):
+    def channels(self, n_channels: int):
         '''Change the number of channels in the audio signal. If decreasing the
         number of channels it mixes channels together, if increasing the number
         of channels it duplicates.
@@ -1210,8 +1237,14 @@ class Transformer:
         self.effects_log.append('channels')
         return self
 
-    def chorus(self, gain_in=0.5, gain_out=0.9, n_voices=3, delays=None,
-               decays=None, speeds=None, depths=None, shapes=None):
+    def chorus(self,
+               gain_in: float = 0.5, gain_out: float = 0.9,
+               n_voices: int = 3,
+               delays: Optional[List[float]] = None,
+               decays: Optional[List[float]] = None,
+               speeds: Optional[List[float]] = None,
+               depths: Optional[List[float]] = None,
+               shapes: Optional[List[Literal['s', 't']]] = None):
         '''Add a chorus effect to the audio. This can makeasingle vocal sound
         like a chorus, but can also be applied to instrumentation.
 
@@ -1250,7 +1283,7 @@ class Transformer:
             If a list, the list of depths (in miliseconds) of length n_voices.
             If None, the individual delay parameters are chosen automatically
             to be between 1 and 3 miliseconds.
-        shapes : list of 's' or 't' or None, deault=None
+        shapes : list of 's' or 't' or None, default=None
             If a list, the list of modulation shapes - 's' for sinusoidal or
             't' for triangular - of length n_voices.
             If None, the individual shapes are chosen automatically.
@@ -1335,8 +1368,11 @@ class Transformer:
         self.effects_log.append('chorus')
         return self
 
-    def compand(self, attack_time=0.3, decay_time=0.8, soft_knee_db=6.0,
-                tf_points=[(-70, -70), (-60, -20), (0, 0)],
+    def compand(self,
+                attack_time: float = 0.3,
+                decay_time: float = 0.8,
+                soft_knee_db: float = 6.0,
+                tf_points: List[Tuple[float, float]] = [(-70, -70), (-60, -20), (0, 0)],
                 ):
         '''Compand (compress or expand) the dynamic range of the audio.
 
@@ -1441,7 +1477,10 @@ class Transformer:
         self.effects_log.append('contrast')
         return self
 
-    def convert(self, samplerate=None, n_channels=None, bitdepth=None):
+    def convert(self,
+                samplerate: Optional[float] = None,
+                n_channels: Optional[int] = None,
+                bitdepth: Optional[int] = None):
         '''Converts output audio to the specified format.
 
         Parameters
@@ -1477,7 +1516,7 @@ class Transformer:
             self.rate(samplerate)
         return self
 
-    def dcshift(self, shift=0.0):
+    def dcshift(self, shift: float = 0.0):
         '''Apply a DC shift to the audio.
 
         Parameters
@@ -1524,7 +1563,7 @@ class Transformer:
         self.effects_log.append('deemph')
         return self
 
-    def delay(self, positions):
+    def delay(self, positions: List[float]):
         '''Delay one or more audio channels such that they start at the given
         positions.
 
@@ -1549,7 +1588,7 @@ class Transformer:
         self.effects_log.append('delay')
         return self
 
-    def downsample(self, factor=2):
+    def downsample(self, factor: int = 2):
         '''Downsample the signal by an integer factor. Only the first out of
         each factor samples is retained, the others are discarded.
 
@@ -1593,8 +1632,11 @@ class Transformer:
         self.effects_log.append('earwax')
         return self
 
-    def echo(self, gain_in=0.8, gain_out=0.9, n_echos=1, delays=[60],
-             decays=[0.4]):
+    def echo(self,
+             gain_in: float = 0.8, gain_out: float = 0.9,
+             n_echos: int = 1,
+             delays: List[float] = [60],
+             decays: List[float] = [0.4]):
         '''Add echoing to the audio.
 
         Echoes are reflected sound and can occur naturally amongst mountains
@@ -1664,8 +1706,11 @@ class Transformer:
         self.effects_log.append('echo')
         return self
 
-    def echos(self, gain_in=0.8, gain_out=0.9, n_echos=1, delays=[60],
-              decays=[0.4]):
+    def echos(self,
+              gain_in: float = 0.8, gain_out: float = 0.9,
+              n_echos: int = 1,
+              delays: List[float] = [60],
+              decays: List[float] = [0.4]):
         '''Add a sequence of echoes to the audio.
 
         Like the echo effect, echos stand for ‘ECHO in Sequel’, that is the
@@ -1735,7 +1780,10 @@ class Transformer:
         self.effects_log.append('echos')
         return self
 
-    def equalizer(self, frequency, width_q, gain_db):
+    def equalizer(self,
+                  frequency: float,
+                  width_q: float,
+                  gain_db: float):
         '''Apply a two-pole peaking equalisation (EQ) filter to boost or
         reduce around a given frequency.
         This effect can be applied multiple times to produce complex EQ curves.
@@ -1773,7 +1821,9 @@ class Transformer:
         self.effects_log.append('equalizer')
         return self
 
-    def fade(self, fade_in_len=0.0, fade_out_len=0.0, fade_shape='q'):
+    def fade(self, fade_in_len: float = 0.0,
+             fade_out_len: float = 0.0,
+             fade_shape: Literal['q', 'h', 't', 'l', 'p'] = 'q'):
         '''Add a fade in and/or fade out to an audio file.
         Default fade shape is 1/4 sine wave.
 
@@ -1827,7 +1877,7 @@ class Transformer:
 
         return self
 
-    def fir(self, coefficients):
+    def fir(self, coefficients: List[float]):
         '''Use SoX’s FFT convolution engine with given FIR filter coefficients.
 
         Parameters
@@ -1850,8 +1900,12 @@ class Transformer:
 
         return self
 
-    def flanger(self, delay=0, depth=2, regen=0, width=71, speed=0.5,
-                shape='sine', phase=25, interp='linear'):
+    def flanger(self,
+                delay: float = 0, depth: float = 2,
+                regen: float = 0, width: float = 71, speed: float = 0.5,
+                shape: Literal['sine', 'triangle'] = 'sine',
+                phase: float = 25,
+                interp: Literal['linear', 'quadratic'] = 'linear'):
         '''Apply a flanging effect to the audio.
 
         Parameters
@@ -1912,7 +1966,11 @@ class Transformer:
 
         return self
 
-    def gain(self, gain_db=0.0, normalize=True, limiter=False, balance=None):
+    def gain(self,
+             gain_db: float = 0.0,
+             normalize: bool = True,
+             limiter: bool = False,
+             balance: Optional[Literal['e', 'B', 'b']] = None):
         '''Apply amplification or attenuation to the audio signal.
 
         Parameters
@@ -1972,7 +2030,10 @@ class Transformer:
 
         return self
 
-    def highpass(self, frequency, width_q=0.707, n_poles=2):
+    def highpass(self,
+                 frequency: float,
+                 width_q: float = 0.707,
+                 n_poles: int = 2):
         '''Apply a high-pass filter with 3dB point frequency. The filter can be
         either single-pole or double-pole. The filters roll off at 6dB per pole
         per octave (20dB per pole per decade).
@@ -2013,7 +2074,10 @@ class Transformer:
 
         return self
 
-    def lowpass(self, frequency, width_q=0.707, n_poles=2):
+    def lowpass(self,
+                frequency: float,
+                width_q: float = 0.707,
+                n_poles: int = 2):
         '''Apply a low-pass filter with 3dB point frequency. The filter can be
         either single-pole or double-pole. The filters roll off at 6dB per pole
         per octave (20dB per pole per decade).
@@ -2054,7 +2118,7 @@ class Transformer:
 
         return self
 
-    def hilbert(self, num_taps=None):
+    def hilbert(self, num_taps: Optional[int] = None):
         '''Apply an odd-tap Hilbert transform filter, phase-shifting the signal
         by 90 degrees. This is used in many matrix coding schemes and for
         analytic signal generation. The process is often written as a
@@ -2085,7 +2149,7 @@ class Transformer:
 
         return self
 
-    def loudness(self, gain_db=-10.0, reference_level=65.0):
+    def loudness(self, gain_db: float = -10.0, reference_level: float = 65.0):
         '''Loudness control. Similar to the gain effect, but provides
         equalisation for the human auditory system.
 
@@ -2124,12 +2188,17 @@ class Transformer:
 
         return self
 
-    def mcompand(self, n_bands=2, crossover_frequencies=[1600],
-                 attack_time=[0.005, 0.000625], decay_time=[0.1, 0.0125],
-                 soft_knee_db=[6.0, None],
-                 tf_points=[[(-47, -40), (-34, -34), (-17, -33), (0, 0)],
-                            [(-47, -40), (-34, -34), (-15, -33), (0, 0)]],
-                 gain=[None, None]):
+    def mcompand(self,
+                 n_bands: int = 2,
+                 crossover_frequencies: List[float] = [1600],
+                 attack_time: List[float] = [0.005, 0.000625],
+                 decay_time: List[float] = [0.1, 0.0125],
+                 soft_knee_db: List[Optional[float]] = [6.0, None],
+                 tf_points: List[List[Tuple[float, float]]] = [
+                     [(-47, -40), (-34, -34), (-17, -33), (0, 0)],
+                     [(-47, -40), (-34, -34), (-15, -33), (0, 0)]
+                 ],
+                 gain: List[Optional[float]] = [None, None]):
 
         '''The multi-band compander is similar to the single-band compander but
         the audio is first divided into bands using Linkwitz-Riley cross-over
@@ -2285,7 +2354,9 @@ class Transformer:
         self.effects_log.append('mcompand')
         return self
 
-    def noiseprof(self, input_filepath, profile_path):
+    def noiseprof(self,
+                  input_filepath: Union[str, Path],
+                  profile_path: Union[str, Path]):
         '''Calculate a profile of the audio for use in noise reduction.
         Running this command does not effect the Transformer effects
         chain. When this function is called, the calculated noise profile
@@ -2321,7 +2392,7 @@ class Transformer:
 
         return None
 
-    def noisered(self, profile_path, amount=0.5):
+    def noisered(self, profile_path: Union[str, Path], amount: float = 0.5):
         '''Reduce noise in the audio signal by profiling and filtering.
         This effect is moderately effective at removing consistent
         background noise such as hiss or hum.
@@ -2360,7 +2431,7 @@ class Transformer:
 
         return self
 
-    def norm(self, db_level=-3.0):
+    def norm(self, db_level: float = -3.0):
         '''Normalize an audio file to a particular db level.
         This behaves identically to the gain effect with normalize=True.
 
@@ -2399,7 +2470,7 @@ class Transformer:
 
         return self
 
-    def overdrive(self, gain_db=20.0, colour=20.0):
+    def overdrive(self, gain_db: float = 20.0, colour: float = 20.0):
         '''Apply non-linear distortion.
 
         Parameters
@@ -2426,7 +2497,7 @@ class Transformer:
 
         return self
 
-    def pad(self, start_duration=0.0, end_duration=0.0):
+    def pad(self, start_duration: float = 0.0, end_duration: float = 0.0):
         '''Add silence to the beginning or end of a file.
         Calling this with the default arguments has no effect.
 
@@ -2458,8 +2529,10 @@ class Transformer:
 
         return self
 
-    def phaser(self, gain_in=0.8, gain_out=0.74, delay=3, decay=0.4, speed=0.5,
-               modulation_shape='sinusoidal'):
+    def phaser(self,
+               gain_in: float = 0.8, gain_out: float = 0.74,
+               delay: int = 3, decay: float = 0.4, speed: float = 0.5,
+               modulation_shape: Literal['sinusoidal', 'triangular'] = 'sinusoidal'):
         '''Apply a phasing effect to the audio.
 
         Parameters
@@ -2520,7 +2593,7 @@ class Transformer:
 
         return self
 
-    def pitch(self, n_semitones, quick=False):
+    def pitch(self, n_semitones: float, quick: bool = False):
         '''Pitch shift the audio without changing the tempo.
 
         This effect uses the WSOLA algorithm. The audio is chopped up into
@@ -2564,7 +2637,8 @@ class Transformer:
 
         return self
 
-    def rate(self, samplerate, quality='h'):
+    def rate(self, samplerate: float,
+             quality: Literal['q', 'l', 'm', 'h', 'v'] = 'h'):
         '''Change the audio sampling rate (i.e. resample the audio) to any
         given `samplerate`. Better the resampling quality = slower runtime.
 
@@ -2604,7 +2678,9 @@ class Transformer:
 
         return self
 
-    def remix(self, remix_dictionary=None, num_output_channels=None):
+    def remix(self,
+              remix_dictionary: Optional[Dict[int, List[int]]] = None,
+              num_output_channels: Optional[int] = None):
         '''Remix the channels of an audio file.
 
         Note: volume options are not yet implemented
@@ -2684,7 +2760,7 @@ class Transformer:
 
         return self
 
-    def repeat(self, count=1):
+    def repeat(self, count: int = 1):
         '''Repeat the entire audio count times.
 
         Parameters
@@ -2700,8 +2776,14 @@ class Transformer:
         self.effects.extend(effect_args)
         self.effects_log.append('repeat')
 
-    def reverb(self, reverberance=50, high_freq_damping=50, room_scale=100,
-               stereo_depth=100, pre_delay=0, wet_gain=0, wet_only=False):
+    def reverb(self,
+               reverberance: float = 50,
+               high_freq_damping: float = 50,
+               room_scale: float = 100,
+               stereo_depth: float = 100,
+               pre_delay: float = 0,
+               wet_gain: float = 0,
+               wet_only: bool = False):
         '''Add reverberation to the audio using the ‘freeverb’ algorithm.
         A reverberation effect is sometimes desirable for concert halls that
         are too small or contain so many people that the hall’s natural
@@ -2784,8 +2866,11 @@ class Transformer:
 
         return self
 
-    def silence(self, location=0, silence_threshold=0.1,
-                min_silence_duration=0.1, buffer_around_silence=False):
+    def silence(self,
+                location: Literal[0, 1, -1] = 0,
+                silence_threshold: float = 0.1,
+                min_silence_duration: float = 0.1,
+                buffer_around_silence: bool = False):
         '''Removes silent regions from an audio file.
 
         Parameters
@@ -2861,9 +2946,12 @@ class Transformer:
 
         return self
 
-    def sinc(self, filter_type='high', cutoff_freq=3000,
-             stop_band_attenuation=120, transition_bw=None,
-             phase_response=None):
+    def sinc(self,
+             filter_type: Literal['high', 'low', 'pass', 'reject'] = 'high',
+             cutoff_freq: Union[float, List[float]] = 3000,
+             stop_band_attenuation: float = 120,
+             transition_bw: Optional[Union[float, List[float]]] = None,
+             phase_response: Optional[float] = None):
         '''Apply a sinc kaiser-windowed low-pass, high-pass, band-pass, or
         band-reject filter to the signal.
 
@@ -3004,7 +3092,7 @@ class Transformer:
         self.effects_log.append('sinc')
         return self
 
-    def speed(self, factor):
+    def speed(self, factor: float):
         '''Adjust the audio speed (pitch and tempo together).
 
         Technically, the speed effect only changes the sample rate information,
@@ -3041,7 +3129,10 @@ class Transformer:
 
         return self
 
-    def stat(self, input_filepath, scale=None, rms=False):
+    def stat(self,
+             input_filepath: Union[str, Path],
+             scale: Optional[float] = None,
+             rms: Optional[bool] = False):
         '''Display time and frequency domain statistical information about the
         audio. Audio is passed unmodified through the SoX processing chain.
 
@@ -3094,7 +3185,7 @@ class Transformer:
 
         return stat_dict
 
-    def power_spectrum(self, input_filepath):
+    def power_spectrum(self, input_filepath: Union[str, Path]):
         '''Calculates the power spectrum (4096 point DFT). This method
         internally invokes the stat command with the -freq option.
 
@@ -3132,7 +3223,7 @@ class Transformer:
 
         return power_spectrum
 
-    def stats(self, input_filepath):
+    def stats(self, input_filepath: Union[str, Path]):
         '''Display time domain statistical information about the audio
         channels. Audio is passed unmodified through the SoX processing chain.
         Statistics are calculated and displayed for each audio channel
@@ -3175,7 +3266,7 @@ class Transformer:
 
         return stats_dict
 
-    def stretch(self, factor, window=20):
+    def stretch(self, factor: float, window: float = 20):
         '''Change the audio duration (but not its pitch).
         **Unless factor is close to 1, use the tempo effect instead.**
 
@@ -3242,7 +3333,9 @@ class Transformer:
 
         return self
 
-    def tempo(self, factor, audio_type=None, quick=False):
+    def tempo(self, factor: float,
+              audio_type: Optional[Literal['m', 's', 'l']] = None,
+              quick: bool = False):
         '''Time stretch audio without changing pitch.
 
         This effect uses the WSOLA algorithm. The audio is chopped up into
@@ -3306,7 +3399,9 @@ class Transformer:
 
         return self
 
-    def treble(self, gain_db, frequency=3000.0, slope=0.5):
+    def treble(self, gain_db: float,
+               frequency: float = 3000.0,
+               slope: float = 0.5):
         '''Boost or cut the treble (lower) frequencies of the audio using a
         two-pole shelving filter with a response similar to that of a standard
         hi-fi’s tone-controls. This is also known as shelving equalisation.
@@ -3349,7 +3444,7 @@ class Transformer:
 
         return self
 
-    def tremolo(self, speed=6.0, depth=40.0):
+    def tremolo(self, speed: float = 6.0, depth: float = 40.0):
         '''Apply a tremolo (low frequency amplitude modulation) effect to the
         audio. The tremolo frequency in Hz is giv en by speed, and the depth
         as a percentage by depth (default 40).
@@ -3389,7 +3484,7 @@ class Transformer:
 
         return self
 
-    def trim(self, start_time, end_time=None):
+    def trim(self, start_time: float, end_time: Optional[float] = None):
         '''Excerpt a clip from an audio file, given the start timestamp and end timestamp of the clip within the file, expressed in seconds. If the end timestamp is set to `None` or left unspecified, it defaults to the duration of the audio file.
 
         Parameters
@@ -3421,7 +3516,7 @@ class Transformer:
 
         return self
 
-    def upsample(self, factor=2):
+    def upsample(self, factor: int = 2):
         '''Upsample the signal by an integer factor: zero-value samples are
         inserted between each pair of input samples. As a result, the original
         spectrum is replicated into the new frequency space (imaging) and
@@ -3448,9 +3543,14 @@ class Transformer:
 
         return self
 
-    def vad(self, location=1, normalize=True, activity_threshold=7.0,
-            min_activity_duration=0.25, initial_search_buffer=1.0,
-            max_gap=0.25, initial_pad=0.0):
+    def vad(self,
+            location: Literal[1, -1] = 1,
+            normalize: bool = True,
+            activity_threshold: float = 7.0,
+            min_activity_duration: float = 0.25,
+            initial_search_buffer: float = 1.0,
+            max_gap: float = 0.25,
+            initial_pad: float = 0.0):
         '''Voice Activity Detector. Attempts to trim silence and quiet
         background sounds from the ends of recordings of speech. The algorithm
         currently uses a simple cepstral power measurement to detect voice, so
@@ -3541,7 +3641,7 @@ class Transformer:
         return self
 
     def vol(self, gain: float,
-            gain_type='amplitude',
+            gain_type: Literal['amplitude', 'power', 'db'] = 'amplitude',
             limiter_gain: Optional[float] = None):
         '''Apply an amplification or an attenuation to the audio signal.
 
