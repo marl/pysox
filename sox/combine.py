@@ -34,6 +34,7 @@ class Combiner(Transformer):
     Inherits all methods from the Transformer class, thus any effects can be
     applied after combining.
     '''
+
     def __init__(self):
         super(Combiner, self).__init__()
 
@@ -66,6 +67,11 @@ class Combiner(Transformer):
             are applied to the input files in order.
             If None, input files will be combined at their original volumes.
 
+        Returns
+        -------
+        status : bool
+            True on success.
+
         '''
         file_info.validate_input_file_list(input_filepath_list)
         file_info.validate_output_file(output_filepath)
@@ -73,7 +79,8 @@ class Combiner(Transformer):
         _validate_volumes(input_volumes)
 
         input_format_list = _build_input_format_list(
-            input_filepath_list, input_volumes, self.input_format
+            input_filepath_list, input_volumes,
+            self.input_format
         )
 
         try:
@@ -88,7 +95,7 @@ class Combiner(Transformer):
         input_args = _build_input_args(input_filepath_list, input_format_list)
         args.extend(input_args)
 
-        args.extend(self.output_format)
+        args.extend(self._output_format_args(self.output_format))
         args.append(output_filepath)
         args.extend(self.effects)
 
