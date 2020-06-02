@@ -3,7 +3,9 @@ Changes
 
 v1.4.0
 ~~~~~~
-- refactored `.build()` function to support in-memory array inputs and outputs
+- added `.build_array()` which supports file or in memory inputs and array outputs
+- added `.build_file()` - an alias to `.build()`
+- refactored `.build()` function to support file or in-memory array inputs and file outputs
 - the call to subprocess calls the binary directly (shell=False)
 - file_info methods return None instead of 0 when the value is not available
 - fixed bug in `file_info.bitrate()`, which was returning bitdepth
