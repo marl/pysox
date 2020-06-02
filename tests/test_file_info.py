@@ -12,6 +12,7 @@ def relpath(f):
 SPACEY_FILE = relpath("data/annoying filename (derp).wav")
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE2 = relpath('data/input.aiff')
+INPUT_FILE3 = relpath('data/input.WAV')
 EMPTY_FILE = relpath('data/empty.wav')
 INPUT_FILE_INVALID = relpath('data/input.xyz')
 OUTPUT_FILE = relpath('data/output.wav')
@@ -33,6 +34,7 @@ class TestBitrate(unittest.TestCase):
     def test_empty(self):
         actual = file_info.bitrate(EMPTY_FILE)
         expected = None
+        self.assertEqual(expected, actual)
 
 class TestBitdepth(unittest.TestCase):
 
@@ -231,6 +233,11 @@ class TestFileExtension(unittest.TestCase):
     def test_ext5(self):
         actual = file_info.file_extension('this.is/a/weird.path/file.x23zya')
         expected = 'x23zya'
+        self.assertEqual(expected, actual)
+
+    def test_ext6(self):
+        actual = file_info.file_extension('simplefile.MP3')
+        expected = 'mp3'
         self.assertEqual(expected, actual)
 
 

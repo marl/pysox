@@ -326,7 +326,7 @@ def file_extension(filepath):
     extension : str
         The file's extension
     '''
-    return os.path.splitext(filepath)[1][1:]
+    return os.path.splitext(filepath)[1][1:].lower()
 
 
 def info(filepath):
