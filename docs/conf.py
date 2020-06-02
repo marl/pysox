@@ -15,7 +15,6 @@
 
 import sys
 import os
-import shlex
 import imp
 
 # If extensions (or modules to document with autodoc) are in another directory,

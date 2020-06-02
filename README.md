@@ -56,10 +56,10 @@ python setup.py install
 # Tests
 
 If you have a different version of SoX installed, it's recommended that you run
-the tests locally to make sure everything behaves as expected:
+the tests locally to make sure everything behaves as expected, by simply running:
 
 ```
-pytest tests/
+pytest
 ```
 
 # Examples
@@ -75,10 +75,12 @@ tfm.compand()
 # apply a fade in and fade out
 tfm.fade(fade_in_len=1.0, fade_out_len=0.5)
 # create an output file.
+tfm.build_file('path/to/input_audio.wav', 'path/to/output/audio.aiff')
+# or equivalently using the legacy API
 tfm.build('path/to/input_audio.wav', 'path/to/output/audio.aiff')
 # get the output in-memory as a numpy array
 # by default the sample rate will be the same as the input file
-status, audio_out, err = tfm.build(input_filepath='path/to/input_audio.wav')
+array_out = tfm.build_array(input_filepath='path/to/input_audio.wav')
 # see the applied effects
 tfm.effects_log
 > ['trim', 'compand', 'fade']
@@ -97,16 +99,16 @@ y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
 tfm = sox.Transformer()
 # shift the pitch up by 2 semitones
 tfm.pitch(2)
-# compute transformation in-memory
-status, y_out, err = tfm.build(input_array=y, sample_rate_in=sample_rate)
+# transform an in-memory array and return an array
+y_out = tfm.build_array(input_array=y, sample_rate_in=sample_rate)
 # instead, save output to a file
-tfm.build(
+tfm.build_file(
     input_array=y, sample_rate_in=sample_rate,
     output_filepath='path/to/output.wav'
 )
 # create an output file with a different sample rate
 tfm.set_output_format(rate=8000)
-tfm.build(
+tfm.build_file(
     input_array=y, sample_rate_in=sample_rate,
     output_filepath='path/to/output_8k.wav'
 )
