@@ -7,10 +7,15 @@ This module requires that SoX is installed.
 
 from __future__ import print_function
 
+from pathlib import Path
+from typing import Union, Optional, List
+
+from typing_extensions import Literal
+
 from . import file_info
 from . import core
 from .log import logger
-from .core import ENCODING_VALS
+from .core import ENCODING_VALS, EncodingValue
 from .core import is_number
 from .core import sox
 from .core import play
@@ -20,10 +25,11 @@ from .core import VALID_FORMATS
 
 from .transform import Transformer
 
-
 COMBINE_VALS = [
     'concatenate', 'merge', 'mix', 'mix-power', 'multiply'
 ]
+
+CombineValue = Literal['concatenate', 'merge', 'mix', 'mix-power', 'multiply']
 
 
 class Combiner(Transformer):
@@ -38,8 +44,11 @@ class Combiner(Transformer):
     def __init__(self):
         super(Combiner, self).__init__()
 
-    def build(self, input_filepath_list, output_filepath, combine_type,
-              input_volumes=None):
+    def build(self,
+              input_filepath_list: Union[str, Path],
+              output_filepath: Union[str, Path],
+              combine_type: CombineValue,
+              input_volumes: Optional[List[float]] = None):
         '''Builds the output_file by executing the current set of commands.
 
         Parameters
@@ -116,7 +125,10 @@ class Combiner(Transformer):
                 logger.info("[SoX] {}".format(out))
             return True
 
-    def preview(self, input_filepath_list, combine_type, input_volumes=None):
+    def preview(self,
+                input_filepath_list: List[Union[str, Path]],
+                combine_type: CombineValue,
+                input_volumes: Optional[List[float]] = None):
         '''Play a preview of the output with the current set of effects
 
         Parameters
@@ -155,8 +167,13 @@ class Combiner(Transformer):
 
         play(args)
 
-    def set_input_format(self, file_type=None, rate=None, bits=None,
-                         channels=None, encoding=None, ignore_length=None):
+    def set_input_format(self,
+                         file_type: Optional[List[str]] = None,
+                         rate: Optional[List[float]] = None,
+                         bits: Optional[List[int]] = None,
+                         channels: Optional[List[int]] = None,
+                         encoding: Optional[List[EncodingValue]] = None,
+                         ignore_length: Optional[List[bool]] = None):
         '''Sets input file format arguments. This is primarily useful when
         dealing with audio files without a file extension. Overwrites any
         previously set input file arguments.
@@ -332,7 +349,7 @@ def _validate_sample_rates(input_filepath_list, combine_type):
         raise IOError(
             "Input files do not have the same sample rate. The {} combine "
             "type requires that all files have the same sample rate"
-            .format(combine_type)
+                .format(combine_type)
         )
 
 
@@ -347,7 +364,7 @@ def _validate_num_channels(input_filepath_list, combine_type):
             "Input files do not have the same number of channels. The "
             "{} combine type requires that all files have the same "
             "number of channels"
-            .format(combine_type)
+                .format(combine_type)
         )
 
 
@@ -477,5 +494,5 @@ def _validate_volumes(input_volumes):
             if not core.is_number(vol):
                 raise ValueError(
                     "Elements of input_volumes must be numbers: found {}"
-                    .format(vol)
+                        .format(vol)
                 )

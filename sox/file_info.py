@@ -1,5 +1,8 @@
 ''' Audio file info computed by soxi.
 '''
+from pathlib import Path
+from typing import Union, List
+
 from .log import logger
 
 import os
@@ -9,7 +12,7 @@ from .core import soxi
 from .core import sox
 
 
-def bitdepth(input_filepath):
+def bitdepth(input_filepath: Union[str, Path]):
     '''
     Number of bits per sample, or None if not applicable.
 
@@ -33,7 +36,7 @@ def bitdepth(input_filepath):
     return int(output)
 
 
-def bitrate(input_filepath):
+def bitrate(input_filepath: Union[str, Path]):
     '''
     Bit rate averaged over the whole file.
     Expressed in bytes per second (bps), or None if not applicable.
@@ -64,7 +67,7 @@ def bitrate(input_filepath):
         return float(output[:-1])
 
 
-def channels(input_filepath):
+def channels(input_filepath: Union[str, Path]):
     '''
     Show number of channels.
 
@@ -83,7 +86,7 @@ def channels(input_filepath):
     return int(output)
 
 
-def comments(input_filepath):
+def comments(input_filepath: Union[str, Path]):
     '''
     Show file comments (annotations) if available.
 
@@ -103,7 +106,7 @@ def comments(input_filepath):
     return str(output)
 
 
-def duration(input_filepath):
+def duration(input_filepath: Union[str, Path]):
     '''
     Show duration in seconds, or None if not available.
 
@@ -126,7 +129,7 @@ def duration(input_filepath):
     return float(output)
 
 
-def encoding(input_filepath):
+def encoding(input_filepath: Union[str, Path]):
     '''
     Show the name of the audio encoding.
 
@@ -145,7 +148,7 @@ def encoding(input_filepath):
     return str(output)
 
 
-def file_type(input_filepath):
+def file_type(input_filepath: Union[str, Path]):
     '''
     Show detected file-type.
 
@@ -164,7 +167,7 @@ def file_type(input_filepath):
     return str(output)
 
 
-def num_samples(input_filepath):
+def num_samples(input_filepath: Union[str, Path]):
     '''
     Show number of samples, or None if unavailable.
 
@@ -187,7 +190,7 @@ def num_samples(input_filepath):
     return int(output)
 
 
-def sample_rate(input_filepath):
+def sample_rate(input_filepath: Union[str, Path]):
     '''
     Show sample-rate.
 
@@ -206,7 +209,7 @@ def sample_rate(input_filepath):
     return float(output)
 
 
-def silent(input_filepath, threshold=0.001):
+def silent(input_filepath: Union[str, Path], threshold=0.001):
     '''
     Determine if an input file is silent.
 
@@ -234,7 +237,7 @@ def silent(input_filepath, threshold=0.001):
         return True
 
 
-def validate_input_file(input_filepath):
+def validate_input_file(input_filepath: Union[str, Path]):
     '''Input file validation function. Checks that file exists and can be
     processed by SoX.
 
@@ -256,7 +259,7 @@ def validate_input_file(input_filepath):
         )
 
 
-def validate_input_file_list(input_filepath_list):
+def validate_input_file_list(input_filepath_list: List[Union[str, Path]]):
     '''Input file list validation function. Checks that object is a list and
     contains valid filepaths that can be processed by SoX.
 
@@ -275,7 +278,7 @@ def validate_input_file_list(input_filepath_list):
         validate_input_file(input_filepath)
 
 
-def validate_output_file(output_filepath):
+def validate_output_file(output_filepath: Union[str, Path]):
     '''Output file validation function. Checks that file can be written, and
     has a valid file extension. Throws a warning if the path already exists,
     as it will be overwritten on build.
@@ -313,7 +316,7 @@ def validate_output_file(output_filepath):
         )
 
 
-def file_extension(filepath):
+def file_extension(filepath: Union[str, Path]):
     '''Get the extension of a filepath.
 
     Parameters
@@ -329,7 +332,7 @@ def file_extension(filepath):
     return os.path.splitext(filepath)[1][1:]
 
 
-def info(filepath):
+def info(filepath: Union[str, Path]):
     '''Get a dictionary of file information
 
     Parameters
@@ -363,7 +366,7 @@ def info(filepath):
     return info_dictionary
 
 
-def stat(filepath):
+def stat(filepath: Union[str, Path]):
     '''Returns a dictionary of audio statistics.
 
     Parameters
@@ -381,7 +384,7 @@ def stat(filepath):
     return stat_dictionary
 
 
-def _stat_call(filepath):
+def _stat_call(filepath: Union[str, Path]):
     '''Call sox's stat function.
 
     Parameters
