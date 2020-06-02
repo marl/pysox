@@ -10,6 +10,7 @@ from .log import logger
 
 import random
 import os
+import numpy as np
 
 from .core import ENCODING_VALS
 from .core import is_number
@@ -21,6 +22,13 @@ from .core import VALID_FORMATS
 from . import file_info
 
 VERBOSITY_VALS = [0, 1, 2, 3, 4]
+
+ENCODINGS_MAPPING = {
+    np.int16: 's16',
+    np.int8: 's8',
+    np.float32: 'f32',
+    np.float64: 'f64',
+}
 
 
 class Transformer(object):
@@ -35,7 +43,11 @@ class Transformer(object):
     set_globals
         Overwrite the default global arguments.
     build
-        Execute the current chain of commands and write output file.
+        Execute the current chain of commands to create an output file.
+    build_file
+        Alias of build.
+    build_array
+        Execute the current chain of commands to create an output array.
 
     '''
 
@@ -55,8 +67,8 @@ class Transformer(object):
             Global arguments that will be passed to SoX.
 
         '''
-        self.input_format = []
-        self.output_format = []
+        self.input_format = {}
+        self.output_format = {}
 
         self.effects = []
         self.effects_log = []
@@ -133,6 +145,82 @@ class Transformer(object):
         self.globals = global_args
         return self
 
+    def _validate_input_format(self, input_format):
+        '''Private helper function for validating input formats
+        '''
+        file_type = input_format.get('file_type')
+        rate = input_format.get('rate')
+        bits = input_format.get('bits')
+        channels = input_format.get('channels')
+        encoding = input_format.get('encoding')
+        ignore_length = input_format.get('ignore_length', False)
+
+        if file_type not in VALID_FORMATS + [None]:
+            raise ValueError(
+                'Invalid file_type. Must be one of {}'.format(VALID_FORMATS)
+            )
+
+        if not is_number(rate) and rate is not None:
+            raise ValueError('rate must be a float or None')
+
+        if rate is not None and rate <= 0:
+            raise ValueError('rate must be a positive number')
+
+        if not isinstance(bits, int) and bits is not None:
+            raise ValueError('bits must be an int or None')
+
+        if bits is not None and bits <= 0:
+            raise ValueError('bits must be a positive number')
+
+        if not isinstance(channels, int) and channels is not None:
+            raise ValueError('channels must be an int or None')
+
+        if channels is not None and channels <= 0:
+            raise ValueError('channels must be a positive number')
+
+        if encoding not in ENCODING_VALS + [None]:
+            raise ValueError(
+                'Invalid encoding {}. Must be one of {}'.format(
+                    encoding, ENCODING_VALS)
+            )
+
+        if not isinstance(ignore_length, bool):
+            raise ValueError('ignore_length must be a boolean')
+
+    def _input_format_args(self, input_format):
+        '''Private helper function for set_input_format
+        '''
+        self._validate_input_format(input_format)
+
+        file_type = input_format.get('file_type')
+        rate = input_format.get('rate')
+        bits = input_format.get('bits')
+        channels = input_format.get('channels')
+        encoding = input_format.get('encoding')
+        ignore_length = input_format.get('ignore_length', False)
+
+        input_format_args = []
+
+        if file_type is not None:
+            input_format_args.extend(['-t', '{}'.format(file_type)])
+
+        if rate is not None:
+            input_format_args.extend(['-r', '{:f}'.format(rate)])
+
+        if bits is not None:
+            input_format_args.extend(['-b', '{}'.format(bits)])
+
+        if channels is not None:
+            input_format_args.extend(['-c', '{}'.format(channels)])
+
+        if encoding is not None:
+            input_format_args.extend(['-e', '{}'.format(encoding)])
+
+        if ignore_length:
+            input_format_args.append('--ignore-length')
+
+        return input_format_args
+
     def set_input_format(self, file_type=None, rate=None, bits=None,
                          channels=None, encoding=None, ignore_length=False):
         '''Sets input file format arguments. This is primarily useful when
@@ -196,8 +284,29 @@ class Transformer(object):
             If True, overrides an (incorrect) audio length given in an audio
             file’s header. If this option is given then SoX will keep reading
             audio until it reaches the end of the input file.
-
         '''
+        input_format = {
+            'file_type': file_type,
+            'rate': rate,
+            'bits': bits,
+            'channels': channels,
+            'encoding': encoding,
+            'ignore_length': ignore_length
+        }
+        self._validate_input_format(input_format)
+        self.input_format = input_format
+
+    def _validate_output_format(self, output_format):
+        '''Private helper function for validating input formats
+        '''
+        file_type = output_format.get('file_type')
+        rate = output_format.get('rate')
+        bits = output_format.get('bits')
+        channels = output_format.get('channels')
+        encoding = output_format.get('encoding')
+        comments = output_format.get('comments')
+        append_comments = output_format.get('append_comments', True)
+
         if file_type not in VALID_FORMATS + [None]:
             raise ValueError(
                 'Invalid file_type. Must be one of {}'.format(VALID_FORMATS)
@@ -226,31 +335,49 @@ class Transformer(object):
                 'Invalid encoding. Must be one of {}'.format(ENCODING_VALS)
             )
 
-        if not isinstance(ignore_length, bool):
-            raise ValueError('ignore_length must be a boolean')
+        if comments is not None and not isinstance(comments, str):
+            raise ValueError('comments must be a string or None')
 
-        input_format = []
+        if not isinstance(append_comments, bool):
+            raise ValueError('append_comments must be a boolean')
+
+    def _output_format_args(self, output_format):
+        '''Private helper function for set_output_format
+        '''
+        self._validate_output_format(output_format)
+
+        file_type = output_format.get('file_type')
+        rate = output_format.get('rate')
+        bits = output_format.get('bits')
+        channels = output_format.get('channels')
+        encoding = output_format.get('encoding')
+        comments = output_format.get('comments')
+        append_comments = output_format.get('append_comments', True)
+
+        output_format_args = []
 
         if file_type is not None:
-            input_format.extend(['-t', '{}'.format(file_type)])
+            output_format_args.extend(['-t', '{}'.format(file_type)])
 
         if rate is not None:
-            input_format.extend(['-r', '{:f}'.format(rate)])
+            output_format_args.extend(['-r', '{:f}'.format(rate)])
 
         if bits is not None:
-            input_format.extend(['-b', '{}'.format(bits)])
+            output_format_args.extend(['-b', '{}'.format(bits)])
 
         if channels is not None:
-            input_format.extend(['-c', '{}'.format(channels)])
+            output_format_args.extend(['-c', '{}'.format(channels)])
 
         if encoding is not None:
-            input_format.extend(['-e', '{}'.format(encoding)])
+            output_format_args.extend(['-e', '{}'.format(encoding)])
 
-        if ignore_length:
-            input_format.append('--ignore-length')
+        if comments is not None:
+            if append_comments:
+                output_format_args.extend(['--add-comment', comments])
+            else:
+                output_format_args.extend(['--comment', comments])
 
-        self.input_format = input_format
-        return self
+        return output_format_args
 
     def set_output_format(self, file_type=None, rate=None, bits=None,
                           channels=None, encoding=None, comments=None,
@@ -317,88 +444,104 @@ class Transformer(object):
         append_comments : bool, default=True
             If True, comment strings are appended to SoX's default comments. If
             False, the supplied comment replaces the existing comment.
-
         '''
-        if file_type not in VALID_FORMATS + [None]:
-            raise ValueError(
-                'Invalid file_type. Must be one of {}'.format(VALID_FORMATS)
-            )
-
-        if not is_number(rate) and rate is not None:
-            raise ValueError('rate must be a float or None')
-
-        if rate is not None and rate <= 0:
-            raise ValueError('rate must be a positive number')
-
-        if not isinstance(bits, int) and bits is not None:
-            raise ValueError('bits must be an int or None')
-
-        if bits is not None and bits <= 0:
-            raise ValueError('bits must be a positive number')
-
-        if not isinstance(channels, int) and channels is not None:
-            raise ValueError('channels must be an int or None')
-
-        if channels is not None and channels <= 0:
-            raise ValueError('channels must be a positive number')
-
-        if encoding not in ENCODING_VALS + [None]:
-            raise ValueError(
-                'Invalid encoding. Must be one of {}'.format(ENCODING_VALS)
-            )
-
-        if comments is not None and not isinstance(comments, str):
-            raise ValueError('comments must be a string or None')
-
-        if not isinstance(append_comments, bool):
-            raise ValueError('append_comments must be a boolean')
-
-        output_format = []
-
-        if file_type is not None:
-            output_format.extend(['-t', '{}'.format(file_type)])
-
-        if rate is not None:
-            output_format.extend(['-r', '{:f}'.format(rate)])
-
-        if bits is not None:
-            output_format.extend(['-b', '{}'.format(bits)])
-
-        if channels is not None:
-            output_format.extend(['-c', '{}'.format(channels)])
-
-        if encoding is not None:
-            output_format.extend(['-e', '{}'.format(encoding)])
-
-        if comments is not None:
-            if append_comments:
-                output_format.extend(['--add-comment', comments])
-            else:
-                output_format.extend(['--comment', comments])
-
+        output_format = {
+            'file_type': file_type,
+            'rate': rate,
+            'bits': bits,
+            'channels': channels,
+            'encoding': encoding,
+            'comments': comments,
+            'append_comments': append_comments
+        }
+        self._validate_output_format(output_format)
         self.output_format = output_format
-        return self
 
     def clear_effects(self):
         '''Remove all effects processes.
-
         '''
         self.effects = list()
         self.effects_log = list()
         return self
 
-    def build(self, input_filepath, output_filepath, extra_args=None,
-              return_output=False):
-        '''Builds the output_file by executing the current set of commands.
+    def _parse_inputs(self, input_filepath, input_array, sample_rate_in):
+        '''Private helper function for parsing inputs to build and build_array
 
         Parameters
         ----------
+        input_filepath : str or None
+            Either path to input audio file or None.
+        input_array : np.ndarray or None
+            A np.ndarray of an waveform with shape (n_samples, n_channels)
+            or None
+        sample_rate_in : int or None
+            Sample rate of input_array or None
+
+        Returns
+        -------
+        input_format : dict
+            Input format dictionary
         input_filepath : str
-            Path to input audio file.
-        output_filepath : str or None
-            Path to desired output file. If a file already exists at the given
-            path, the file will be overwritten.
-            If None, no file will be created.
+            Formatted input filepath.
+        '''
+        if input_filepath is not None and input_array is not None:
+            raise ValueError(
+                "Only one of input_filepath and input_array may be specified"
+            )
+        # set input parameters
+        if input_filepath is not None:
+            file_info.validate_input_file(input_filepath)
+            input_format = self.input_format
+            if input_format.get('channels') is None:
+                input_format['channels'] = file_info.channels(input_filepath)
+        elif input_array is not None:
+            if not isinstance(input_array, np.ndarray):
+                raise TypeError("input_array must be a numpy array or None")
+            if sample_rate_in is None:
+                raise ValueError(
+                    "sample_rate_in must be specified for array inputs"
+                )
+            input_filepath = '-'
+            input_format = {
+                'file_type': ENCODINGS_MAPPING[input_array.dtype.type],
+                'rate': sample_rate_in,
+                'bits': None,
+                'channels': (
+                    input_array.shape[-1] if len(input_array.shape) > 1 else 1
+                ),
+                'encoding': None,
+                'ignore_length': False
+            }
+        else:
+            raise ValueError(
+                "One of input_filepath or input_array must be specified"
+            )
+        return input_format, input_filepath
+
+    def build(self, input_filepath=None, output_filepath=None,
+              input_array=None, sample_rate_in=None,
+              extra_args=None, return_output=False):
+        '''Given an input file or array, creates an output_file on disk by
+        executing the current set of commands. This function returns True on
+        success. If return_output is True, this function returns a triple of
+        (status, out, err), giving the success state, along with stdout and
+        stderr returned by sox.
+
+        Parameters
+        ----------
+        input_filepath : str or None
+            Either path to input audio file or None for array input.
+        output_filepath : str
+            Path to desired output file. If a file already exists at
+            the given path, the file will be overwritten.
+            If '-n', no file is created.
+        input_array : np.ndarray or None
+            An np.ndarray of an waveform with shape (n_samples, n_channels).
+            sample_rate_in must also be provided.
+            If None, input_filepath must be specified.
+        sample_rate_in : int
+            Sample rate of input_array.
+            This argument is ignored if input_array is None.
         extra_args : list or None, default=None
             If a list is given, these additional arguments are passed to SoX
             at the end of the list of effects.
@@ -406,26 +549,66 @@ class Transformer(object):
         return_output : bool, default=False
             If True, returns the status and information sent to stderr and
             stdout as a tuple (status, stdout, stderr).
-            Otherwise returns True on success.
+            If output_filepath is None, return_output=True by default.
+            If False, returns True on success.
+
+        Returns
+        -------
+        status : bool
+            True on success.
+        out : str (optional)
+            This is not returned unless return_output is True.
+            When returned, captures the stdout produced by sox.
+        err : str (optional)
+            This is not returned unless return_output is True.
+            When returned, captures the stderr produced by sox.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import sox
+        >>> tfm = sox.Transformer()
+        >>> sample_rate = 44100
+        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+
+        file in, file out - basic usage
+
+        >>> status = tfm.build('path/to/input.wav', 'path/to/output.mp3')
+
+        file in, file out - equivalent usage
+
+        >>> status = tfm.build(
+                input_filepath='path/to/input.wav',
+                output_filepath='path/to/output.mp3'
+            )
+
+        array in, file out
+
+        >>> status = tfm.build(
+                input_array=y, sample_rate_in=sample_rate,
+                output_filepath='path/to/output.mp3'
+            )
 
         '''
-        file_info.validate_input_file(input_filepath)
+        input_format, input_filepath = self._parse_inputs(
+            input_filepath, input_array, sample_rate_in
+        )
 
-        if output_filepath is not None:
-            file_info.validate_output_file(output_filepath)
-        else:
-            output_filepath = '-n'
+        if output_filepath is None:
+            raise ValueError("output_filepath is not specified!")
 
+        # set output parameters
         if input_filepath == output_filepath:
             raise ValueError(
                 "input_filepath must be different from output_filepath."
             )
+        file_info.validate_output_file(output_filepath)
 
         args = []
         args.extend(self.globals)
-        args.extend(self.input_format)
+        args.extend(self._input_format_args(input_format))
         args.append(input_filepath)
-        args.extend(self.output_format)
+        args.extend(self._output_format_args(self.output_format))
         args.append(output_filepath)
         args.extend(self.effects)
 
@@ -434,25 +617,250 @@ class Transformer(object):
                 raise ValueError("extra_args must be a list.")
             args.extend(extra_args)
 
-        status, out, err = sox(args)
-
+        status, out, err = sox(args, input_array, True)
         if status != 0:
             raise SoxError(
                 "Stdout: {}\nStderr: {}".format(out, err)
             )
-        else:
-            logger.info(
-                "Created %s with effects: %s",
-                output_filepath,
-                " ".join(self.effects_log)
-            )
-            if out is not None:
-                logger.info("[SoX] {}".format(out))
 
-            if return_output:
-                return status, out, err
-            else:
-                return True
+        logger.info(
+            "Created %s with effects: %s",
+            output_filepath,
+            " ".join(self.effects_log)
+        )
+
+        if return_output:
+            return status, out, err
+
+        return True
+
+    def build_file(self, input_filepath=None, output_filepath=None,
+                   input_array=None, sample_rate_in=None,
+                   extra_args=None, return_output=False):
+        '''An alias for build.
+        Given an input file or array, creates an output_file on disk by
+        executing the current set of commands. This function returns True on
+        success. If return_output is True, this function returns a triple of
+        (status, out, err), giving the success state, along with stdout and
+        stderr returned by sox.
+
+        Parameters
+        ----------
+        input_filepath : str or None
+            Either path to input audio file or None for array input.
+        output_filepath : str
+            Path to desired output file. If a file already exists at
+            the given path, the file will be overwritten.
+            If '-n', no file is created.
+        input_array : np.ndarray or None
+            An np.ndarray of an waveform with shape (n_samples, n_channels).
+            sample_rate_in must also be provided.
+            If None, input_filepath must be specified.
+        sample_rate_in : int
+            Sample rate of input_array.
+            This argument is ignored if input_array is None.
+        extra_args : list or None, default=None
+            If a list is given, these additional arguments are passed to SoX
+            at the end of the list of effects.
+            Don't use this argument unless you know exactly what you're doing!
+        return_output : bool, default=False
+            If True, returns the status and information sent to stderr and
+            stdout as a tuple (status, stdout, stderr).
+            If output_filepath is None, return_output=True by default.
+            If False, returns True on success.
+
+        Returns
+        -------
+        status : bool
+            True on success.
+        out : str (optional)
+            This is not returned unless return_output is True.
+            When returned, captures the stdout produced by sox.
+        err : str (optional)
+            This is not returned unless return_output is True.
+            When returned, captures the stderr produced by sox.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import sox
+        >>> tfm = sox.Transformer()
+        >>> sample_rate = 44100
+        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+
+        file in, file out - basic usage
+
+        >>> status = tfm.build('path/to/input.wav', 'path/to/output.mp3')
+
+        file in, file out - equivalent usage
+
+        >>> status = tfm.build(
+                input_filepath='path/to/input.wav',
+                output_filepath='path/to/output.mp3'
+            )
+
+        array in, file out
+
+        >>> status = tfm.build(
+                input_array=y, sample_rate_in=sample_rate,
+                output_filepath='path/to/output.mp3'
+            )
+
+        '''
+        return self.build(
+            input_filepath, output_filepath, input_array, sample_rate_in,
+            extra_args, return_output
+        )
+
+    def build_array(self, input_filepath=None, input_array=None,
+                    sample_rate_in=None, extra_args=None):
+        '''Given an input file or array, returns the ouput as a numpy array
+        by executing the current set of commands. By default the array will
+        have the same sample rate as the input file unless otherwise specified
+        using set_output_format. Functions such as rate, channels and convert
+        will be ignored!
+
+        Parameters
+        ----------
+        input_filepath : str or None
+            Either path to input audio file or None.
+        input_array : np.ndarray or None
+            A np.ndarray of an waveform with shape (n_samples, n_channels).
+            If this argument is passed, sample_rate_in must also be provided.
+            If None, input_filepath must be specified.
+        sample_rate_in : int
+            Sample rate of input_array.
+            This argument is ignored if input_array is None.
+        extra_args : list or None, default=None
+            If a list is given, these additional arguments are passed to SoX
+            at the end of the list of effects.
+            Don't use this argument unless you know exactly what you're doing!
+
+        Returns
+        -------
+        output_array : np.ndarray
+            Output audio as a numpy array
+
+        Examples
+        --------
+
+        >>> import numpy as np
+        >>> import sox
+        >>> tfm = sox.Transformer()
+        >>> sample_rate = 44100
+        >>> y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+
+        file in, array out
+
+        >>> output_array = tfm.build(input_filepath='path/to/input.wav')
+
+        array in, array out
+
+        >>> output_array = tfm.build(input_array=y, sample_rate_in=sample_rate)
+
+        specifying the output sample rate
+
+        >>> tfm.set_output_format(rate=8000)
+        >>> output_array = tfm.build(input_array=y, sample_rate_in=sample_rate)
+
+        if an effect changes the number of channels, you must explicitly
+        specify the number of output channels
+
+        >>> tfm.remix(remix_dictionary={1: [1], 2: [1], 3: [1]})
+        >>> tfm.set_output_format(channels=3)
+        >>> output_array = tfm.build(input_array=y, sample_rate_in=sample_rate)
+
+
+        '''
+        input_format, input_filepath = self._parse_inputs(
+            input_filepath, input_array, sample_rate_in
+        )
+
+        # check if any of the below commands are part of the effects chain
+        ignored_commands = ['rate', 'channels', 'convert']
+        if set(ignored_commands) & set(self.effects_log):
+            logger.warning(
+                "When outputting to an array, rate, channels and convert " +
+                "effects may be ignored. Use set_output_format() to " +
+                "specify output formats."
+            )
+
+        output_filepath = '-'
+
+        if input_format.get('file_type') is None:
+            encoding_out = np.int16
+        else:
+            encoding_out = [
+                k for k, v in ENCODINGS_MAPPING.items()
+                if input_format['file_type'] == v
+            ][0]
+
+        n_bits = np.dtype(encoding_out).itemsize * 8
+
+        output_format = {
+            'file_type': 'raw',
+            'rate': sample_rate_in,
+            'bits': n_bits,
+            'channels': input_format['channels'],
+            'encoding': None,
+            'comments': None,
+            'append_comments': True,
+        }
+
+        if self.output_format.get('rate') is not None:
+            output_format['rate'] = self.output_format['rate']
+
+        if self.output_format.get('channels') is not None:
+            output_format['channels'] = self.output_format['channels']
+
+        if self.output_format.get('bits') is not None:
+            n_bits = self.output_format['bits']
+            output_format['bits'] = n_bits
+
+        if n_bits == 8:
+            encoding_out = np.int8
+        elif n_bits == 16:
+            encoding_out = np.int16
+        elif n_bits == 32:
+            encoding_out = np.float32
+        elif n_bits == 64:
+            encoding_out = np.float64
+        else:
+            raise ValueError("invalid n_bits {}".format(n_bits))
+
+        args = []
+        args.extend(self.globals)
+        args.extend(self._input_format_args(input_format))
+        args.append(input_filepath)
+        args.extend(self._output_format_args(output_format))
+        args.append(output_filepath)
+        args.extend(self.effects)
+
+        if extra_args is not None:
+            if not isinstance(extra_args, list):
+                raise ValueError("extra_args must be a list.")
+            args.extend(extra_args)
+
+        status, out, err = sox(args, input_array, False)
+        if status != 0:
+            raise SoxError(
+                "Stdout: {}\nStderr: {}".format(out, err)
+            )
+
+        out = np.frombuffer(out, dtype=encoding_out)
+        if output_format['channels'] > 1:
+            out = out.reshape(
+                (
+                    output_format['channels'],
+                    int(len(out) / output_format['channels'])
+                ), order='F'
+            ).T
+        logger.info(
+            "Created array with effects: %s",
+            " ".join(self.effects_log)
+        )
+
+        return out
 
     def preview(self, input_filepath):
         '''Play a preview of the output with the current set of effects
@@ -1038,13 +1446,13 @@ class Transformer(object):
                 raise ValueError(
                     "bitdepth must be one of {}.".format(str(bitdepths))
                 )
-            self.output_format.extend(['-b', '{}'.format(bitdepth)])
+            self.output_format['bits'] = bitdepth
         if n_channels is not None:
             if not isinstance(n_channels, int) or n_channels <= 0:
                 raise ValueError(
                     "n_channels must be a positive integer."
                 )
-            self.output_format.extend(['-c', '{}'.format(n_channels)])
+            self.output_format['channels'] = n_channels
         if samplerate is not None:
             if not is_number(samplerate) or samplerate <= 0:
                 raise ValueError("samplerate must be a positive number.")
@@ -1821,7 +2229,6 @@ class Transformer(object):
             raise ValueError("gain must be a list of length n_bands")
 
         if any([not (is_number(g) or g is None) for g in gain]):
-            print(gain)
             raise ValueError("gain elements must be numbers or None.")
 
         effect_args = ['mcompand']
@@ -1892,7 +2299,7 @@ class Transformer(object):
                 "profile_path {} is not writeable.".format(_abs_profile_path))
 
         effect_args = ['noiseprof', profile_path]
-        self.build(input_filepath, None, extra_args=effect_args)
+        self.build(input_filepath, '-n', extra_args=effect_args)
 
         return None
 
@@ -2654,14 +3061,14 @@ class Transformer(object):
             effect_args.append('-rms')
 
         _, _, stat_output = self.build(
-            input_filepath, None, extra_args=effect_args, return_output=True
+            input_filepath, '-n', extra_args=effect_args, return_output=True
         )
 
         stat_dict = {}
         lines = stat_output.split('\n')
         for line in lines:
             split_line = line.split()
-            if len(split_line) == 0:
+            if not split_line:
                 continue
             value = split_line[-1]
             key = ' '.join(split_line[:-1])
@@ -2692,7 +3099,7 @@ class Transformer(object):
         effect_args = ['channels', '1', 'stat', '-freq']
 
         _, _, stat_output = self.build(
-            input_filepath, None, extra_args=effect_args, return_output=True
+            input_filepath, '-n', extra_args=effect_args, return_output=True
         )
 
         power_spectrum = []
@@ -2735,7 +3142,7 @@ class Transformer(object):
         effect_args = ['channels', '1', 'stats']
 
         _, _, stats_output = self.build(
-            input_filepath, None, extra_args=effect_args, return_output=True
+            input_filepath, '-n', extra_args=effect_args, return_output=True
         )
 
         stats_dict = {}

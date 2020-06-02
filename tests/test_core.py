@@ -56,6 +56,13 @@ class TestSox(unittest.TestCase):
         self.assertEqual(expected_out, actual_out)
         self.assertNotEqual('', acutal_err)
 
+    def test_src_array_invalid(self):
+        args = ['input.wav', 'output.xyz']
+        arr = 'not a numpy array'
+        expected_status = 1
+        actual_status, _, _ = core.sox(args, arr)
+        self.assertEqual(expected_status, actual_status)
+
     def test_sox_fail_corrupt_file(self):
         args = [INPUT_FILE_CORRUPT, OUTPUT_FILE]
         expected_status = 2

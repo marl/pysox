@@ -24,7 +24,7 @@ def bitdepth(input_filepath):
         Number of bits per sample.
         Returns None if not applicable.
     '''
-    
+
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'b')
     if output == '0':
@@ -49,7 +49,7 @@ def bitrate(input_filepath):
         Bit rate, expressed in bytes per second.
         Returns None if not applicable.
     '''
-    
+
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'B')
     # The characters below stand for kilo, Mega, Giga, etc.
@@ -285,16 +285,13 @@ def validate_output_file(output_filepath):
     output_filepath : str
         The output filepath.
 
-    Returns:
-    --------
-    output_filepath : str
-        The output filepath.
-
     '''
+    if output_filepath == '-n':
+        return
 
     nowrite_conditions = [
-        bool(os.path.dirname(output_filepath)) or\
-            not os.access(os.getcwd(), os.W_OK),
+        bool(os.path.dirname(output_filepath)) or
+             not os.access(os.getcwd(), os.W_OK),
         not os.access(os.path.dirname(output_filepath), os.W_OK)]
 
     if all(nowrite_conditions):
@@ -324,12 +321,12 @@ def file_extension(filepath):
     filepath : str
         File path.
 
-    Returns:
-    --------
+    Returns
+    -------
     extension : str
         The file's extension
     '''
-    return os.path.splitext(filepath)[1][1:]
+    return os.path.splitext(filepath)[1][1:].lower()
 
 
 def info(filepath):
@@ -340,8 +337,8 @@ def info(filepath):
     filepath : str
         File path.
 
-    Returns:
-    --------
+    Returns
+    -------
     info_dictionary : dict
         Dictionary of file information. Fields are:
             * channels
