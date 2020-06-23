@@ -64,6 +64,14 @@ pytest
 
 # Examples
 
+**Warning: These examples use the most recent pre-release of pysox (1.4.0b0). You can install it with:**
+
+
+```pip install sox --pre```
+
+
+**For examples and documentation for other versions, see the [Documentation](http://pysox.readthedocs.org).**
+
 ```python
 import sox
 # create transformer
