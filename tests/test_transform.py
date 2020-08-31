@@ -4816,7 +4816,7 @@ class TestTransformerStretch(unittest.TestCase):
 
     def test_default(self):
         tfm = new_transformer()
-        tfm.stretch(1.1)
+        tfm.stretch(1/1.1)
 
         actual_args = tfm.effects
         expected_args = ['stretch', '1.100000', '20.000000']
@@ -4833,7 +4833,7 @@ class TestTransformerStretch(unittest.TestCase):
 
     def test_factor_valid(self):
         tfm = new_transformer()
-        tfm.stretch(0.7)
+        tfm.stretch(1/0.7)
 
         actual_args = tfm.effects
         expected_args = ['stretch', '0.700000', '20.000000']
@@ -4846,7 +4846,7 @@ class TestTransformerStretch(unittest.TestCase):
 
     def test_factor_extreme(self):
         tfm = new_transformer()
-        tfm.stretch(0.2)
+        tfm.stretch(1/0.2)
 
         actual_args = tfm.effects
         expected_args = ['stretch', '0.200000', '20.000000']
@@ -4864,7 +4864,7 @@ class TestTransformerStretch(unittest.TestCase):
 
     def test_window_valid(self):
         tfm = new_transformer()
-        tfm.stretch(0.99, window=10)
+        tfm.stretch(1/0.99, window=10)
 
         actual_args = tfm.effects
         expected_args = ['stretch', '0.990000', '10.000000']
