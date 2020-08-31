@@ -3200,7 +3200,7 @@ class Transformer(object):
                 "window must be a positive number."
             )
 
-        effect_args = ['stretch', '{:f}'.format(factor), '{:f}'.format(window)]
+        effect_args = ['stretch', '{:f}'.format(1/factor), '{:f}'.format(window)]
 
         self.effects.extend(effect_args)
         self.effects_log.append('stretch')
