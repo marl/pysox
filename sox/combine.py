@@ -11,7 +11,6 @@ from . import file_info
 from . import core
 from .log import logger
 from .core import ENCODING_VALS
-from .core import enquote_filepath
 from .core import is_number
 from .core import sox
 from .core import play
@@ -35,6 +34,7 @@ class Combiner(Transformer):
     Inherits all methods from the Transformer class, thus any effects can be
     applied after combining.
     '''
+
     def __init__(self):
         super(Combiner, self).__init__()
 
@@ -67,6 +67,11 @@ class Combiner(Transformer):
             are applied to the input files in order.
             If None, input files will be combined at their original volumes.
 
+        Returns
+        -------
+        status : bool
+            True on success.
+
         '''
         file_info.validate_input_file_list(input_filepath_list)
         file_info.validate_output_file(output_filepath)
@@ -74,7 +79,8 @@ class Combiner(Transformer):
         _validate_volumes(input_volumes)
 
         input_format_list = _build_input_format_list(
-            input_filepath_list, input_volumes, self.input_format
+            input_filepath_list, input_volumes,
+            self.input_format
         )
 
         try:
@@ -89,8 +95,8 @@ class Combiner(Transformer):
         input_args = _build_input_args(input_filepath_list, input_format_list)
         args.extend(input_args)
 
-        args.extend(self.output_format)
-        args.append(enquote_filepath(output_filepath))
+        args.extend(self._output_format_args(self.output_format))
+        args.append(output_filepath)
         args.extend(self.effects)
 
         status, out, err = sox(args)
@@ -305,9 +311,6 @@ class Combiner(Transformer):
         self.input_format = input_format
         return self
 
-    def splice(self):
-        raise NotImplementedError
-
 
 def _validate_file_formats(input_filepath_list, combine_type):
     '''Validate that combine method can be performed with given files.
@@ -436,7 +439,7 @@ def _build_input_args(input_filepath_list, input_format_list):
     zipped = zip(input_filepath_list, input_format_list)
     for input_file, input_fmt in zipped:
         input_args.extend(input_fmt)
-        input_args.append(enquote_filepath(input_file))
+        input_args.append(input_file)
 
     return input_args
 

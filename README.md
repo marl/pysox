@@ -3,7 +3,7 @@ Python wrapper around sox. [Read the Docs here](http://pysox.readthedocs.org).
 
 [![PyPI version](https://badge.fury.io/py/sox.svg)](https://badge.fury.io/py/sox)
 [![Documentation Status](https://readthedocs.org/projects/resampy/badge/?version=latest)](http://pysox.readthedocs.io/en/latest/?badge=latest)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/rabitt/pysox/master/LICENSE.md)
+[![GitHub license](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://raw.githubusercontent.com/rabitt/pysox/master/LICENSE.md)
 [![PyPI](https://img.shields.io/pypi/pyversions/Django.svg?maxAge=2592000)]()
 
 [![Build Status](https://travis-ci.org/rabitt/pysox.svg?branch=master)](https://travis-ci.org/rabitt/pysox)
@@ -36,7 +36,7 @@ or install [from source](https://sourceforge.net/projects/sox/files/sox/).
 
 
 
-To install the most up to date release of this module via PyPi:
+To install the most up-to-date release of this module via PyPi:
 
 ```pip install sox```
 
@@ -56,18 +56,17 @@ python setup.py install
 # Tests
 
 If you have a different version of SoX installed, it's recommended that you run
-the tests locally to make sure everything behaves as expected:
+the tests locally to make sure everything behaves as expected, by simply running:
 
 ```
-cd tests
-nosetests .
+pytest
 ```
 
 # Examples
 
 ```python
 import sox
-# create trasnformer
+# create transformer
 tfm = sox.Transformer()
 # trim the audio between 5 and 10.5 seconds.
 tfm.trim(5, 10.5)
@@ -75,12 +74,44 @@ tfm.trim(5, 10.5)
 tfm.compand()
 # apply a fade in and fade out
 tfm.fade(fade_in_len=1.0, fade_out_len=0.5)
-# create the output file.
+# create an output file.
+tfm.build_file('path/to/input_audio.wav', 'path/to/output/audio.aiff')
+# or equivalently using the legacy API
 tfm.build('path/to/input_audio.wav', 'path/to/output/audio.aiff')
+# get the output in-memory as a numpy array
+# by default the sample rate will be the same as the input file
+array_out = tfm.build_array(input_filepath='path/to/input_audio.wav')
 # see the applied effects
 tfm.effects_log
 > ['trim', 'compand', 'fade']
 
+```
+
+Transform in-memory arrays:
+```python
+import numpy
+import sox
+# sample rate in Hz
+sample_rate = 44100
+# generate a 1-second sine tone at 440 Hz
+y = np.sin(2 * np.pi * 440.0 * np.arange(sample_rate * 1.0) / sample_rate)
+# create a transformer
+tfm = sox.Transformer()
+# shift the pitch up by 2 semitones
+tfm.pitch(2)
+# transform an in-memory array and return an array
+y_out = tfm.build_array(input_array=y, sample_rate_in=sample_rate)
+# instead, save output to a file
+tfm.build_file(
+    input_array=y, sample_rate_in=sample_rate,
+    output_filepath='path/to/output.wav'
+)
+# create an output file with a different sample rate
+tfm.set_output_format(rate=8000)
+tfm.build_file(
+    input_array=y, sample_rate_in=sample_rate,
+    output_filepath='path/to/output_8k.wav'
+)
 ```
 
 Concatenate 3 audio files:
@@ -91,10 +122,22 @@ cbn = sox.Combiner()
 # pitch shift combined audio up 3 semitones
 cbn.pitch(3.0)
 # convert output to 8000 Hz stereo
-cbn.convert(samplerate=8000, channels=2)
+cbn.convert(samplerate=8000, n_channels=2)
 # create the output file
 cbn.build(
     ['input1.wav', 'input2.wav', 'input3.wav'], 'output.wav', 'concatenate'
 )
+# the combiner does not currently support array input/output
+```
 
+Get file information:
+```python
+import sox
+# get the sample rate
+sample_rate = sox.file_info.sample_rate('path/to/file.mp3')
+# get the number of samples
+n_samples = sox.file_info.num_samples('path/to/file.wav')
+# determine if a file is silent
+is_silent = sox.file_info.silent('path/to/file.aiff')
+# file info doesn't currently support array input
 ```

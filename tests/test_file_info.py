@@ -12,6 +12,7 @@ def relpath(f):
 SPACEY_FILE = relpath("data/annoying filename (derp).wav")
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE2 = relpath('data/input.aiff')
+INPUT_FILE3 = relpath('data/input.WAV')
 EMPTY_FILE = relpath('data/empty.wav')
 INPUT_FILE_INVALID = relpath('data/input.xyz')
 OUTPUT_FILE = relpath('data/output.wav')
@@ -22,17 +23,39 @@ class TestBitrate(unittest.TestCase):
 
     def test_wav(self):
         actual = file_info.bitrate(INPUT_FILE)
-        expected = 16
+        expected = 706000.0
         self.assertEqual(expected, actual)
 
     def test_aiff(self):
         actual = file_info.bitrate(INPUT_FILE2)
-        expected = 32
+        expected = 768000.0
         self.assertEqual(expected, actual)
 
     def test_empty(self):
         actual = file_info.bitrate(EMPTY_FILE)
+        expected = None
+        self.assertEqual(expected, actual)
+
+class TestBitdepth(unittest.TestCase):
+
+    def test_wav(self):
+        actual = file_info.bitdepth(INPUT_FILE)
         expected = 16
+        self.assertEqual(expected, actual)
+
+    def test_aiff(self):
+        actual = file_info.bitdepth(INPUT_FILE2)
+        expected = 32
+        self.assertEqual(expected, actual)
+
+    def test_empty(self):
+        actual = file_info.bitdepth(INPUT_FILE)
+        expected = 16
+        self.assertEqual(expected, actual)
+
+    def test_aiff(self):
+        actual = file_info.bitdepth(INPUT_FILE2)
+        expected = 32
         self.assertEqual(expected, actual)
 
 
@@ -91,7 +114,7 @@ class TestDuration(unittest.TestCase):
 
     def test_empty(self):
         actual = file_info.duration(EMPTY_FILE)
-        expected = 0
+        expected = None
         self.assertEqual(expected, actual)
 
 
@@ -145,7 +168,7 @@ class TestNumSamples(unittest.TestCase):
 
     def test_empty(self):
         actual = file_info.num_samples(EMPTY_FILE)
-        expected = 0
+        expected = None
         self.assertEqual(expected, actual)
 
 
@@ -212,6 +235,11 @@ class TestFileExtension(unittest.TestCase):
         expected = 'x23zya'
         self.assertEqual(expected, actual)
 
+    def test_ext6(self):
+        actual = file_info.file_extension('simplefile.MP3')
+        expected = 'mp3'
+        self.assertEqual(expected, actual)
+
 
 class TestInfo(unittest.TestCase):
 
@@ -220,7 +248,8 @@ class TestInfo(unittest.TestCase):
         expected = {
             'channels': 1,
             'sample_rate': 44100.0,
-            'bitrate': 16,
+            'bitdepth': 16,
+            'bitrate': 706000.0,
             'duration': 10.0,
             'num_samples': 441000,
             'encoding': 'Signed Integer PCM',

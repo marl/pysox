@@ -5,7 +5,8 @@ import os
 
 # Check that SoX is installed and callable
 NO_SOX = False
-if not len(os.popen('sox -h').readlines()):
+stream_handler = os.popen('sox -h')
+if not len(stream_handler.readlines()):
     logger.warning("""SoX could not be found!
 
     If you do not have SoX, proceed here:
@@ -15,6 +16,7 @@ if not len(os.popen('sox -h').readlines()):
     path variables.
     """)
     NO_SOX = True
+stream_handler.close()
 
 from . import file_info
 from .combine import Combiner
