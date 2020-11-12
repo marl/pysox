@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from sox import transform, file_info
+from sox import transform
 from sox.core import SoxError
 import soundfile as sf
 import numpy as np
@@ -665,6 +665,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             self.tfm.set_output_format(append_comments=None)
         with self.assertRaises(ValueError):
             self.tfm._output_format_args({'append_comments': None})
+
 
 class TestTransformerBuild(unittest.TestCase):
     def setUp(self):
@@ -1702,7 +1703,7 @@ class TestTransformerConvert(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
 
-        ## pysndfile doesn't support int8
+        # pysndfile doesn't support int8
         # tfm.set_output_format(file_type='raw', bits=8)
         # tfm_assert_array_to_file_output(
         #     INPUT_FILE, OUTPUT_FILE, tfm, dtype_out='int8', test_file_out=False)
@@ -3100,8 +3101,8 @@ class TestTransformerMcompand(unittest.TestCase):
             decay_time=[0.020, 0.020, 0.020],
             soft_knee_db=[None, 2.0, None],
             tf_points=[[(-40, -40), (0, 0)],
-                [(-40, -40), (-30, -38), (-20, -36), (0, -34)],
-                [(-40, -40), (0, 0)]],
+                       [(-40, -40), (-30, -38), (-20, -36), (0, -34)],
+                       [(-40, -40), (0, 0)]],
             gain=[None, None, None])
         actual_args = tfm.effects
         expected_args = [
