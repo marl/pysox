@@ -3585,3 +3585,65 @@ class Transformer(object):
         self.effects_log.append('vol')
 
         return self
+
+
+class SynthTransformer(Transformer):
+    '''Transformer that calls Sox's `synth` argument to use synthesized
+    audio rather than an input audio file.
+    '''
+    _valid_noise_types = ['whitenoise', 'pinknoise', 'brownnoise', 'tpdfnoise']
+
+    def __init__(self):
+        super().__init__()
+        self.effects.append('synth')
+
+        # if more channels is desired, must be explicitly set in set_output_format
+        self.input_format['channels'] = 1
+
+    def _parse_inputs(self, input_filepath, input_array, sample_rate_in):
+        '''Overrides Transformer._parse_inputs
+
+        Asserts that input_filepath and input_array are None, then returns
+        `input_format` and the -n flag (indicating no input file) for
+        `input_filepath`
+        '''
+        if input_filepath is not None or input_array is not None:
+            raise ValueError(
+                "For `synth` modes, input_filepath and input_array should be None"
+            )
+        input_filepath = '-n'
+        input_format = self.input_format
+        input_format['rate'] = sample_rate_in
+        return input_format, input_filepath
+
+    def set_input_format(self, file_type=None, rate=None, bits=None,
+                         channels=None, encoding=None, ignore_length=False):
+        '''Overides Transformer.set_input_format. This method should not be called on
+        SynthTransformer
+        '''
+        raise AttributeError("SynthTransformer.set_input_format has no effect")
+
+    def _add_noise(self, noise_type, length):
+        if noise_type not in self._valid_noise_types:
+            raise ValueError(
+                f'Invalid noise type: {noise_type}. Must be one of {self._valid_noise_types}'
+            )
+        if not is_number(length) or length <= 0:
+            raise ValueError('Length of noise must be a positive number')
+
+        effect_args = [f'{length}', f'{noise_type}']
+        self.effects.extend(effect_args)
+        self.effects_log.append(noise_type)
+        return self
+
+    def whitenoise(self, length):
+        return self._add_noise(noise_type='whitenoise', length=length)
+
+    def pinknoise(self, length):
+        return self._add_noise(noise_type='pinknoise', length=length)
+
+    def brownnoise(self, length):
+        return self._add_noise(noise_type='brownnoise', length=length)
+
+    def tpdfnoise(self, length):
+        return self._add_noise(noise_type='tpdfnoise', length=length)

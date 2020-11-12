@@ -20,7 +20,7 @@ stream_handler.close()
 
 from . import file_info
 from .combine import Combiner
-from .transform import Transformer
+from .transform import Transformer, SynthTransformer
 from .core import SoxError
 from .core import SoxiError
 from .version import version as __version__
