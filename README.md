@@ -89,7 +89,7 @@ tfm.effects_log
 
 Transform in-memory arrays:
 ```python
-import numpy
+import numpy as np
 import sox
 # sample rate in Hz
 sample_rate = 44100
