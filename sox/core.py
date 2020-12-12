@@ -42,6 +42,9 @@ def sox(args, src_array=None, decode_out_with_utf=True):
         Returns stderr as a string.
 
     '''
+    # Explicitly convert python3 pathlib.Path objects to strings.
+    args = [str(x) for x in args]
+
     if args[0].lower() != "sox":
         args.insert(0, "sox")
     else:
