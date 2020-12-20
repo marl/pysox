@@ -1,10 +1,13 @@
 '''Base module for calling SoX '''
-from .log import logger
 
+from pathlib import Path
 import subprocess
 from subprocess import CalledProcessError
+from typing import Union
+
 import numpy as np
 
+from .log import logger
 from . import NO_SOX
 
 SOXI_ARGS = ['B', 'b', 'c', 'a', 'D', 'e', 't', 's', 'r']
@@ -122,12 +125,12 @@ def _get_valid_formats():
 VALID_FORMATS = _get_valid_formats()
 
 
-def soxi(filepath, argument):
+def soxi(filepath: Union[str, Path], argument: str) -> str:
     ''' Base call to SoXI.
 
     Parameters
     ----------
-    filepath : str
+    filepath : path-like (str or pathlib.Path)
         Path to audio file.
 
     argument : str
@@ -138,6 +141,7 @@ def soxi(filepath, argument):
     shell_output : str
         Command line output of SoXI
     '''
+    filepath = str(filepath)
 
     if argument not in SOXI_ARGS:
         raise ValueError("Invalid argument '{}' to SoXI".format(argument))
@@ -175,6 +179,9 @@ def play(args):
         True on success.
 
     '''
+    # Make sure all inputs are strings (eg not pathlib.Path)
+    args = [str(x) for x in args]
+
     if args[0].lower() != "play":
         args.insert(0, "play")
     else:
