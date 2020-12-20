@@ -1,5 +1,6 @@
-import unittest
+from pathlib import Path
 import os
+import unittest
 
 from sox import transform, file_info
 from sox.core import SoxError
@@ -95,6 +96,15 @@ class TestTransformSetGlobals(unittest.TestCase):
         self.assertEqual(expected, actual)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_defaults_pathlib(self):
+        actual = self.tfm.globals
+        expected = ['-D', '-V2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(Path(INPUT_FILE), Path(OUTPUT_FILE))
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
@@ -3090,6 +3100,35 @@ class TestTransformerMcompand(unittest.TestCase):
         expected_res = True
         self.assertEqual(expected_res, actual_res)
         tfm_assert_array_to_file_output(INPUT_FILE, OUTPUT_FILE, tfm)
+
+    def test_tf_points_valid2(self):
+        tfm = new_transformer()
+        tfm.mcompand(
+            n_bands=3,
+            crossover_frequencies=[6500, 8000],
+            attack_time=[0.001, 0.001, 0.001],
+            decay_time=[0.020, 0.020, 0.020],
+            soft_knee_db=[None, 2.0, None],
+            tf_points=[[(-40, -40), (0, 0)],
+                [(-40, -40), (-30, -38), (-20, -36), (0, -34)],
+                [(-40, -40), (0, 0)]],
+            gain=[None, None, None])
+        actual_args = tfm.effects
+        expected_args = [
+            'mcompand',
+            '0.001000,0.020000 -40.000000,-40.000000,0.000000,0.000000',
+            '6500.000000',
+            ('0.001000,0.020000 2.000000:-40.000000,-40.000000,-30.000000,' +
+             '-38.000000,-20.000000,-36.000000,0.000000,-34.000000'),
+            '8000.000000',
+            '0.001000,0.020000 -40.000000,-40.000000,0.000000,0.000000'
+        ]
+
+        self.assertEqual(expected_args, actual_args)
+
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
 
     def test_tf_points_wrong_len(self):
         tfm = new_transformer()

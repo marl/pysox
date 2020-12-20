@@ -5,6 +5,9 @@ import imp
 
 version = imp.load_source('sox.version', 'sox/version.py')
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 if __name__ == "__main__":
     setup(
         name='sox',
@@ -16,7 +19,8 @@ if __name__ == "__main__":
         download_url='http://github.com/rabitt/pysox/releases',
         packages=['sox'],
         package_data={'sox': []},
-        long_description="""Python wrapper around SoX.""",
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         keywords='audio effects SoX',
         license='BSD-3-Clause',
         install_requires=[

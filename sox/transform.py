@@ -540,9 +540,9 @@ class Transformer:
     def build(self,
               input_filepath: Optional[Union[str, Path]] = None,
               output_filepath: Optional[Union[str, Path]] = None,
-              input_array: Optional[np.ndarray] = None,
-              sample_rate_in: Optional[np.ndarray] = None,
-              extra_args: List[str] = None,
+              input_array: Optional[str] = None,
+              sample_rate_in: Optional[float] = None,
+              extra_args: Optional[List[str]] = None,
               return_output: bool = False):
         '''Given an input file or array, creates an output_file on disk by
         executing the current set of commands. This function returns True on
@@ -661,8 +661,8 @@ class Transformer:
                    input_filepath: Optional[Union[str, Path]] = None,
                    output_filepath: Optional[Union[str, Path]] = None,
                    input_array: Optional[np.ndarray] = None,
-                   sample_rate_in: Optional[np.ndarray] = None,
-                   extra_args: List[str] = None,
+                   sample_rate_in: Optional[float] = None,
+                   extra_args: Optional[List[str]] = None,
                    return_output: bool = False):
         '''An alias for build.
         Given an input file or array, creates an output_file on disk by
@@ -742,8 +742,8 @@ class Transformer:
     def build_array(self,
                     input_filepath: Optional[Union[str, Path]] = None,
                     input_array: Optional[np.ndarray] = None,
-                    sample_rate_in: Optional[int] = None,
-                    extra_args: List[str] = None) -> np.ndarray:
+                    sample_rate_in: Optional[float] = None,
+                    extra_args: Optional[List[str]] = None):
         '''Given an input file or array, returns the ouput as a numpy array
         by executing the current set of commands. By default the array will
         have the same sample rate as the input file unless otherwise specified
@@ -2309,7 +2309,7 @@ class Transformer:
                 raise ValueError(
                     "Tuple values in tf_points lists must be <= 0 (dB)."
                 )
-            if len(tf_points) > len(set([p[0] for p in tfp])):
+            if len(tfp) > len(set([p[0] for p in tfp])):
                 raise ValueError("Found duplicate x-value in tf_points list.")
 
         if not isinstance(gain, list) or len(gain) != n_bands:

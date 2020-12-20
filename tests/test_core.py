@@ -1,3 +1,4 @@
+from pathlib import Path
 import unittest
 import os
 
@@ -20,6 +21,12 @@ class TestSox(unittest.TestCase):
 
     def test_base_case(self):
         args = ['sox', INPUT_FILE, OUTPUT_FILE]
+        expected = (0, '', '')
+        actual = core.sox(args)
+        self.assertEqual(expected, actual)
+
+    def test_base_case_pathlib(self):
+        args = ['sox', Path(INPUT_FILE), Path(OUTPUT_FILE)]
         expected = (0, '', '')
         actual = core.sox(args)
         self.assertEqual(expected, actual)
@@ -122,6 +129,11 @@ class TestSoxi(unittest.TestCase):
         expected = '441000'
         self.assertEqual(expected, actual)
 
+    def test_base_case_pathlib(self):
+        actual = core.soxi(Path(INPUT_FILE), 's')
+        expected = '441000'
+        self.assertEqual(expected, actual)
+
     def test_spacey_wav(self):
         actual = core.soxi(SPACEY_FILE, 's')
         expected = '80000'
@@ -149,6 +161,12 @@ class TestPlay(unittest.TestCase):
 
     def test_base_case(self):
         args = ['play', 'data/input.aiff', 'trim', '0', '0.1']
+        expected = True
+        actual = core.play(args)
+        self.assertEqual(expected, actual)
+
+    def test_base_pathlib(self):
+        args = ['play', Path('data/input.aiff'), 'trim', '0', '0.1']
         expected = True
         actual = core.play(args)
         self.assertEqual(expected, actual)
@@ -182,6 +200,7 @@ class TestPlay(unittest.TestCase):
         expected = False
         actual = core.play(args)
         self.assertEqual(expected, actual)
+
 
 
 class TestIsNumber(unittest.TestCase):

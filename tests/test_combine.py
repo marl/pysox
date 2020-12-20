@@ -1,5 +1,6 @@
-import unittest
+from pathlib import Path
 import os
+import unittest
 
 from sox import combine
 from sox.core import SoxError
@@ -49,6 +50,13 @@ class TestCombineDefault(unittest.TestCase):
         expected_result = True
         actual_result = self.cbn.build(
             [INPUT_WAV, INPUT_WAV], OUTPUT_FILE, 'concatenate'
+        )
+        self.assertEqual(expected_result, actual_result)
+
+    def test_build_pathlib(self):
+        expected_result = True
+        actual_result = self.cbn.build(
+            [Path(INPUT_WAV), (INPUT_WAV)], Path(OUTPUT_FILE), 'concatenate'
         )
         self.assertEqual(expected_result, actual_result)
 
@@ -403,6 +411,12 @@ class TestCombinePreview(unittest.TestCase):
         actual = self.cbn.preview([INPUT_WAV, INPUT_WAV], 'mix', [1.0, 0.5])
         self.assertEqual(expected, actual)
 
+    def test_valid_pathlib(self):
+        expected = None
+        actual = self.cbn.preview([Path(INPUT_WAV), Path(INPUT_WAV)], 'mix')
+        self.assertEqual(expected, actual)
+
+
 
 class TestBuildInputArgs(unittest.TestCase):
 
@@ -414,6 +428,13 @@ class TestBuildInputArgs(unittest.TestCase):
         expected = ['-v', '1', INPUT_WAV, '-v', '1', INPUT_WAV]
         actual = combine._build_input_args(
             [INPUT_WAV, INPUT_WAV], [['-v', '1'], ['-v', '1']]
+        )
+        self.assertEqual(expected, actual)
+
+    def test_handles_pathlib(self):
+        expected = ['-v', '1', INPUT_WAV, '-v', '1', INPUT_WAV]
+        actual = combine._build_input_args(
+            [Path(INPUT_WAV), Path(INPUT_WAV)], [['-v', '1'], ['-v', '1']]
         )
         self.assertEqual(expected, actual)
 

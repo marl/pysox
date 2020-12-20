@@ -1,5 +1,6 @@
-import unittest
+from pathlib import Path
 import os
+import unittest
 
 from sox import file_info
 from sox.core import SoxError
@@ -12,6 +13,7 @@ def relpath(f):
 SPACEY_FILE = relpath("data/annoying filename (derp).wav")
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE2 = relpath('data/input.aiff')
+INPUT_FILE3 = relpath('data/input.WAV')
 EMPTY_FILE = relpath('data/empty.wav')
 INPUT_FILE_INVALID = relpath('data/input.xyz')
 OUTPUT_FILE = relpath('data/output.wav')
@@ -25,6 +27,11 @@ class TestBitrate(unittest.TestCase):
         expected = 706000.0
         self.assertEqual(expected, actual)
 
+    def test_wav_pathlib(self):
+        actual = file_info.bitrate(Path(INPUT_FILE))
+        expected = 706000.0
+        self.assertEqual(expected, actual)
+
     def test_aiff(self):
         actual = file_info.bitrate(INPUT_FILE2)
         expected = 768000.0
@@ -33,11 +40,19 @@ class TestBitrate(unittest.TestCase):
     def test_empty(self):
         actual = file_info.bitrate(EMPTY_FILE)
         expected = None
+        self.assertEqual(expected, actual)
+
+
 
 class TestBitdepth(unittest.TestCase):
 
     def test_wav(self):
         actual = file_info.bitdepth(INPUT_FILE)
+        expected = 16
+        self.assertEqual(expected, actual)
+
+    def test_wav_pathlib(self):
+        actual = file_info.bitdepth(Path(INPUT_FILE))
         expected = 16
         self.assertEqual(expected, actual)
 
@@ -64,6 +79,11 @@ class TestChannels(unittest.TestCase):
         expected = 1
         self.assertEqual(expected, actual)
 
+    def test_wav_pathlib(self):
+        actual = file_info.channels(Path(INPUT_FILE))
+        expected = 1
+        self.assertEqual(expected, actual)
+
     def test_aiff(self):
         actual = file_info.channels(INPUT_FILE2)
         expected = 3
@@ -82,6 +102,11 @@ class TestComments(unittest.TestCase):
         expected = ""
         self.assertEqual(expected, actual)
 
+    def test_wav_pathlib(self):
+        actual = file_info.comments(Path(INPUT_FILE))
+        expected = ""
+        self.assertEqual(expected, actual)
+
     def test_aiff(self):
         actual = file_info.comments(INPUT_FILE2)
         expected = "Processed by SoX"
@@ -97,6 +122,11 @@ class TestDuration(unittest.TestCase):
 
     def test_wav(self):
         actual = file_info.duration(INPUT_FILE)
+        expected = 10.0
+        self.assertEqual(expected, actual)
+
+    def test_wav_pathlib(self):
+        actual = file_info.duration(Path(INPUT_FILE))
         expected = 10.0
         self.assertEqual(expected, actual)
 
@@ -123,6 +153,11 @@ class TestEncoding(unittest.TestCase):
         expected = "Signed Integer PCM"
         self.assertEqual(expected, actual)
 
+    def test_wav_pathlib(self):
+        actual = file_info.encoding(Path(INPUT_FILE))
+        expected = "Signed Integer PCM"
+        self.assertEqual(expected, actual)
+
     def test_aiff(self):
         actual = file_info.encoding(INPUT_FILE2)
         expected = "Signed Integer PCM"
@@ -138,6 +173,11 @@ class TestFileType(unittest.TestCase):
 
     def test_wav(self):
         actual = file_info.file_type(INPUT_FILE)
+        expected = "wav"
+        self.assertEqual(expected, actual)
+
+    def test_wav_pathlib(self):
+        actual = file_info.file_type(Path(INPUT_FILE))
         expected = "wav"
         self.assertEqual(expected, actual)
 
@@ -159,6 +199,11 @@ class TestNumSamples(unittest.TestCase):
         expected = 441000
         self.assertEqual(expected, actual)
 
+    def test_wav_pathlib(self):
+        actual = file_info.num_samples(Path(INPUT_FILE))
+        expected = 441000
+        self.assertEqual(expected, actual)
+
     def test_aiff(self):
         actual = file_info.num_samples(INPUT_FILE2)
         expected = 80000
@@ -174,6 +219,11 @@ class TestSampleRate(unittest.TestCase):
 
     def test_wav(self):
         actual = file_info.sample_rate(INPUT_FILE)
+        expected = 44100
+        self.assertEqual(expected, actual)
+
+    def test_wav_pathlib(self):
+        actual = file_info.sample_rate(Path(INPUT_FILE))
         expected = 44100
         self.assertEqual(expected, actual)
 
@@ -195,6 +245,11 @@ class TestSilent(unittest.TestCase):
         expected = False
         self.assertEqual(expected, actual)
 
+    def test_nonsilent_pathlib(self):
+        actual = file_info.silent(Path(INPUT_FILE))
+        expected = False
+        self.assertEqual(expected, actual)
+
     def test_silent(self):
         actual = file_info.silent(SILENT_FILE)
         expected = True
@@ -210,6 +265,11 @@ class TestFileExtension(unittest.TestCase):
 
     def test_ext1(self):
         actual = file_info.file_extension('simplefile.xyz')
+        expected = 'xyz'
+        self.assertEqual(expected, actual)
+
+    def test_ext1_pathlib(self):
+        actual = file_info.file_extension(Path('simplefile.xyz'))
         expected = 'xyz'
         self.assertEqual(expected, actual)
 
@@ -233,28 +293,42 @@ class TestFileExtension(unittest.TestCase):
         expected = 'x23zya'
         self.assertEqual(expected, actual)
 
+    def test_ext6(self):
+        actual = file_info.file_extension('simplefile.MP3')
+        expected = 'mp3'
+        self.assertEqual(expected, actual)
+
 
 class TestInfo(unittest.TestCase):
 
     def test_dictionary(self):
-        actual = file_info.info(INPUT_FILE)
-        expected = {
-            'channels': 1,
-            'sample_rate': 44100.0,
-            'bitdepth': 16,
-            'bitrate': 706000.0,
-            'duration': 10.0,
-            'num_samples': 441000,
-            'encoding': 'Signed Integer PCM',
-            'silent': False
-        }
-        self.assertEqual(expected, actual)
+        for use_pathlib in [False, True]:
+            with self.subTest():
+                input_file = Path(INPUT_FILE) if use_pathlib else INPUT_FILE
+
+                actual = file_info.info(input_file)
+                expected = {
+                    'channels': 1,
+                    'sample_rate': 44100.0,
+                    'bitdepth': 16,
+                    'bitrate': 706000.0,
+                    'duration': 10.0,
+                    'num_samples': 441000,
+                    'encoding': 'Signed Integer PCM',
+                    'silent': False
+                }
+                self.assertEqual(expected, actual)
 
 
 class TestValidateInputFile(unittest.TestCase):
 
     def test_valid(self):
         actual = file_info.validate_input_file(INPUT_FILE)
+        expected = None
+        self.assertEqual(expected, actual)
+
+    def test_valid_pathlib(self):
+        actual = file_info.validate_input_file(Path(INPUT_FILE))
         expected = None
         self.assertEqual(expected, actual)
 

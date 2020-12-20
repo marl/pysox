@@ -1,13 +1,14 @@
 '''Base module for calling SoX '''
+import subprocess
+from pathlib import Path
+from subprocess import CalledProcessError
+from typing import Union
+
+import numpy as np
 from typing_extensions import Literal
 
-from .log import logger
-
-import subprocess
-from subprocess import CalledProcessError
-import numpy as np
-
 from . import NO_SOX
+from .log import logger
 
 SOXI_ARGS = ['B', 'b', 'c', 'a', 'D', 'e', 't', 's', 'r']
 
@@ -19,7 +20,6 @@ EncodingValue = Literal[
     'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
     'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
 ]
-
 
 
 def sox(args, src_array=None, decode_out_with_utf=True):
@@ -49,6 +49,9 @@ def sox(args, src_array=None, decode_out_with_utf=True):
         Returns stderr as a string.
 
     '''
+    # Explicitly convert python3 pathlib.Path objects to strings.
+    args = [str(x) for x in args]
+
     if args[0].lower() != "sox":
         args.insert(0, "sox")
     else:
@@ -96,6 +99,7 @@ def sox(args, src_array=None, decode_out_with_utf=True):
 class SoxError(Exception):
     '''Exception to be raised when SoX exits with non-zero status.
     '''
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
@@ -126,12 +130,12 @@ def _get_valid_formats():
 VALID_FORMATS = _get_valid_formats()
 
 
-def soxi(filepath, argument):
+def soxi(filepath: Union[str, Path], argument: str) -> str:
     ''' Base call to SoXI.
 
     Parameters
     ----------
-    filepath : str
+    filepath : path-like (str or pathlib.Path)
         Path to audio file.
 
     argument : str
@@ -142,6 +146,7 @@ def soxi(filepath, argument):
     shell_output : str
         Command line output of SoXI
     '''
+    filepath = str(filepath)
 
     if argument not in SOXI_ARGS:
         raise ValueError("Invalid argument '{}' to SoXI".format(argument))
@@ -179,6 +184,9 @@ def play(args):
         True on success.
 
     '''
+    # Make sure all inputs are strings (eg not pathlib.Path)
+    args = [str(x) for x in args]
+
     if args[0].lower() != "play":
         args.insert(0, "play")
     else:
@@ -209,6 +217,7 @@ def play(args):
 class SoxiError(Exception):
     '''Exception to be raised when SoXI exits with non-zero status.
     '''
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
