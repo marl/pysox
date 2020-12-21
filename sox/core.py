@@ -2,7 +2,7 @@
 import subprocess
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Union
+from typing import Union, List, Optional, Tuple, Iterable, Any
 
 import numpy as np
 from typing_extensions import Literal
@@ -22,7 +22,10 @@ EncodingValue = Literal[
 ]
 
 
-def sox(args, src_array=None, decode_out_with_utf=True):
+def sox(args: Iterable[str],
+        src_array: Optional[np.ndarray] = None,
+        decode_out_with_utf: bool = True) -> \
+        Tuple[bool, Optional[Union[str, np.ndarray]], Optional[str]]:
     '''Pass an argument list to SoX.
 
     Parameters
@@ -104,7 +107,7 @@ class SoxError(Exception):
         Exception.__init__(self, *args, **kwargs)
 
 
-def _get_valid_formats():
+def _get_valid_formats() -> List[str]:
     ''' Calls SoX help for a lists of audio formats available with the current
     install of SoX.
 
@@ -169,7 +172,7 @@ def soxi(filepath: Union[str, Path], argument: str) -> str:
     return str(shell_output).strip('\n')
 
 
-def play(args):
+def play(args: Iterable[str]) -> bool:
     '''Pass an argument list to play.
 
     Parameters
@@ -222,7 +225,7 @@ class SoxiError(Exception):
         Exception.__init__(self, *args, **kwargs)
 
 
-def is_number(var):
+def is_number(var: Any) -> bool:
     '''Check if variable is a numeric value.
 
     Parameters
@@ -243,7 +246,7 @@ def is_number(var):
         return False
 
 
-def all_equal(list_of_things):
+def all_equal(list_of_things: List[Any]) -> bool:
     '''Check if a list contains identical elements.
 
     Parameters

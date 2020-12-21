@@ -1,8 +1,9 @@
 ''' Audio file info computed by soxi.
 '''
 import os
+from numbers import Number
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 from typing import Optional, Union
 
 from .core import VALID_FORMATS
@@ -337,7 +338,7 @@ def file_extension(filepath: Union[str, Path]) -> str:
     return Path(filepath).suffix[1:].lower()
 
 
-def info(filepath: Union[str, Path]) -> dict:
+def info(filepath: Union[str, Path]) -> Dict[str, Union[str, Number]]:
     '''Get a dictionary of file information
 
     Parameters
@@ -371,7 +372,7 @@ def info(filepath: Union[str, Path]) -> dict:
     return info_dictionary
 
 
-def stat(filepath: Union[str, Path]) -> dict:
+def stat(filepath: Union[str, Path]) -> Dict[str, Optional[float]]:
     '''Returns a dictionary of audio statistics.
 
     Parameters
@@ -408,7 +409,7 @@ def _stat_call(filepath: Union[str, Path]) -> str:
     return stat_output
 
 
-def _parse_stat(stat_output: Union[str, Path]) -> dict:
+def _parse_stat(stat_output: Union[str, Path]) -> Dict[str, Optional[float]]:
     '''Parse the string output from sox's stat function
 
     Parameters

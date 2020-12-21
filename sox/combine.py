@@ -29,7 +29,7 @@ COMBINE_VALS = [
     'concatenate', 'merge', 'mix', 'mix-power', 'multiply'
 ]
 
-CombineValue = Literal['concatenate', 'merge', 'mix', 'mix-power', 'multiply']
+CombineType = Literal['concatenate', 'merge', 'mix', 'mix-power', 'multiply']
 
 
 class Combiner(Transformer):
@@ -47,7 +47,7 @@ class Combiner(Transformer):
     def build(self,
               input_filepath_list: Union[str, Path],
               output_filepath: Union[str, Path],
-              combine_type: CombineValue,
+              combine_type: CombineType,
               input_volumes: Optional[List[float]] = None):
         '''Builds the output_file by executing the current set of commands.
 
@@ -127,7 +127,7 @@ class Combiner(Transformer):
 
     def preview(self,
                 input_filepath_list: List[Union[str, Path]],
-                combine_type: CombineValue,
+                combine_type: CombineType,
                 input_volumes: Optional[List[float]] = None):
         '''Play a preview of the output with the current set of effects
 
@@ -329,7 +329,8 @@ class Combiner(Transformer):
         return self
 
 
-def _validate_file_formats(input_filepath_list, combine_type):
+def _validate_file_formats(input_filepath_list: List[Path],
+                           combine_type: CombineType):
     '''Validate that combine method can be performed with given files.
     Raises IOError if input file formats are incompatible.
     '''
@@ -339,7 +340,8 @@ def _validate_file_formats(input_filepath_list, combine_type):
         _validate_num_channels(input_filepath_list, combine_type)
 
 
-def _validate_sample_rates(input_filepath_list, combine_type):
+def _validate_sample_rates(input_filepath_list: List[Path],
+                           combine_type: CombineType):
     ''' Check if files in input file list have the same sample rate
     '''
     sample_rates = [
@@ -353,7 +355,8 @@ def _validate_sample_rates(input_filepath_list, combine_type):
         )
 
 
-def _validate_num_channels(input_filepath_list, combine_type):
+def _validate_num_channels(input_filepath_list: List[Path],
+                           combine_type: CombineType):
     ''' Check if files in input file list have the same number of channels
     '''
     channels = [
@@ -368,8 +371,9 @@ def _validate_num_channels(input_filepath_list, combine_type):
         )
 
 
-def _build_input_format_list(input_filepath_list, input_volumes=None,
-                             input_format=None):
+def _build_input_format_list(input_filepath_list: List[Path],
+                             input_volumes: Optional[List[float]] = None,
+                             input_format: List[List[str]] = None):
     '''Set input formats given input_volumes.
 
     Parameters
@@ -443,7 +447,8 @@ def _build_input_format_list(input_filepath_list, input_volumes=None,
     return input_format_list
 
 
-def _build_input_args(input_filepath_list, input_format_list):
+def _build_input_args(input_filepath_list: List[Path],
+                      input_format_list: List[str]):
     ''' Builds input arguments by stitching input filepaths and input
     formats together.
     '''
@@ -463,7 +468,7 @@ def _build_input_args(input_filepath_list, input_format_list):
     return input_args
 
 
-def _validate_combine_type(combine_type):
+def _validate_combine_type(combine_type: List[CombineType]):
     '''Check that the combine_type is valid.
 
     Parameters
@@ -479,7 +484,7 @@ def _validate_combine_type(combine_type):
         )
 
 
-def _validate_volumes(input_volumes):
+def _validate_volumes(input_volumes: List[float]):
     '''Check input_volumes contains a valid list of volumes.
 
     Parameters
