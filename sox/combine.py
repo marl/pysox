@@ -430,6 +430,8 @@ def _build_input_args(input_filepath_list, input_format_list):
     ''' Builds input arguments by stitching input filepaths and input
     formats together.
     '''
+    # Convert pathlib.Paths to strings.
+    input_filepath_list = [str(x) for x in input_filepath_list]
     if len(input_format_list) != len(input_filepath_list):
         raise ValueError(
             "input_format_list & input_filepath_list are not the same size"

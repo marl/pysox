@@ -1,5 +1,6 @@
-import unittest
+from pathlib import Path
 import os
+import unittest
 
 from sox import transform, file_info
 from sox.core import SoxError
@@ -95,6 +96,15 @@ class TestTransformSetGlobals(unittest.TestCase):
         self.assertEqual(expected, actual)
 
         actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_defaults_pathlib(self):
+        actual = self.tfm.globals
+        expected = ['-D', '-V2']
+        self.assertEqual(expected, actual)
+
+        actual_result = self.tfm.build(Path(INPUT_FILE), Path(OUTPUT_FILE))
         expected_result = True
         self.assertEqual(expected_result, actual_result)
 
