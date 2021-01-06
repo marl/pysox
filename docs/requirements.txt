@@ -1,2 +1,2 @@
 numpydoc>=0.5
-numpy >= 1.9.0
+numpy>=1.9.0
