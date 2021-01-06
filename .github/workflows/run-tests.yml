@@ -43,7 +43,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --cov=sox/
+        pytest
 
     - name: Coveralls
       uses: coverallsapp/github-action@master
