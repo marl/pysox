@@ -291,7 +291,7 @@ def validate_output_file(output_filepath: Union[str, Path]) -> None:
         The output filepath.
 
     '''
-    # This function enforces use of the path as a string, becasue
+    # This function enforces use of the path as a string, because
     # os.access has no analog in pathlib.
     output_filepath = str(output_filepath)
 

@@ -1,4 +1,5 @@
 '''Base module for calling SoX '''
+
 import subprocess
 from pathlib import Path
 from subprocess import CalledProcessError
