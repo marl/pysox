@@ -48,7 +48,7 @@ jobs:
       
     - name: Run Coveralls
       run: |
-        coverage report --source=sox > ${{ github.workspace }}/coverage/lcov.info
+        coverage run -m pytest tests/ > ${{ github.workspace }}/coverage/lcov.info
 
     - name: push results to Coveralls
       uses: coverallsapp/github-action@master
