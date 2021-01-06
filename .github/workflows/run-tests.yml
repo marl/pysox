@@ -43,7 +43,7 @@ jobs:
 
     - name: Test with nosetests
       run: |
-        pytest	
+        nosetests --with-coverage --cover-erase --cover-package=sox -v -w tests/		
 
     - name: Coveralls
       uses: coverallsapp/github-action@master
