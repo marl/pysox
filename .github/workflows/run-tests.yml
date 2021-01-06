@@ -44,9 +44,13 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --cov=sox/ tests/ > ${{ github.workspace }}/coverage/lcov.info
+        pytest tests/
+      
+    - name: Run Coveralls
+      run: |
+        coverage run --source=sox -m pytest tests/
 
-    - name: Coveralls
+    - name: push results to Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
