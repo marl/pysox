@@ -50,8 +50,8 @@ jobs:
       run: |
         coverage run -m pytest tests/ > ${{ github.workspace }}/coverage/lcov.info
 
-      - name: Coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          coveralls
+    - name: Coveralls
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        coveralls
