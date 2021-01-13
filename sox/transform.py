@@ -8,7 +8,8 @@ This module requires that SoX is installed.
 from __future__ import print_function
 
 from pathlib import Path
-from typing import List, Optional, Literal, Dict, Union, Tuple, Sequence
+from typing import List, Optional, Dict, Union, Tuple, Sequence
+from typing_extensions import Literal
 
 from .log import logger
 
