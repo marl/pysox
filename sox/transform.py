@@ -8,7 +8,7 @@ This module requires that SoX is installed.
 from __future__ import print_function
 
 from pathlib import Path
-from typing import List, Optional, Literal, Dict, Union, Tuple
+from typing import List, Optional, Literal, Dict, Union, Tuple, Sequence
 
 from .log import logger
 
@@ -1709,8 +1709,8 @@ class Transformer:
     def echos(self,
               gain_in: float = 0.8, gain_out: float = 0.9,
               n_echos: int = 1,
-              delays: List[float] = [60],
-              decays: List[float] = [0.4]):
+              delays: Sequence[float] = (60,),
+              decays: Sequence[float] = (0.4,)):
         '''Add a sequence of echoes to the audio.
 
         Like the echo effect, echos stand for ‘ECHO in Sequel’, that is the
@@ -1746,8 +1746,8 @@ class Transformer:
             raise ValueError("n_echos must be a positive integer.")
 
         # validate delays
-        if not isinstance(delays, list):
-            raise ValueError("delays must be a list")
+        if not isinstance(delays, Sequence):
+            raise ValueError("delays must be a sequence (list or tuple)")
 
         if len(delays) != n_echos:
             raise ValueError("the length of delays must equal n_echos")
@@ -1756,8 +1756,8 @@ class Transformer:
             raise ValueError("the elements of delays must be numbers > 0")
 
         # validate decays
-        if not isinstance(decays, list):
-            raise ValueError("decays must be a list")
+        if not isinstance(decays, Sequence):
+            raise ValueError("decays must be a sequence (list or tuple)")
 
         if len(decays) != n_echos:
             raise ValueError("the length of decays must equal n_echos")
@@ -1877,7 +1877,7 @@ class Transformer:
 
         return self
 
-    def fir(self, coefficients: List[float]):
+    def fir(self, coefficients: Sequence[float]):
         '''Use SoX’s FFT convolution engine with given FIR filter coefficients.
 
         Parameters
@@ -1886,8 +1886,8 @@ class Transformer:
             fir filter coefficients
 
         '''
-        if not isinstance(coefficients, list):
-            raise ValueError("coefficients must be a list.")
+        if not isinstance(coefficients, Sequence):
+            raise ValueError("coefficients must be a sequence (list or tuple).")
 
         if not all([is_number(c) for c in coefficients]):
             raise ValueError("coefficients must be numbers.")

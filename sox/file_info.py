@@ -106,7 +106,7 @@ def comments(input_filepath: Union[str, Path]) -> str:
     return str(output)
 
 
-def duration(input_filepath: Union[str, Path]) -> float:
+def duration(input_filepath: Union[str, Path]) -> Optional[float]:
     '''
     Show duration in seconds, or None if not available.
 
@@ -409,7 +409,7 @@ def _stat_call(filepath: Union[str, Path]) -> str:
     return stat_output
 
 
-def _parse_stat(stat_output: Union[str, Path]) -> Dict[str, Optional[float]]:
+def _parse_stat(stat_output: str) -> Dict[str, Optional[float]]:
     '''Parse the string output from sox's stat function
 
     Parameters
