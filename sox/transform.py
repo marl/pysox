@@ -74,13 +74,13 @@ class Transformer:
             Global arguments that will be passed to SoX.
 
         '''
-        self.input_format: Dict = {}
-        self.output_format: Dict = {}
+        self.input_format = {}  # type: Dict
+        self.output_format = {}  # type : Dict
 
-        self.effects: List[str] = []
-        self.effects_log: List[str] = []
+        self.effects = []  # type: List[str]
+        self.effects_log = []  # type: List[str]
 
-        self.globals: List[str] = []
+        self.globals = []  # type: List[str]
         self.set_globals()
 
     def set_globals(self, dither: bool = False,
