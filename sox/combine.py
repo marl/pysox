@@ -12,17 +12,16 @@ from typing import Union, Optional, List
 
 from typing_extensions import Literal
 
-from . import file_info
 from . import core
-from .log import logger
+from . import file_info
 from .core import ENCODING_VALS, EncodingValue
-from .core import is_number
-from .core import sox
-from .core import play
 from .core import SoxError
 from .core import SoxiError
 from .core import VALID_FORMATS
-
+from .core import is_number
+from .core import play
+from .core import sox
+from .log import logger
 from .transform import Transformer
 
 COMBINE_VALS = [
@@ -329,7 +328,7 @@ class Combiner(Transformer):
         return self
 
 
-def _validate_file_formats(input_filepath_list: List[Path],
+def _validate_file_formats(input_filepath_list: List[Union[str, Path]],
                            combine_type: CombineType):
     '''Validate that combine method can be performed with given files.
     Raises IOError if input file formats are incompatible.
@@ -373,7 +372,8 @@ def _validate_num_channels(input_filepath_list: List[Path],
 
 def _build_input_format_list(input_filepath_list: List[Path],
                              input_volumes: Optional[List[float]] = None,
-                             input_format: List[List[str]] = None):
+                             input_format: Optional[List[List[str]]] = None) \
+        -> List[str]:
     '''Set input formats given input_volumes.
 
     Parameters
@@ -448,7 +448,7 @@ def _build_input_format_list(input_filepath_list: List[Path],
 
 
 def _build_input_args(input_filepath_list: List[Path],
-                      input_format_list: List[str]):
+                      input_format_list: List[str]) -> List[str]:
     ''' Builds input arguments by stitching input filepaths and input
     formats together.
     '''
