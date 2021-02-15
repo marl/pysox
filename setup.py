@@ -25,6 +25,7 @@ if __name__ == "__main__":
         license='BSD-3-Clause',
         install_requires=[
             'numpy >= 1.9.0',
+            'typing-extensions >=  3.7.4.2 '
         ],
         extras_require={
             'tests': [

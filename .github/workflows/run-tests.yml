@@ -26,6 +26,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install sox
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-cov
@@ -54,4 +55,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        coveralls
+        coveralls --service=github

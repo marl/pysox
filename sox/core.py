@@ -1,14 +1,15 @@
 '''Base module for calling SoX '''
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Union
+from typing import Union, List, Optional, Tuple, Iterable, Any
 
 import numpy as np
+from typing_extensions import Literal
 
-from .log import logger
 from . import NO_SOX
+from .log import logger
 
 SOXI_ARGS = ['B', 'b', 'c', 'a', 'D', 'e', 't', 's', 'r']
 
@@ -16,9 +17,16 @@ ENCODING_VALS = [
     'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
     'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
 ]
+EncodingValue = Literal[
+    'signed-integer', 'unsigned-integer', 'floating-point', 'a-law', 'u-law',
+    'oki-adpcm', 'ima-adpcm', 'ms-adpcm', 'gsm-full-rate'
+]
 
 
-def sox(args, src_array=None, decode_out_with_utf=True):
+def sox(args: Iterable[str],
+        src_array: Optional[np.ndarray] = None,
+        decode_out_with_utf: bool = True) -> \
+        Tuple[bool, Optional[Union[str, np.ndarray]], Optional[str]]:
     '''Pass an argument list to SoX.
 
     Parameters
@@ -95,11 +103,12 @@ def sox(args, src_array=None, decode_out_with_utf=True):
 class SoxError(Exception):
     '''Exception to be raised when SoX exits with non-zero status.
     '''
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
 
-def _get_valid_formats():
+def _get_valid_formats() -> List[str]:
     ''' Calls SoX help for a lists of audio formats available with the current
     install of SoX.
 
@@ -164,7 +173,7 @@ def soxi(filepath: Union[str, Path], argument: str) -> str:
     return str(shell_output).strip('\n')
 
 
-def play(args):
+def play(args: Iterable[str]) -> bool:
     '''Pass an argument list to play.
 
     Parameters
@@ -212,11 +221,12 @@ def play(args):
 class SoxiError(Exception):
     '''Exception to be raised when SoXI exits with non-zero status.
     '''
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
 
-def is_number(var):
+def is_number(var: Any) -> bool:
     '''Check if variable is a numeric value.
 
     Parameters
@@ -237,7 +247,7 @@ def is_number(var):
         return False
 
 
-def all_equal(list_of_things):
+def all_equal(list_of_things: List[Any]) -> bool:
     '''Check if a list contains identical elements.
 
     Parameters
