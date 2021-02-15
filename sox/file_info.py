@@ -1,12 +1,14 @@
 ''' Audio file info computed by soxi.
 '''
 import os
+from numbers import Number
 from pathlib import Path
+from typing import List, Dict
 from typing import Optional, Union
 
 from .core import VALID_FORMATS
-from .core import soxi
 from .core import sox
+from .core import soxi
 from .log import logger
 
 
@@ -104,7 +106,7 @@ def comments(input_filepath: Union[str, Path]) -> str:
     return str(output)
 
 
-def duration(input_filepath: Union[str, Path]) -> float:
+def duration(input_filepath: Union[str, Path]) -> Optional[float]:
     '''
     Show duration in seconds, or None if not available.
 
@@ -259,7 +261,7 @@ def validate_input_file(input_filepath: Union[str, Path]) -> None:
         )
 
 
-def validate_input_file_list(input_filepath_list: Union[str, Path]) -> None:
+def validate_input_file_list(input_filepath_list: List[Union[str, Path]]) -> None:
     '''Input file list validation function. Checks that object is a list and
     contains valid filepaths that can be processed by SoX.
 
@@ -320,7 +322,7 @@ def validate_output_file(output_filepath: Union[str, Path]) -> None:
         )
 
 
-def file_extension(filepath: Union[str, Path]):
+def file_extension(filepath: Union[str, Path]) -> str:
     '''Get the extension of a filepath.
 
     Parameters
@@ -336,7 +338,7 @@ def file_extension(filepath: Union[str, Path]):
     return Path(filepath).suffix[1:].lower()
 
 
-def info(filepath: Union[str, Path]) -> dict:
+def info(filepath: Union[str, Path]) -> Dict[str, Union[str, Number]]:
     '''Get a dictionary of file information
 
     Parameters
@@ -370,7 +372,7 @@ def info(filepath: Union[str, Path]) -> dict:
     return info_dictionary
 
 
-def stat(filepath: Union[str, Path]) -> dict:
+def stat(filepath: Union[str, Path]) -> Dict[str, Optional[float]]:
     '''Returns a dictionary of audio statistics.
 
     Parameters
@@ -407,7 +409,7 @@ def _stat_call(filepath: Union[str, Path]) -> str:
     return stat_output
 
 
-def _parse_stat(stat_output: Union[str, Path]) -> dict:
+def _parse_stat(stat_output: str) -> Dict[str, Optional[float]]:
     '''Parse the string output from sox's stat function
 
     Parameters
