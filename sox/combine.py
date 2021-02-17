@@ -7,23 +7,28 @@ This module requires that SoX is installed.
 
 from __future__ import print_function
 
-from . import file_info
+from pathlib import Path
+from typing import Union, Optional, List
+
+from typing_extensions import Literal
+
 from . import core
-from .log import logger
-from .core import ENCODING_VALS
-from .core import is_number
-from .core import sox
-from .core import play
+from . import file_info
+from .core import ENCODING_VALS, EncodingValue
 from .core import SoxError
 from .core import SoxiError
 from .core import VALID_FORMATS
-
+from .core import is_number
+from .core import play
+from .core import sox
+from .log import logger
 from .transform import Transformer
-
 
 COMBINE_VALS = [
     'concatenate', 'merge', 'mix', 'mix-power', 'multiply'
 ]
+
+CombineType = Literal['concatenate', 'merge', 'mix', 'mix-power', 'multiply']
 
 
 class Combiner(Transformer):
@@ -38,8 +43,11 @@ class Combiner(Transformer):
     def __init__(self):
         super(Combiner, self).__init__()
 
-    def build(self, input_filepath_list, output_filepath, combine_type,
-              input_volumes=None):
+    def build(self,
+              input_filepath_list: Union[str, Path],
+              output_filepath: Union[str, Path],
+              combine_type: CombineType,
+              input_volumes: Optional[List[float]] = None):
         '''Builds the output_file by executing the current set of commands.
 
         Parameters
@@ -116,7 +124,10 @@ class Combiner(Transformer):
                 logger.info("[SoX] {}".format(out))
             return True
 
-    def preview(self, input_filepath_list, combine_type, input_volumes=None):
+    def preview(self,
+                input_filepath_list: List[Union[str, Path]],
+                combine_type: CombineType,
+                input_volumes: Optional[List[float]] = None):
         '''Play a preview of the output with the current set of effects
 
         Parameters
@@ -155,8 +166,13 @@ class Combiner(Transformer):
 
         play(args)
 
-    def set_input_format(self, file_type=None, rate=None, bits=None,
-                         channels=None, encoding=None, ignore_length=None):
+    def set_input_format(self,
+                         file_type: Optional[List[str]] = None,
+                         rate: Optional[List[float]] = None,
+                         bits: Optional[List[int]] = None,
+                         channels: Optional[List[int]] = None,
+                         encoding: Optional[List[EncodingValue]] = None,
+                         ignore_length: Optional[List[bool]] = None):
         '''Sets input file format arguments. This is primarily useful when
         dealing with audio files without a file extension. Overwrites any
         previously set input file arguments.
@@ -312,7 +328,8 @@ class Combiner(Transformer):
         return self
 
 
-def _validate_file_formats(input_filepath_list, combine_type):
+def _validate_file_formats(input_filepath_list: List[Union[str, Path]],
+                           combine_type: CombineType):
     '''Validate that combine method can be performed with given files.
     Raises IOError if input file formats are incompatible.
     '''
@@ -322,7 +339,8 @@ def _validate_file_formats(input_filepath_list, combine_type):
         _validate_num_channels(input_filepath_list, combine_type)
 
 
-def _validate_sample_rates(input_filepath_list, combine_type):
+def _validate_sample_rates(input_filepath_list: List[Path],
+                           combine_type: CombineType):
     ''' Check if files in input file list have the same sample rate
     '''
     sample_rates = [
@@ -332,11 +350,12 @@ def _validate_sample_rates(input_filepath_list, combine_type):
         raise IOError(
             "Input files do not have the same sample rate. The {} combine "
             "type requires that all files have the same sample rate"
-            .format(combine_type)
+                .format(combine_type)
         )
 
 
-def _validate_num_channels(input_filepath_list, combine_type):
+def _validate_num_channels(input_filepath_list: List[Path],
+                           combine_type: CombineType):
     ''' Check if files in input file list have the same number of channels
     '''
     channels = [
@@ -347,12 +366,14 @@ def _validate_num_channels(input_filepath_list, combine_type):
             "Input files do not have the same number of channels. The "
             "{} combine type requires that all files have the same "
             "number of channels"
-            .format(combine_type)
+                .format(combine_type)
         )
 
 
-def _build_input_format_list(input_filepath_list, input_volumes=None,
-                             input_format=None):
+def _build_input_format_list(input_filepath_list: List[Path],
+                             input_volumes: Optional[List[float]] = None,
+                             input_format: Optional[List[List[str]]] = None) \
+        -> List[str]:
     '''Set input formats given input_volumes.
 
     Parameters
@@ -426,7 +447,8 @@ def _build_input_format_list(input_filepath_list, input_volumes=None,
     return input_format_list
 
 
-def _build_input_args(input_filepath_list, input_format_list):
+def _build_input_args(input_filepath_list: List[Path],
+                      input_format_list: List[str]) -> List[str]:
     ''' Builds input arguments by stitching input filepaths and input
     formats together.
     '''
@@ -446,7 +468,7 @@ def _build_input_args(input_filepath_list, input_format_list):
     return input_args
 
 
-def _validate_combine_type(combine_type):
+def _validate_combine_type(combine_type: List[CombineType]):
     '''Check that the combine_type is valid.
 
     Parameters
@@ -462,7 +484,7 @@ def _validate_combine_type(combine_type):
         )
 
 
-def _validate_volumes(input_volumes):
+def _validate_volumes(input_volumes: List[float]):
     '''Check input_volumes contains a valid list of volumes.
 
     Parameters
@@ -479,5 +501,5 @@ def _validate_volumes(input_volumes):
             if not core.is_number(vol):
                 raise ValueError(
                     "Elements of input_volumes must be numbers: found {}"
-                    .format(vol)
+                        .format(vol)
                 )
