@@ -170,7 +170,7 @@ def soxi(filepath: Union[str, Path], argument: str) -> str:
 
     shell_output = shell_output.decode("utf-8")
 
-    return str(shell_output).strip('\n')
+    return str(shell_output).strip('\n\r')
 
 
 def play(args: Iterable[str]) -> bool:
