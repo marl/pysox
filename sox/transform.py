@@ -629,8 +629,12 @@ class Transformer:
         args = []
         args.extend(self.globals)
         args.extend(self._input_format_args(input_format))
+        if input_filepath != "-n":
+            args.append("--")
         args.append(input_filepath)
         args.extend(self._output_format_args(self.output_format))
+        if output_filepath != "-n":
+            args.append("--")
         args.append(output_filepath)
         args.extend(self.effects)
 
@@ -860,8 +864,12 @@ class Transformer:
         args = []
         args.extend(self.globals)
         args.extend(self._input_format_args(input_format))
+        if input_filepath != "-n":
+            args.append("--")
         args.append(input_filepath)
         args.extend(self._output_format_args(output_format))
+        if output_filepath != "-n":
+            args.append("--")
         args.append(output_filepath)
         args.extend(self.effects)
 
@@ -903,6 +911,7 @@ class Transformer:
         args = ["play", "--no-show-progress"]
         args.extend(self.globals)
         args.extend(self.input_format)
+        args.append("--")
         args.append(input_filepath)
         args.extend(self.effects)
 

@@ -1,5 +1,6 @@
 from pathlib import Path
 import unittest
+import shutil
 import os
 
 from sox import core
@@ -11,6 +12,7 @@ def relpath(f):
 
 
 SPACEY_FILE = relpath("data/annoying filename (derp).wav")
+DASHED_FILE = "-dashed.wav"
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE_INVALID = relpath('data/input.xyz')
 INPUT_FILE_CORRUPT = relpath('data/empty.aiff')
@@ -138,6 +140,13 @@ class TestSoxi(unittest.TestCase):
         actual = core.soxi(SPACEY_FILE, 's')
         expected = '80000'
         self.assertEqual(expected, actual)
+
+    def test_dashed_wav(self):
+        shutil.copyfile(INPUT_FILE, DASHED_FILE)
+        actual = core.soxi(DASHED_FILE, 's')
+        expected = '441000'
+        self.assertEqual(expected, actual)
+        os.unlink(DASHED_FILE)
 
     def test_invalid_argument(self):
         with self.assertRaises(ValueError):
