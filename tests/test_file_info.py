@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import shutil
 import unittest
 
 from sox import file_info
@@ -11,6 +12,7 @@ def relpath(f):
 
 
 SPACEY_FILE = relpath("data/annoying filename (derp).wav")
+DASHED_FILE = "-dashed.wav"
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE2 = relpath('data/input.aiff')
 INPUT_FILE3 = relpath('data/input.WAV')
@@ -134,6 +136,13 @@ class TestDuration(unittest.TestCase):
         actual = file_info.duration(SPACEY_FILE)
         expected = 10.0
         self.assertEqual(expected, actual)
+
+    def test_dashed_wav(self):
+        shutil.copyfile(INPUT_FILE, DASHED_FILE)
+        actual = file_info.duration(DASHED_FILE)
+        expected = 10.0
+        self.assertEqual(expected, actual)
+        os.unlink(DASHED_FILE)
 
     def test_aiff(self):
         actual = file_info.duration(INPUT_FILE2)
@@ -336,6 +345,13 @@ class TestValidateInputFile(unittest.TestCase):
         actual = file_info.validate_input_file(SPACEY_FILE)
         expected = None
         self.assertEqual(expected, actual)
+
+    def test_valid_wdash(self):
+        shutil.copyfile(INPUT_FILE, DASHED_FILE)
+        actual = file_info.validate_input_file(DASHED_FILE)
+        expected = None
+        self.assertEqual(expected, actual)
+        os.unlink(DASHED_FILE)
 
     def test_nonexistent(self):
         with self.assertRaises(IOError):

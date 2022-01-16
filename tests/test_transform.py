@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import shutil
 import unittest
 
 from sox import transform, file_info
@@ -13,6 +14,8 @@ def relpath(f):
 
 
 SPACEY_FILE = relpath("data/annoying filename (derp).wav")
+DASHED_FILE = "-dashed.wav"
+DASHED_OUTPUT_FILE = "-dashed-output.wav"
 INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE4 = relpath('data/input4.wav')
 OUTPUT_FILE = relpath('data/output.wav')
@@ -688,6 +691,13 @@ class TestTransformerBuild(unittest.TestCase):
         status = self.tfm.build(SPACEY_FILE, OUTPUT_FILE)
         self.assertTrue(status)
 
+    def test_valid_dashed(self):
+        shutil.copyfile(INPUT_FILE, DASHED_FILE)
+        status = self.tfm.build(DASHED_FILE, DASHED_OUTPUT_FILE)
+        self.assertTrue(status)
+        os.unlink(DASHED_FILE)
+        os.unlink(DASHED_OUTPUT_FILE)
+
     def test_null_output(self):
         status = self.tfm.build(INPUT_FILE, '-n')
         self.assertTrue(status)
@@ -750,6 +760,12 @@ class TestTransformerBuildArray(unittest.TestCase):
     def test_valid_spacey(self):
         arr_out = self.tfm.build_array(SPACEY_FILE)
         self.assertTrue(isinstance(arr_out, np.ndarray))
+
+    def test_valid_dashed(self):
+        shutil.copyfile(INPUT_FILE, DASHED_FILE)
+        arr_out = self.tfm.build_array(DASHED_FILE)
+        self.assertTrue(isinstance(arr_out, np.ndarray))
+        os.unlink(DASHED_FILE)
 
     def test_extra_arg(self):
         arr_out = self.tfm.build_array(INPUT_FILE, extra_args=['norm'])

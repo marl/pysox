@@ -157,6 +157,8 @@ def soxi(filepath: Union[str, Path], argument: str) -> str:
 
     args = ['sox', '--i']
     args.append("-{}".format(argument))
+    if filepath != "-n":
+        args.append("--")
     args.append(filepath)
 
     try:
