@@ -17,6 +17,7 @@ INPUT_FILE = relpath('data/input.wav')
 INPUT_FILE4 = relpath('data/input4.wav')
 OUTPUT_FILE = relpath('data/output.wav')
 OUTPUT_FILE_ALT = relpath('data/output_alt.wav')
+OUTPUT_FILE_MP3 = relpath('data/output.mp3')
 NOISE_PROF_FILE = relpath('data/noise.prof')
 
 
@@ -371,6 +372,35 @@ class TestTransformSetInputFormat(unittest.TestCase):
             self.tfm.set_input_format(encoding='16-bit-signed-integer')
         with self.assertRaises(ValueError):
             self.tfm._input_format_args({'encoding': '16-bit-signed-integer'})
+    def test_bitrate(self):
+        self.tfm.set_output_format(bitrate=320.0)
+        actual = self.tfm.output_format
+        expected = {
+            'file_type': None,
+            'rate': None,
+            'bits': None,
+            'channels': None,
+            'encoding': None,
+            'bitrate': 320.0,
+            'comments': None,
+            'append_comments': True
+        }
+        self.assertEqual(expected, actual)
+
+        actual_args = self.tfm._output_format_args(self.tfm.output_format)
+        expected_args = ['-C', '320.0']
+        self.assertEqual(expected_args, actual_args)
+
+        actual_result = self.tfm.build(INPUT_FILE, OUTPUT_FILE)
+        expected_result = True
+        self.assertEqual(expected_result, actual_result)
+
+    def test_bitrate_invalid(self):
+        with self.assertRaises(ValueError):
+             self.tfm.set_output_format(bitrate='320.0')
+        with self.assertRaises(ValueError):
+             self.tfm._output_format_args({'bitrate': 320})
+
 
     def test_ignore_length(self):
         self.tfm.set_input_format(ignore_length=True)
@@ -427,6 +457,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': None,
             'encoding': None,
+            'bitrate': None,
             'comments': None,
             'append_comments': True
         }
@@ -449,6 +480,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': None,
             'encoding': None,
+            'bitrate': None,
             'comments': None,
             'append_comments': True
         }
@@ -477,6 +509,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': None,
             'encoding': None,
+            'bitrate': None,
             'comments': None,
             'append_comments': True
         }
@@ -499,6 +532,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': None,
             'encoding': None,
+            'bitrate': None,
             'comments': None,
             'append_comments': True
         }
@@ -533,6 +567,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': 32,
             'channels': None,
             'encoding': None,
+            'bitrate': None,
             'comments': None,
             'append_comments': True
         }
@@ -567,6 +602,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': 2,
             'encoding': None,
+            'bitrate': None,
             'comments': None,
             'append_comments': True
         }
@@ -601,6 +637,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': None,
             'encoding': 'signed-integer',
+            'bitrate': None,
             'comments': None,
             'append_comments': True
         }
@@ -629,6 +666,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': None,
             'encoding': None,
+            'bitrate': None,
             'comments': 'asdf',
             'append_comments': True
         }
@@ -657,6 +695,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
             'bits': None,
             'channels': None,
             'encoding': None,
+            'bitrate': None,
             'comments': 'asdf',
             'append_comments': False
         }
@@ -1747,6 +1786,27 @@ class TestTransformerConvert(unittest.TestCase):
         tfm = new_transformer()
         with self.assertRaises(ValueError):
             tfm.convert(bitdepth=17)
+
+    def test_bitrate_valid(self):
+        tfm = new_transformer()
+        tfm.convert(bitrate=320.0)
+
+        actual = tfm.output_format
+        expected = {'bitrate': 320.0}
+        self.assertEqual(expected, actual)
+ 
+        actual_res = tfm.build(INPUT_FILE, OUTPUT_FILE_MP3)
+        expected_res = True
+        self.assertEqual(expected_res, actual_res)
+
+        tfm.set_output_format(file_type='mp3', bitrate=320.0)
+        tfm_assert_array_to_file_output(
+            INPUT_FILE, OUTPUT_FILE_MP3, tfm, skip_array_tests=True)
+
+    def test_bitrate_invalid(self):
+        tfm = new_transformer()
+        with self.assertRaises(ValueError):
+            tfm.convert(bitrate=0)
 
 
 class TestTransformerDcshift(unittest.TestCase):

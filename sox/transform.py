@@ -315,6 +315,7 @@ class Transformer:
         bits = output_format.get('bits')
         channels = output_format.get('channels')
         encoding = output_format.get('encoding')
+        bitrate = output_format.get('bitrate')
         comments = output_format.get('comments')
         append_comments = output_format.get('append_comments', True)
 
@@ -341,6 +342,9 @@ class Transformer:
         if channels is not None and channels <= 0:
             raise ValueError('channels must be a positive number')
 
+        if not isinstance(bitrate, float) and bitrate is not None:
+            raise ValueError('bitrate must be an float or None')
+
         if encoding not in ENCODING_VALS + [None]:
             raise ValueError(
                 f'Invalid encoding. Must be one of {ENCODING_VALS}'
@@ -362,6 +366,7 @@ class Transformer:
         bits = output_format.get('bits')
         channels = output_format.get('channels')
         encoding = output_format.get('encoding')
+        bitrate = output_format.get('bitrate')
         comments = output_format.get('comments')
         append_comments = output_format.get('append_comments', True)
 
@@ -382,6 +387,9 @@ class Transformer:
         if encoding is not None:
             output_format_args.extend(['-e', f'{encoding}'])
 
+        if bitrate is not None:
+            output_format_args.extend(['-C', '{}'.format(bitrate)])
+
         if comments is not None:
             if append_comments:
                 output_format_args.extend(['--add-comment', comments])
@@ -396,6 +404,7 @@ class Transformer:
                           bits: Optional[int] = None,
                           channels: Optional[int] = None,
                           encoding: Optional[EncodingValue] = None,
+                          bitrate: Optional[float] = None,
                           comments: Optional[str] = None,
                           append_comments: bool = True):
         '''Sets output file format arguments. These arguments will overwrite
@@ -454,6 +463,8 @@ class Transformer:
                     associated speech quality. SoX has support for GSM’s
                     original 13kbps ‘Full Rate’ audio format. It is usually
                     CPU-intensive to work with GSM audio.
+        bitrate : float, default=None
+                    Desired bitrate. Uses Sox's -C (compression) argument.
         comments : str or None, default=None
             If not None, the string is added as a comment in the header of the
             output audio file. If None, no comments are added.
@@ -467,6 +478,7 @@ class Transformer:
             'bits': bits,
             'channels': channels,
             'encoding': encoding,
+            'bitrate': bitrate,
             'comments': comments,
             'append_comments': append_comments
         }
@@ -1477,7 +1489,8 @@ class Transformer:
     def convert(self,
                 samplerate: Optional[float] = None,
                 n_channels: Optional[int] = None,
-                bitdepth: Optional[int] = None):
+                bitdepth: Optional[int] = None,
+                bitrate: Optional[float] = None):
         '''Converts output audio to the specified format.
 
         Parameters
@@ -1488,6 +1501,8 @@ class Transformer:
             Desired number of channels. If None, defaults to the same as input.
         bitdepth : int, default=None
             Desired bitdepth. If None, defaults to the same as input.
+        bitrate : float, default=None
+            Desired bitrate. Uses Sox's -C (compression) argument.
 
         See Also
         --------
@@ -1511,6 +1526,11 @@ class Transformer:
             if not is_number(samplerate) or samplerate <= 0:
                 raise ValueError("samplerate must be a positive number.")
             self.rate(samplerate)
+        if bitrate is not None:
+            if not isinstance(bitrate, float) or bitrate <= 0:
+                raise ValueError("bitrate must be a positive float.")
+            self.output_format["bitrate"] = bitrate
+
         return self
 
     def dcshift(self, shift: float = 0.0):
