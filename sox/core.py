@@ -153,10 +153,10 @@ def soxi(filepath: Union[str, Path], argument: str) -> str:
     filepath = str(filepath)
 
     if argument not in SOXI_ARGS:
-        raise ValueError("Invalid argument '{}' to SoXI".format(argument))
+        raise ValueError(f"Invalid argument '{argument}' to SoXI")
 
     args = ['sox', '--i']
-    args.append("-{}".format(argument))
+    args.append(f"-{argument}")
     args.append(filepath)
 
     try:
@@ -165,8 +165,8 @@ def soxi(filepath: Union[str, Path], argument: str) -> str:
             stderr=subprocess.PIPE
         )
     except CalledProcessError as cpe:
-        logger.info("SoXI error message: {}".format(cpe.output))
-        raise SoxiError("SoXI failed with exit code {}".format(cpe.returncode))
+        logger.info(f"SoXI error message: {cpe.output}")
+        raise SoxiError(f"SoXI failed with exit code {cpe.returncode}")
 
     shell_output = shell_output.decode("utf-8")
 
