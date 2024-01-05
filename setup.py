@@ -1,9 +1,7 @@
 """ Setup script for sox. """
 from setuptools import setup
 
-import imp
 
-version = imp.load_source('sox.version', 'sox/version.py')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -11,12 +9,11 @@ with open("README.md", "r") as fh:
 if __name__ == "__main__":
     setup(
         name='sox',
-        version=version.version,
         description='Python wrapper around SoX.',
         author='Rachel Bittner',
         author_email='rachel.bittner@nyu.edu',
         url='https://github.com/rabitt/pysox',
-        download_url='http://github.com/rabitt/pysox/releases',
+        download_url='https://github.com/rabitt/pysox/releases',
         packages=['sox'],
         package_data={'sox': []},
         long_description=long_description,
