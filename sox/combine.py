@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 '''
 Python wrapper around the SoX library.
 This module requires that SoX is installed.
 '''
 
-from __future__ import print_function
 
 from pathlib import Path
 from typing import Union, Optional, List
@@ -41,7 +39,7 @@ class Combiner(Transformer):
     '''
 
     def __init__(self):
-        super(Combiner, self).__init__()
+        super().__init__()
 
     def build(self,
               input_filepath_list: Union[str, Path],
@@ -111,7 +109,7 @@ class Combiner(Transformer):
 
         if status != 0:
             raise SoxError(
-                "Stdout: {}\nStderr: {}".format(out, err)
+                f"Stdout: {out}\nStderr: {err}"
             )
         else:
             logger.info(
@@ -121,7 +119,7 @@ class Combiner(Transformer):
                 " ".join(self.effects_log)
             )
             if out is not None:
-                logger.info("[SoX] {}".format(out))
+                logger.info(f"[SoX] {out}")
             return True
 
     def preview(self,
@@ -306,19 +304,19 @@ class Combiner(Transformer):
             input_format.append([])
 
         for i, f in enumerate(file_type):
-            input_format[i].extend(['-t', '{}'.format(f)])
+            input_format[i].extend(['-t', f'{f}'])
 
         for i, r in enumerate(rate):
-            input_format[i].extend(['-r', '{}'.format(r)])
+            input_format[i].extend(['-r', f'{r}'])
 
         for i, b in enumerate(bits):
-            input_format[i].extend(['-b', '{}'.format(b)])
+            input_format[i].extend(['-b', f'{b}'])
 
         for i, c in enumerate(channels):
-            input_format[i].extend(['-c', '{}'.format(c)])
+            input_format[i].extend(['-c', f'{c}'])
 
         for i, e in enumerate(encoding):
-            input_format[i].extend(['-e', '{}'.format(e)])
+            input_format[i].extend(['-e', f'{e}'])
 
         for i, l in enumerate(ignore_length):
             if l is True:
@@ -347,7 +345,7 @@ def _validate_sample_rates(input_filepath_list: List[Path],
         file_info.sample_rate(f) for f in input_filepath_list
     ]
     if not core.all_equal(sample_rates):
-        raise IOError(
+        raise OSError(
             "Input files do not have the same sample rate. The {} combine "
             "type requires that all files have the same sample rate"
                 .format(combine_type)
@@ -362,7 +360,7 @@ def _validate_num_channels(input_filepath_list: List[Path],
         file_info.channels(f) for f in input_filepath_list
     ]
     if not core.all_equal(channels):
-        raise IOError(
+        raise OSError(
             "Input files do not have the same number of channels. The "
             "{} combine type requires that all files have the same "
             "number of channels"
@@ -441,7 +439,7 @@ def _build_input_format_list(input_filepath_list: List[Path],
             fmts = [f for f in input_format]
 
     for i, (vol, fmt) in enumerate(zip(vols, fmts)):
-        input_format_list[i].extend(['-v', '{}'.format(vol)])
+        input_format_list[i].extend(['-v', f'{vol}'])
         input_format_list[i].extend(fmt)
 
     return input_format_list

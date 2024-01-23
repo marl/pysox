@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # pysox documentation build configuration file, created by
 # sphinx-quickstart on Tue May 17 14:11:03 2016.

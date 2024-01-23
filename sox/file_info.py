@@ -250,14 +250,14 @@ def validate_input_file(input_filepath: Union[str, Path]) -> None:
     '''
     input_filepath = Path(input_filepath)
     if not input_filepath.exists():
-        raise IOError(
-            "input_filepath {} does not exist.".format(input_filepath)
+        raise OSError(
+            f"input_filepath {input_filepath} does not exist."
         )
     ext = file_extension(input_filepath)
     if ext not in VALID_FORMATS:
         logger.info("Valid formats: %s", " ".join(VALID_FORMATS))
         logger.warning(
-            "This install of SoX cannot process .{} files.".format(ext)
+            f"This install of SoX cannot process .{ext} files."
         )
 
 
@@ -304,15 +304,15 @@ def validate_output_file(output_filepath: Union[str, Path]) -> None:
         not os.access(os.path.dirname(output_filepath), os.W_OK)]
 
     if all(nowrite_conditions):
-        raise IOError(
-            "SoX cannot write to output_filepath {}".format(output_filepath)
+        raise OSError(
+            f"SoX cannot write to output_filepath {output_filepath}"
         )
 
     ext = file_extension(output_filepath)
     if ext not in VALID_FORMATS:
         logger.info("Valid formats: %s", " ".join(VALID_FORMATS))
         logger.warning(
-            "This install of SoX cannot process .{} files.".format(ext)
+            f"This install of SoX cannot process .{ext} files."
         )
 
     if os.path.exists(output_filepath):
