@@ -32,7 +32,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-cov
         python -m pip install coveralls
-        python -m pip install pysoundfile
+        python -m pip install soundfile
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         python -m pip install -e .
         mkdir ${{ github.workspace }}/coverage
