@@ -20,6 +20,32 @@ OUTPUT_FILE = relpath('data/output.wav')
 SILENT_FILE = relpath('data/silence.wav')
 
 
+class TestCarriageReturnStrip(unittest.TestCase):
+
+    def test_carriage_return_strip(self):
+        def part_of_file_info_bitrate(output):
+            # The characters below stand for kilo, Mega, Giga, etc.
+            greek_prefixes = '\0kMGTPEZY'
+            # Don't need the 'if output == "0":' branch here
+            if output[-1] in greek_prefixes:
+                multiplier = 1000.0**(greek_prefixes.index(output[-1]))
+                return float(output[:-1])*multiplier
+            else:
+                return float(output[:-1])
+        # Simulate a shell output with carriage return
+        shell_output = '256k\n\r'
+        # When only '\n' is stripped
+        output = shell_output.strip('\n')
+        with self.assertRaises(ValueError):
+            part_of_file_info_bitrate(output)
+        # When '\n\r' is stripped
+        output = shell_output.strip('\n\r')
+        actual = part_of_file_info_bitrate(output)
+        expected = 256000.0
+        self.assertIsInstance(actual, float)
+        self.assertEqual(expected, actual)
+
+
 class TestBitrate(unittest.TestCase):
 
     def test_wav(self):
