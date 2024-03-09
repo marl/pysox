@@ -56,13 +56,17 @@ def bitrate(input_filepath: Union[str, Path]) -> Optional[float]:
     validate_input_file(input_filepath)
     output = soxi(input_filepath, 'B')
     # The characters below stand for kilo, Mega, Giga, etc.
-    greek_prefixes = '\0kMGTPEZY'
+    # greek_prefix might not be the last character in string in cross platform
+    # environment - \r\n
+    greek_prefixes = '\0KMGTPEZY'
+    greek_index = [n for n, p in enumerate(greek_prefixes) if p in output.upper()]
     if output == "0":
         logger.warning("Bit rate unavailable for %s", input_filepath)
         return None
-    elif output[-1] in greek_prefixes:
-        multiplier = 1000.0**(greek_prefixes.index(output[-1]))
-        return float(output[:-1])*multiplier
+    elif greek_index:
+        assert len(greek_index) == 1
+        multiplier = 1000.0**greek_index[0]
+        return float(output[:greek_index[0]])*multiplier
     else:
         return float(output[:-1])
 
