@@ -2,4 +2,4 @@
 """Version info"""
 
 short_version = '1.5'
-version = '1.5rc1'
+version = '1.5.0'
