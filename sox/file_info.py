@@ -64,7 +64,7 @@ def bitrate(input_filepath: Union[str, Path]) -> Optional[float]:
         multiplier = 1000.0**(greek_prefixes.index(output[-1]))
         return float(output[:-1])*multiplier
     else:
-        return float(output[:-1])
+        return float(output)
 
 
 def channels(input_filepath: Union[str, Path]) -> int:
