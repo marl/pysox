@@ -43,8 +43,8 @@ def sox(args: Iterable[str],
 
     Returns
     -------
-    status : bool
-        True on success.
+    status : int
+        0 on success.
     out : str, np.ndarray, or None
         Returns a np.ndarray if src_array was an np.ndarray.
         Returns the stdout produced by sox if src_array is None.
