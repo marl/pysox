@@ -3129,7 +3129,9 @@ class Transformer:
         return self
 
     def stat(self,
-             input_filepath: Union[str, Path],
+             input_filepath: Optional[Union[str, Path]] = None,
+             input_array: Optional[np.ndarray] = None,
+             sample_rate_in: Optional[float] = None,
              scale: Optional[float] = None,
              rms: Optional[bool] = False):
         '''Display time and frequency domain statistical information about the
@@ -3143,8 +3145,13 @@ class Transformer:
 
         Parameters
         ----------
-        input_filepath : str
+        input_filepath : str or None
             Path to input file to compute stats on.
+        input_array : np.ndarray or None
+            A np.ndarray of an waveform with shape (n_samples, n_channels)
+            or None
+        sample_rate_in : int or None
+            Sample rate of input_array or None
         scale : float or None, default=None
             If not None, scales the input by the given scale factor.
         rms : bool, default=False
@@ -3169,7 +3176,8 @@ class Transformer:
             effect_args.append('-rms')
 
         _, _, stat_output = self.build(
-            input_filepath, '-n', extra_args=effect_args, return_output=True
+            input_filepath=input_filepath, input_array=input_array, sample_rate_in=sample_rate_in,
+            output_filepath='-n', extra_args=effect_args, return_output=True
         )
 
         stat_dict = {}
@@ -3184,7 +3192,10 @@ class Transformer:
 
         return stat_dict
 
-    def power_spectrum(self, input_filepath: Union[str, Path]):
+    def power_spectrum(self,
+             input_filepath: Optional[Union[str, Path]] = None,
+             input_array: Optional[np.ndarray] = None,
+             sample_rate_in: Optional[float] = None):
         '''Calculates the power spectrum (4096 point DFT). This method
         internally invokes the stat command with the -freq option.
 
@@ -3192,8 +3203,13 @@ class Transformer:
 
         Parameters
         ----------
-        input_filepath : str
+        input_filepath : str or None
             Path to input file to compute stats on.
+        input_array : np.ndarray or None
+            A np.ndarray of an waveform with shape (n_samples, n_channels)
+            or None
+        sample_rate_in : int or None
+            Sample rate of input_array or None
 
         Returns
         -------
@@ -3207,7 +3223,8 @@ class Transformer:
         effect_args = ['channels', '1', 'stat', '-freq']
 
         _, _, stat_output = self.build(
-            input_filepath, '-n', extra_args=effect_args, return_output=True
+            input_filepath=input_filepath, input_array=input_array, sample_rate_in=sample_rate_in,
+            output_filepath='-n', extra_args=effect_args, return_output=True
         )
 
         power_spectrum = []
@@ -3222,7 +3239,10 @@ class Transformer:
 
         return power_spectrum
 
-    def stats(self, input_filepath: Union[str, Path]):
+    def stats(self,
+             input_filepath: Optional[Union[str, Path]] = None,
+             input_array: Optional[np.ndarray] = None,
+             sample_rate_in: Optional[float] = None):
         '''Display time domain statistical information about the audio
         channels. Audio is passed unmodified through the SoX processing chain.
         Statistics are calculated and displayed for each audio channel
@@ -3235,8 +3255,13 @@ class Transformer:
 
         Parameters
         ----------
-        input_filepath : str
+        input_filepath : str or None
             Path to input file to compute stats on.
+        input_array : np.ndarray or None
+            A np.ndarray of an waveform with shape (n_samples, n_channels)
+            or None
+        sample_rate_in : int or None
+            Sample rate of input_array or None
 
         Returns
         -------
@@ -3250,7 +3275,8 @@ class Transformer:
         effect_args = ['channels', '1', 'stats']
 
         _, _, stats_output = self.build(
-            input_filepath, '-n', extra_args=effect_args, return_output=True
+            input_filepath=input_filepath, input_array=input_array, sample_rate_in=sample_rate_in,
+            output_filepath='-n', extra_args=effect_args, return_output=True
         )
 
         stats_dict = {}
