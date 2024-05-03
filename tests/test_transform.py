@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import unittest
+from unittest.mock import patch
 
 from sox import transform, file_info
 from sox.core import SoxError
@@ -676,6 +677,7 @@ class TestTransformSetOutputFormat(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tfm._output_format_args({'append_comments': None})
 
+
 class TestTransformerBuild(unittest.TestCase):
     def setUp(self):
         self.tfm = new_transformer()
@@ -813,6 +815,17 @@ class TestTransformerBuildArray(unittest.TestCase):
         self.tfm.set_output_format(bits=17)
         with self.assertRaises(ValueError):
             self.tfm.build_array(INPUT_FILE)
+
+    def test_output_file_type(self):
+        with patch("sox.transform.sox") as patched_sox_call:
+            patched_sox_call.return_value = 0, b"", b""
+            self.tfm.build_array(INPUT_FILE)
+            sox_cmd_args, src_array, decode_out_with_utf = patched_sox_call.call_args[0]
+            self.assertIn("raw", sox_cmd_args)  # default output file type
+            self.tfm.set_output_format(file_type="gsm")
+            self.tfm.build_array(INPUT_FILE)
+            sox_cmd_args, src_array, decode_out_with_utf = patched_sox_call.call_args[0]
+            self.assertIn("gsm", sox_cmd_args)  # desired output file type
 
 
 class TestTransformerClearEffects(unittest.TestCase):

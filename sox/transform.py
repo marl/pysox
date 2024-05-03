@@ -834,6 +834,9 @@ class Transformer:
             'append_comments': True,
         }
 
+        if self.output_format.get('file_type') is not None:
+            output_format['file_type'] = self.output_format['file_type']
+
         if self.output_format.get('rate') is not None:
             output_format['rate'] = self.output_format['rate']
 

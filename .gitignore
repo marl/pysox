@@ -66,3 +66,7 @@ target/
 .ipynb_checkpoints
 
 **/noise.prof
+
+# IDE Stuff
+.idea/
+.vscode/
