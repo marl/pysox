@@ -29,6 +29,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install sox
+        sudo apt-get install libsox-fmt-mp3
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-cov
         python -m pip install coveralls
@@ -47,7 +48,7 @@ jobs:
     - name: Test with pytest
       run: |
         pytest tests/
-      
+
     - name: Run Coveralls
       run: |
         coverage run -m pytest tests/ > ${{ github.workspace }}/coverage/lcov.info
