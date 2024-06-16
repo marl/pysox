@@ -343,7 +343,7 @@ class Transformer:
             raise ValueError('channels must be a positive number')
 
         if not isinstance(bitrate, float) and bitrate is not None:
-            raise ValueError('bitrate must be an float or None')
+            raise ValueError('bitrate must be a positive float or None')
 
         if encoding not in ENCODING_VALS + [None]:
             raise ValueError(
